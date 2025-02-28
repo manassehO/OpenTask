@@ -1,0 +1,6 @@
+[package]
+name = "aztec"
+type = "contract"
+authors = [""]
+
+[dependencies]
