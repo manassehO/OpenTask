@@ -1,3 +1,6 @@
+pub mod events;
+pub mod modules;
+
 fn main() -> u32 {
     fib(16)
 }
