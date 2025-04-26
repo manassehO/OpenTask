@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 
+import { Provider } from "jotai";
 import { Navbar } from "~/app/_components/navbar";
 
 export const metadata: Metadata = {
@@ -18,9 +19,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-		<Navbar />
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+      <body className="flex h-full w-full flex-col bg-[#FAFAFA]">
+        <Provider>
+          <Navbar />
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </Provider>
       </body>
     </html>
   );
