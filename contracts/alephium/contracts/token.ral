@@ -58,12 +58,18 @@ Contract TokenFaucet(
 
         // Make sure the amount is valid
         assert!(amount <= 2, ErrorCodes.InvalidWithdrawAmount)
-        // Functions postfixed with `!` are built-in functions.
+        // Use safe subtraction to prevent underflow
+        balance = safe_sub(balance, amount);
+
         transferTokenFromSelf!(callerAddress!(), selfTokenId!(), amount)
-        // Ralph does not allow underflow.
-        balance = balance - amount
 
         // Emit the event defined earlier.
         emit Withdraw(callerAddress!(), amount)
+    }
+
+    // Safe subtraction function to prevent underflows
+    fn safe_sub(x: U256, y: U256) -> U256 {
+        assert!(x >= y, ErrorCodes.InvalidWithdrawAmount);
+        x - y
     }
 }
