@@ -1,3 +1,6 @@
+pub mod events;
+pub mod modules;
+
 fn main() -> u32 {
     fib(16)
 }
@@ -10,7 +13,7 @@ fn fib(mut n: u32) -> u32 {
         let temp = b;
         b = a + b;
         a = temp;
-    };
+    }
     a
 }
 
