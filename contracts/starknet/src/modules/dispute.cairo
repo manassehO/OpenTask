@@ -2,7 +2,7 @@
 
 pub mod dispute_module {
 
-    use starknet::ContractAddress;
+    use starknet::{ContractAddress};
     use crate::events::dispute_event::{DisputeEvent, DisputeFlagged, DisputeResolved};
 
     #[external]
