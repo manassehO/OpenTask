@@ -1,5 +1,3 @@
-// use crate::events::reward_events::RewardPaid;
-// use starknet::ContractAddress;
 
 pub mod reward_module {
     use starknet::ContractAddress;
