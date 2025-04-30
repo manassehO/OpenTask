@@ -2,5 +2,5 @@
 version = 1
 
 [[package]]
-name = "open_task_starknet"
+name = "opentask_contract"
 version = "0.1.0"
