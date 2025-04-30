@@ -27,8 +27,8 @@ pub trait IEscrow<TContractState> {
 
 #[starknet::contract]
 pub mod Escrow {
-    use opentask_starknet::interface::erc20::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::ContractAddress;
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use super::IEscrow;
 
     #[storage]
