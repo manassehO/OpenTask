@@ -1,7 +1,8 @@
 use starknet::ContractAddress;
 
 /// Enum representing the various states a task can be in
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
+#[allow(starknet::store_no_default_variant)]
 pub enum TaskStatus {
     Active, // Task is active and can receive submissions
     Disputed, // Task has a disputed submission
@@ -10,22 +11,22 @@ pub enum TaskStatus {
 }
 
 /// Core data structure for storing task information
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 pub struct TaskDetails {
     // Creator's address who funded the task
-    creator: ContractAddress,
+    pub creator: ContractAddress,
     // Token address used for payment (STRK, USDC, etc.)
-    token_address: ContractAddress,
+    pub token_address: ContractAddress,
     // Reward amount per individual task completion
-    reward_per_completion: u256,
+    pub reward_per_completion: u256,
     // Total amount initially funded for the task
-    total_funded_amount: u256,
+    pub total_funded_amount: u256,
     // Number of completions required for the task
-    required_completions: u32,
+    pub required_completions: u32,
     // Current number of completed and approved submissions
-    completed_count: u32,
+    pub completed_count: u32,
     // Current status of the task
-    status: TaskStatus,
+    pub status: TaskStatus,
 }
 
 /// Structure used for dispute tracking
