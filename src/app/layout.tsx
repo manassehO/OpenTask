@@ -6,6 +6,8 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { Provider } from "jotai";
+import { DashboardNavbar } from "./_components/layout/dashboardNavbar";
+import Footer from "./_components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -17,10 +19,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body className="flex h-full w-full flex-col bg-[#FAFAFA]">
+    <html lang="en" className={`${GeistSans.variable} h-full`}>
+      <body className="min-h-screen flex flex-col bg-[#FAFAFA]">
         <Provider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <DashboardNavbar />
+          <main className="flex-1">
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </main>
+          <Footer />
         </Provider>
       </body>
     </html>
