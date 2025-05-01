@@ -1,6 +1,7 @@
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import "~/styles/globals.css";
+import { DashboardNavbar } from "../_components/layout/dashboardNavbar";
 import SidebarWrapper from "../_components/layout/sidebarWrapper";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={GeistSans.variable}>
       <body className="bg-[#FAFAFA]">
+         <DashboardNavbar />
         <SidebarWrapper>{children}</SidebarWrapper>
       </body>
     </html>

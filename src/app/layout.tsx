@@ -6,7 +6,6 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { Provider } from "jotai";
-import { DashboardNavbar } from "./_components/layout/dashboardNavbar";
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -21,7 +20,6 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body className="flex h-full w-full flex-col bg-[#FAFAFA]">
         <Provider>
-          <DashboardNavbar />
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </Provider>
       </body>
