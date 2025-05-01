@@ -28,7 +28,7 @@ pub trait IEscrow<TContractState> {
 #[starknet::contract]
 pub mod Escrow {
     use starknet::ContractAddress;
-    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use opentask_contract::interfaces::Ierc20::{IERC20Dispatcher, IERC20DispatcherTrait};
     use super::IEscrow;
 
     #[storage]
@@ -38,7 +38,7 @@ pub mod Escrow {
         fn get_balance(
             self: @ContractState, token_address: ContractAddress, account: ContractAddress,
         ) -> u256 {
-            IERC20Dispatcher { contract_address: token_address }.balance_of(account)
+            IERC20Dispatcher { contract_address: token_address }.balanceOf(account)
         }
 
         fn transfer_tokens(
@@ -58,7 +58,7 @@ pub mod Escrow {
             amount: u256,
         ) -> bool {
             IERC20Dispatcher { contract_address: token_address }
-                .transfer_from(sender, recipient, amount)
+                .transferFrom(sender, recipient, amount)
         }
 
         fn approve_spender(
