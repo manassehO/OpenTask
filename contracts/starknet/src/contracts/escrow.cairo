@@ -1,43 +1,23 @@
-use starknet::ContractAddress;
-
-#[starknet::interface]
-pub trait IEscrow<TContractState> {
-    fn fund_task(
-        ref self: TContractState,
-        task_id: felt252, 
-        required_completions: u32, 
-        reward_per_completion: u256, 
-        token_address: ContractAddress
-    ) ;
-}
-
-#[starknet::interface]
-trait IERC20<TContractState> {
-    fn transfer(ref self: TContractState, to: ContractAddress, amount: u256);
-    fn transfer_from(
-        ref self: TContractState, from: ContractAddress, to: ContractAddress, amount: u256
-    );
-}
-
-
 #[starknet::contract]
 mod Escrow {
+    use core::num::traits::Zero;
+    use core::num::traits::OverflowingMul;
     use starknet::{
         ContractAddress, get_caller_address, get_contract_address,
     };
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use opentask_contract::types::task::{TaskDetails, TaskStatus};
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess
     };
-    use core::num::traits::Zero;
-    use core::num::traits::OverflowingMul;
-
+    use opentask_contract::types::task::{TaskDetails, TaskStatus};
+   
+   //Storage
     #[storage]
     struct Storage {
         tasks: Map<felt252, TaskDetails>,
     }
 
+    // Functions
     #[external(v0)]
     fn fund_task(
         ref self: ContractState,
