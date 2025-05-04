@@ -12,12 +12,10 @@ export default function SidebarWrapper({
   const [isSidebarOpen] = useAtom(sidebarAtom);
 
   return (
-    <div className="flex h-full w-full flex-row items-start pt-[100px] lg:px-[30px]">
+    <div className="flex h-full w-full flex-row items-start pb-[30px] pt-[120px] lg:px-[30px]">
       <Sidebar />
       <main
-        className={`px-6 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? "lg:ml-[330px]" : "lg:ml-0"
-        }`}
+        className={`ml-0 min-h-[calc(100vh-120px)] px-6 transition-all duration-300 ease-in-out lg:ml-[30px]`}
       >
         {children}
       </main>
