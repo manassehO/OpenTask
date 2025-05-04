@@ -17,7 +17,7 @@ function Sidebar() {
     <>
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-[60px] z-40 h-full w-[75%] transform rounded-lg bg-white px-6 py-4 shadow-md transition-transform duration-300 ease-in-out sm:w-[60%] md:w-[40%] lg:left-[60px] lg:top-[100px] lg:h-auto lg:w-[300px] ${isOpen ? "translate-x-0" : "-translate-x-full lg:-left-[30px]"} `}
+        className={`fixed left-0 top-[60px] z-40 h-full w-[75%] transform rounded-lg bg-white px-6 py-4 shadow-md transition-transform duration-300 ease-in-out sm:w-[60%] md:w-[40%] lg:left-[30px] lg:top-[100px] lg:h-auto lg:w-[300px] ${isOpen ? "translate-x-0" : "-translate-x-full lg:left-[-60px]"} `}
       >
         {/* Sidebar content */}
         {sidebar_list.map((list, i) => {
