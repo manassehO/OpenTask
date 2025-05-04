@@ -17,7 +17,7 @@ export default function SidebarWrapper({
       <SidebarToggleButton />
       <Sidebar />
       <main
-        className={`ml-12 min-h-[calc(100vh-120px)] px-6 transition-all duration-300 ease-in-out lg:ml-[30px]`}
+        className={`ml-0 min-h-[calc(100vh-120px)] px-6 transition-all duration-300 ease-in-out lg:ml-[30px]`}
       >
         {children}
       </main>

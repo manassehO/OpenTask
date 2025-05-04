@@ -12,10 +12,10 @@ export default function SidebarToggleButton() {
   return (
     <button
       onClick={() => setIsSidebarOpen(true)}
-      className="fixed left-2 top-[100px] z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md lg:hidden"
+      className="z-2 sticky left-1 top-[100px] flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md lg:hidden"
       aria-label="Open sidebar"
     >
-      <FaBars className="text-lg" />
+      <FaBars className="text-sm" />
     </button>
   );
 }
