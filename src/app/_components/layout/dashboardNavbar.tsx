@@ -7,6 +7,7 @@ import {
   Search,
   Menu,
   X,
+  PanelLeft,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,6 +57,12 @@ export function DashboardNavbar() {
         </div>
 
         <div className="hidden items-center gap-4 lg:flex">
+          <button
+            className=""
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+          >
+            <PanelLeft className="h-[20px] w-[20px] text-black" />
+          </button>
           <a href="">
             <button className="text-base font-bold capitalize text-[#3B82F6]">
               🗓️ create a task
@@ -75,9 +82,12 @@ export function DashboardNavbar() {
         {/* Mobile Hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
           <button
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className="p-1"
+            className=""
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
           >
+            <PanelLeft className="h-[20px] w-[20px] text-black" />
+          </button>
+          <button onClick={() => setMenuOpen((prev) => !prev)} className="p-1">
             {menuOpen ? (
               <X className="h-6 w-6 text-black" />
             ) : (
@@ -89,7 +99,7 @@ export function DashboardNavbar() {
 
       {/* Mobile Dropdown Menu*/}
       {menuOpen && (
-        <div className="absolute right-0 top-full z-50 w-1/2 bg-white shadow-lg p-4 flex flex-col gap-4 lg:hidden">
+        <div className="absolute right-0 top-full z-50 flex w-1/2 flex-col gap-4 bg-white p-4 shadow-lg lg:hidden">
           <div className="flex gap-6">
             <CircleHelp />
             <Bell />
