@@ -1,13 +1,27 @@
-import { HydrateClient } from "~/trpc/server";
+import FaqSection from "./_components/landing_page/faqSection";
+import HeroPage from "./_components/landing_page/hero";
+import PerksSection from "./_components/landing_page/perksSection";
+import StartToFinishSection from "./_components/landing_page/startToFinishSection";
+import WhereYouBelongCard from "./_components/landing_page/whereYouBelongCard";
+import WhyTrustOpenTask from "./_components/landing_page/whyTrustOpenTask";
+import Footer from "./_components/layout/Footer";
+import { Navbar } from "./_components/layout/navbar";
 
-export default async function Home() {
+function page() {
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-			OpenTask
-		  </h1>
-      </main>
-    </HydrateClient>
+    <div>
+      <Navbar />
+      <div className="mt-24 flex h-full w-full flex-col">
+        <HeroPage />
+        <PerksSection />
+        <StartToFinishSection />
+        <WhereYouBelongCard />
+        <WhyTrustOpenTask />
+        <FaqSection />
+      </div>
+      <Footer />
+    </div>
   );
 }
+
+export default page;
