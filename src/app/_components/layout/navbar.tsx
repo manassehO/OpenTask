@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { useAtom } from "jotai";
-import { PanelLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
@@ -33,20 +33,26 @@ export function Navbar() {
   }, []);
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
   return (
-    <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full bg-white shadow">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-20 py-4">
+    <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full justify-between bg-white shadow">
+      <div className="mx-auto flex w-full items-center justify-between px-5 lg:px-20 py-4 lg:max-w-7xl">
         <Link href="/" className="flex items-center">
-          <img src="/logo.svg" alt="OpenTask Logo" className="inline" />
+          <Image
+            width={50}
+            height={50}
+            src="/logo.svg"
+            alt="OpenTask Logo"
+            className="inline"
+          />
         </Link>
 
         {/* Desktop Nav */}
         <ul className="hidden items-center gap-6 md:flex">
-          <button
+          {/* <button
             className=""
             onClick={() => setIsSidebarOpen((prev) => !prev)}
           >
             <PanelLeft className="h-[20px] w-[20px] text-black" />
-          </button>
+          </button> */}
           {sections.map((section) => (
             <li key={section}>
               <a

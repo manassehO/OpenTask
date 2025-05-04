@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { HydrateClient } from "~/trpc/server";
 import Modules from "~/app/_components/dashboard_components/Modules"; // fix path if different
 import { HowItWorks } from "~/app/_components/HowItWorks";

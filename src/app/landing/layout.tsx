@@ -3,10 +3,8 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "~/trpc/react";
-
-import { Provider } from "jotai";
-import Footer from "./_components/layout/Footer";
+import Footer from "../_components/layout/Footer";
+import { Navbar } from "../_components/layout/navbar";
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -20,11 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <Provider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-
-      
-        </Provider>
+        <Navbar />
+        {children}
+        <Footer />
       </body>
     </html>
   );
