@@ -1,3 +1,5 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IERC20<TContractState> {
     fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
