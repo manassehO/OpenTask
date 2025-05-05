@@ -20,7 +20,7 @@ export const CreatePassword = () => {
   };
 
   return (
-    <div>
+    <div className="max-w-[32.37rem]">
       <Formik
         initialValues={initialValues}
         validationSchema={schema}
@@ -39,7 +39,7 @@ export const CreatePassword = () => {
                 type="password"
                 name="createPassword"
                 id="createPassword"
-                className="h-14 w-full max-w-[32.37rem] border border-[#D9D9D9] px-6 outline-none hover:border-[#3B82F6] focus:border-[#95a3ba]"
+                className="h-14 w-full border border-[#D9D9D9] px-6 outline-none hover:border-[#3B82F6] focus:border-[#95a3ba]"
               />
               <ErrorMessage
                 name="createPassword"
@@ -52,7 +52,7 @@ export const CreatePassword = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-16 w-full max-w-[32.37rem] rounded-lg bg-[#3B82F6] p-2.5 text-base font-semibold text-white transition duration-150 ease-in-out hover:bg-[#3B82F6]/95"
+                className="h-16 w-full rounded-lg bg-[#3B82F6] p-2.5 text-base font-semibold text-white transition duration-150 ease-in-out hover:bg-[#3B82F6]/95"
               >
                 Proceed
               </button>
