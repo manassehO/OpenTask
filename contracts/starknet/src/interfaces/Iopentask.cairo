@@ -11,4 +11,5 @@ pub trait IOpenTask<TContractState> {
         total_funded_amount: u256,
         required_completions: u32,
     ) -> bool;
+
 }
