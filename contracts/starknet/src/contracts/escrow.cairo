@@ -32,7 +32,6 @@ mod Escrow {
     use starknet::{
         ContractAddress, get_caller_address, get_contract_address,
     };
-    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess
     };
@@ -102,9 +101,17 @@ mod Escrow {
         assert!(!is_overflow);
 
         // Transfer funds from the caller to the contract
-        let transfer_successful = IERC20Dispatcher { contract_address: token_address }
-            .transfer_from(creator, escrow_address, total_funded_amount);
+        // let transfer_successful = IERC20Dispatcher { contract_address: token_address }
+            // .transfer_from(creator, escrow_address, total_funded_amount);
+        let transfer_successful = self.transfer_from_tokens(
+            token_address,
+            sender: creator,
+            recipient: escrow_address,
+            amount: total_funded_amount,
+        );
         assert(transfer_successful, 'Token transfer failed');
+
+        
 
         // Store task details
         let task_details = TaskDetails {
