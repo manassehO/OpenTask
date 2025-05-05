@@ -42,7 +42,7 @@ export default function OTPInput({
         value={typeof value === 'number' ? value.toString() : ''}
         onChange={handleChange}
         maxLength={maxLength}
-        placeholder={placeholder || 'Enter OTP'}
+        placeholder={placeholder ?? 'Enter OTP'}
         required
         className={`border px-6 py-5 font-semibold rounded w-full ${error && 'border-red-500'}
         focus:outline-none focus:ring-2 focus:ring-black ${error && 'focus:ring-red-500'}
