@@ -1,21 +1,27 @@
-import { HydrateClient } from "~/trpc/server";
-import Modules from "~/app/_components/dashboard_components/Modules"; // fix path if different
-import { HowItWorks } from "~/app/_components/HowItWorks";
+import FaqSection from "./_components/landing_page/faqSection";
+import HeroPage from "./_components/landing_page/hero";
+import PerksSection from "./_components/landing_page/perksSection";
+import StartToFinishSection from "./_components/landing_page/startToFinishSection";
+import WhereYouBelongCard from "./_components/landing_page/whereYouBelongCard";
+import WhyTrustOpenTask from "./_components/landing_page/whyTrustOpenTask";
+import Footer from "./_components/layout/Footer";
+import { Navbar } from "./_components/layout/navbar";
 
-export default async function Home() {
+function page() {
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center text-black">
-        <h1 className="text-5xl font-extrabold tracking-tight mt-10 sm:text-[5rem] mb-12">
-          OpenTask
-        </h1>
-
-        <HowItWorks />
-        
-        <div className="w-full bg-[#1f1f1f] text-white">
-          <Modules />
-        </div>
-      </main>
-    </HydrateClient>
+    <div>
+      <Navbar />
+      <div className="mt-24 flex h-full w-full flex-col">
+        <HeroPage />
+        <PerksSection />
+        <StartToFinishSection />
+        <WhereYouBelongCard />
+        <WhyTrustOpenTask />
+        <FaqSection />
+      </div>
+      <Footer />
+    </div>
   );
 }
+
+export default page;
