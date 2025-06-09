@@ -3,6 +3,8 @@ import { type Metadata } from "next";
 import "~/styles/globals.css";
 import { DashboardNavbar } from "../_components/layout/dashboardNavbar";
 import SidebarWrapper from "../_components/layout/sidebarWrapper";
+import RightBar from "../_components/layout/RightBar";
+
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -13,11 +15,13 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  
   return (
     <html lang="en" className={GeistSans.variable}>
       <body>
         <DashboardNavbar />
         <SidebarWrapper>{children}</SidebarWrapper>
+       <RightBar />
       </body>
     </html>
   );
