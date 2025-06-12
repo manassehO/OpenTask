@@ -9,6 +9,16 @@ import { useRouter } from 'next/navigation';
 // Mock data - Replace with actual data fetching
 const mockTasks: Task[] = [ 
   {
+    id: '0',
+    title: 'Complete a short survey about Defi',
+    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
+    status: 'completed', 
+    deadline: 'Monday, 12th June, 2025',
+    image: 'https://via.placeholder.com/150',
+    rewardInEth: 0.005,
+    rewardInUsd: 2000,
+  },
+  {
     id: '1',
     title: 'Complete a short survey about Defi',
     description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
@@ -22,7 +32,7 @@ const mockTasks: Task[] = [
     id: '2',
     title: 'Complete a short survey about Defi',
     description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'completed', 
+    status: 'active', 
     deadline: 'Monday, 12th June, 2025',
     image: 'https://via.placeholder.com/150',
     rewardInEth: 0.005,
@@ -40,6 +50,36 @@ const mockTasks: Task[] = [
   },
   {
     id: '4',
+    title: 'Complete a short survey about Defi',
+    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
+    status: 'active', 
+    deadline: 'Monday, 12th June, 2025',
+    image: 'https://via.placeholder.com/150',
+    rewardInEth: 0.005,
+    rewardInUsd: 20000,
+  },
+  {
+    id: '5',
+    title: 'Complete a short survey about Defi',
+    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
+    status: 'active', 
+    deadline: 'Monday, 12th June, 2025',
+    image: 'https://via.placeholder.com/150',
+    rewardInEth: 0.005,
+    rewardInUsd: 20000,
+  },
+  {
+    id: '6',
+    title: 'Complete a short survey about Defi',
+    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
+    status: 'active', 
+    deadline: 'Monday, 12th June, 2025',
+    image: 'https://via.placeholder.com/150',
+    rewardInEth: 0.005,
+    rewardInUsd: 20000,
+  },
+  {
+    id: '7',
     title: 'Complete a short survey about Defi',
     description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
     status: 'active', 
@@ -86,7 +126,7 @@ const TasksPage = () => {
       <h1 className="text-3xl font-bold mb-8">Tasks</h1>
       
       <Tabs defaultValue="active" className="space-y-6">
-        <TabsList className="grid bg-white rounded w-full grid-cols-3">
+        <TabsList className="grid bg-white rounded grid-cols-2">
           <TabsTrigger value="all">Tasks</TabsTrigger>
           <TabsTrigger value="active">Active Tasks</TabsTrigger>
         </TabsList>
@@ -96,7 +136,7 @@ const TasksPage = () => {
         </TabsContent>
 
         <TabsContent value="all">
-          <p className="text-black text-muted-foreground mb-4 font-bold">Recommended For You</p>
+          <p className="text-black text-muted-foreground mb-4 font-semibold">Recommended For You</p>
           {renderTaskList(tasks)}
         </TabsContent>
       </Tabs>

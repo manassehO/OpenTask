@@ -42,7 +42,7 @@ const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
     <div
       ref={ref}
       className={cn(
-        "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+        "inline-flex h-fit w-fit items-center justify-center gap-x-2 rounded-[8px] bg-muted p-2 text-muted-foreground",
         className
       )}
       {...props}
@@ -68,8 +68,8 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          isActive && "bg-background text-foreground shadow-sm",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-[4px] px-3 py-3 text-sm text-[#414141] font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          isActive && "bg-background bg-[#3B82F6] text-white shadow-sm",
           className
         )}
         onClick={() => context.onValueChange(value)}
