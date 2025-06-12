@@ -9,6 +9,8 @@ export interface Task {
   deadline: string;
   rewardInEth: number;
   rewardInUsd: number;
+
+  category: string;
 }
 
 export interface TaskCardProps {

@@ -12,17 +12,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
         <div className="space-y-1">
           <h3 className="text-lg font-semibold tracking-1 capitalize">{task.title}</h3>
         </div>
-        <div className="text-sm text-muted-foreground text-[#414141]">
-          {task.description}
+        <div className="text-base text-muted-foreground text-[#414141]">
+          {task.description.length > 100 ? `${task.description.substring(0, 100)}...` : task.description}
         </div>  
       </CardHeader>
       <CardContent>
         <div className="flex flex-row items-center justify-between">
           <div className="flex gap-y-1 flex-col items-start justify-between">
-            <div className="text-sm">
+            <div className="text-base">
               <span className="text-[#414141]">Deadline</span>
             </div>
-            <div className="text-sm">
+            <div className="text-base">
               <span className="font-semibold">{task.deadline} </span>
             </div>
           </div>

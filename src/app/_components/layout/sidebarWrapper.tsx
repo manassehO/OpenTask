@@ -16,7 +16,7 @@ export default function SidebarWrapper({
       <Sidebar />
       <main
         className={`px-6 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? "lg:ml-[300px]" : "lg:ml-0"
+          isSidebarOpen ? "lg:ml-auto" : "lg:ml-0"
         }`}
       >
         {children}

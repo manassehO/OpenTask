@@ -1,105 +1,62 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Task } from '@/types/task';
 import TaskCard from '@/app/_components/tasks/TaskCard';
+import TaskCardSkeleton from '@/app/_components/tasks/TaskCardSkeleton';
+import TaskFilterTabs, { type TaskFilterTab } from '@/app/_components/tasks/TaskFilterTabs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
+import { mockTasks } from '@/mocks/tasks';
 
-// Mock data - Replace with actual data fetching
-const mockTasks: Task[] = [ 
-  {
-    id: '0',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'completed', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 2000,
-  },
-  {
-    id: '1',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'completed', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '2',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '3',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '4',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '5',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '6',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
-  {
-    id: '7',
-    title: 'Complete a short survey about Defi',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.',
-    status: 'active', 
-    deadline: 'Monday, 12th June, 2025',
-    image: 'https://via.placeholder.com/150',
-    rewardInEth: 0.005,
-    rewardInUsd: 20000,
-  },
+const filterTabs: TaskFilterTab[] = [
+  { id: "all", label: "All Tasks", active: true },
+  { id: "defi", label: "De-Fi", active: false },
+  { id: "testing", label: "User Testing", active: false },
 ];
 
 const TasksPage = () => {
   const router = useRouter();
-  const [tasks] = useState<Task[]>(mockTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeFilterTab, setActiveFilterTab] = useState("all");
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      setIsLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTasks(mockTasks);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadTasks();
+  }, []);
 
   const handleTaskAction = (taskId: string) => {
-    router.push(`/tasks/${taskId}`);
+    router.push(`/dashboard/task/${taskId}`);
   };
 
-  const renderTaskList = (filteredTasks: Task[]) => {
-    if (filteredTasks.length === 0) {
+  const filteredTasks = tasks.filter(task => 
+    activeFilterTab === "all" ? true : task.category === activeFilterTab
+  );
+
+  const renderTaskList = (tasksToRender: Task[]) => {
+    if (isLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <TaskCardSkeleton key={index} />
+          ))}
+        </div>
+      );
+    }
+
+    if (tasksToRender.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <h3 className="text-lg font-semibold">No tasks available</h3>
@@ -110,7 +67,7 @@ const TasksPage = () => {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTasks.map((task) => (
+        {tasksToRender.map((task) => (
           <TaskCard
             key={task.id}
             task={task}
@@ -123,9 +80,9 @@ const TasksPage = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Tasks</h1>
-      
-      <Tabs defaultValue="active" className="space-y-6">
+      {/* First Section - Original Two-Tab System */}
+      <h1 className="text-3xl font-bold mb-4">Tasks</h1>
+      <Tabs defaultValue="all" className=" mx-auto">
         <TabsList className="grid bg-white rounded grid-cols-2">
           <TabsTrigger value="all">Tasks</TabsTrigger>
           <TabsTrigger value="active">Active Tasks</TabsTrigger>
@@ -140,6 +97,23 @@ const TasksPage = () => {
           {renderTaskList(tasks)}
         </TabsContent>
       </Tabs>
+
+      {/* Second Section - New Filter Tabs System */}
+      <div className="w-full mx-auto mt-10">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">All Tasks</h2>
+        </div>
+
+        <TaskFilterTabs 
+          tabs={filterTabs}
+          activeTab={activeFilterTab}
+          onTabChange={setActiveFilterTab}
+        />
+
+        <div className="mt-6">
+          {renderTaskList(filteredTasks)}
+        </div>
+      </div>
     </div>
   );
 };

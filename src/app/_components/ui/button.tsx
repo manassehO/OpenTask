@@ -62,7 +62,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 border font-medium transition duration-200",
+        "inline-flex items-center xl:h-[50px] justify-center gap-2 border font-medium transition duration-200",
         backgroundColor,
         textColor,
         borderColor,
