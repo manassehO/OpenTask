@@ -15,7 +15,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={GeistSans.variable}>
-      <body>
+      <body className="bg-gray-50">
         <DashboardNavbar />
         <SidebarWrapper>{children}</SidebarWrapper>
       </body>
