@@ -21,11 +21,11 @@ type ButtonProps = {
 const Button: React.FC<ButtonProps> = ({
   children,
   onClick,
-  backgroundColor = "bg-blue-600",
+  backgroundColor = "bg-[#3B82F6]",
   textColor = "text-white",
   borderColor = "border-transparent",
   padding = "px-4 py-2",
-  rounded = "rounded-md",
+  rounded = "rounded-[4px]",
   className = "",
   type = "button",
   disabled = false,
@@ -62,7 +62,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 border font-medium transition duration-200",
+        "inline-flex items-center xl:h-[50px] justify-center gap-2 border font-medium transition duration-200",
         backgroundColor,
         textColor,
         borderColor,

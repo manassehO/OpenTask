@@ -1,10 +1,16 @@
 import { GeistSans } from "geist/font/sans";
+import { DM_Sans } from "next/font/google";
 import { type Metadata } from "next";
 import "~/styles/globals.css";
 import { DashboardNavbar } from "../_components/layout/dashboardNavbar";
 import SidebarWrapper from "../_components/layout/sidebarWrapper";
 import RightBar from "../_components/layout/RightBar";
 
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+});
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -17,8 +23,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   
   return (
-    <html lang="en" className={GeistSans.variable}>
-      <body>
+    <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
+      <body className={dmSans.className}>
         <DashboardNavbar />
         <SidebarWrapper>{children}</SidebarWrapper>
        <RightBar />
