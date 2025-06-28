@@ -52,7 +52,7 @@ export function DashboardNavbar() {
           <Search className="absolute left-2 top-4 h-6 w-6 text-[#454543]" />
           <input
             className="h-[56px] w-full items-center rounded-lg border-none bg-[#F3F3F3] pl-12 pr-3 text-[#7E7E7E] outline-none placeholder:text-[#7E7E7E]"
-            placeholder="search openTask"
+            placeholder="Search OpenTask"
           />
         </div>
 
