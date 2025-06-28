@@ -66,7 +66,7 @@ export default Sidebar;
 
 const sidebar_list = [
   { title: "Home", icon: "/icons/sidebar_home.svg", route: "/dashboard" },
-  { title: "Task", icon: "/icons/sidebar_task.svg", route: "/dashboard/task" },
+  { title: "Tasks", icon: "/icons/sidebar_task.svg", route: "/dashboard/task" },
   {
     title: "Earnings & Rewards",
     icon: "/icons/sidebar_earning.svg",

@@ -1,121 +1,186 @@
-'use client';
+import React from "react";
+import Calendar from "../../../../public/images/calendar.svg";
+import Diamond from "../../../../public/images/diamond.svg";
+import Users from "../../../../public/images/app-reg.svg";
+import Image from "next/image";
+import type { StaticImageData } from "next/image";
+import doctorImage from "../../../../public/images/banner.webp";
 
-import React, { useState, useEffect } from 'react';
-import type { Task } from '@/types/task';
-import TaskCard from '@/app/_components/tasks/TaskCard';
-import TaskCardSkeleton from '@/app/_components/tasks/TaskCardSkeleton';
-import TaskFilterTabs, { type TaskFilterTab } from '@/app/_components/tasks/TaskFilterTabs';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useRouter } from 'next/navigation';
-import { mockTasks } from '@/mocks/tasks';
+type Props = Record<string, never>;
 
-const filterTabs: TaskFilterTab[] = [
-  { id: "all", label: "All Tasks", active: true },
-  { id: "defi", label: "De-Fi", active: false },
-  { id: "testing", label: "User Testing", active: false },
-];
+interface SectionCardProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-const TasksPage = () => {
-  const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeFilterTab, setActiveFilterTab] = useState("all");
+const SectionCard = ({ children, className = "" }: SectionCardProps) => (
+  <div className={`mb-6 rounded-lg bg-white p-6 shadow-sm max-w-4xl mx-auto ${className}`}>
+    {children}
+  </div>
+);
+interface IconTextItemProps {
+  icon: StaticImageData | { src: string; height: number; width: number };
+  iconAlt: string;
+  label: string;
+  value: string;
+  iconSize?: string;
+}
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setTasks(mockTasks);
-      } catch (error) {
-        console.error('Error loading tasks:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+const IconTextItem = ({ 
+  icon, 
+  iconAlt, 
+  label, 
+  value, 
+  iconSize = "h-10 w-10" 
+}: IconTextItemProps) => (
+  <div className="flex items-center space-x-3">
+    <div className="flex items-center justify-center rounded-full bg-gray-50 p-3">
+      <Image src={icon} alt={iconAlt} className={iconSize} />
+    </div>
+    <div>
+      <p className="text-sm text-gray-600">{label}</p>
+      <p className="text-lg font-bold text-gray-900">{value}</p>
+    </div>
+  </div>
+);
 
-    void loadTasks();
-  }, []);
 
-  const handleTaskAction = (taskId: string) => {
-    router.push(`/dashboard/task/${taskId}`);
-  };
+interface InstructionStepProps {
+  stepNumber: number;
+  description: string;
+}
 
-  const filteredTasks = tasks.filter(task => 
-    activeFilterTab === "all" ? true : task.category === activeFilterTab
-  );
+const InstructionStep = ({ stepNumber, description }: InstructionStepProps) => (
+  <div className="flex items-start space-x-3">
+    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-black"></div>
+    <p className="text-gray-600">
+      <span className="font-medium">Step {stepNumber}:</span> {description}
+    </p>
+  </div>
+);
 
-  const renderTaskList = (tasksToRender: Task[]) => {
-    if (isLoading) {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <TaskCardSkeleton key={index} />
-          ))}
-        </div>
-      );
-    }
+interface ActionButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary';
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  className?: string;
+}
 
-    if (tasksToRender.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <h3 className="text-lg font-semibold">No tasks available</h3>
-          <p className="text-muted-foreground">Check back later for new tasks</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tasksToRender.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onAction={handleTaskAction}
-          />
-        ))}
-      </div>
-    );
+const ActionButton = ({ 
+  children, 
+  variant = 'primary', 
+  onClick, 
+  className = "" 
+}: ActionButtonProps) => {
+  const baseClasses = "w-[45%] rounded-lg px-6 py-3 transition-colors";
+  const variantClasses = {
+    primary: "bg-blue-600 text-white hover:bg-blue-700",
+    secondary: "border border-gray-300 text-gray-700 hover:bg-gray-50"
   };
 
   return (
-    <div className="container mx-auto py-8">
-      {/* First Section - Original Two-Tab System */}
-      <h1 className="text-3xl font-bold mb-4">Tasks</h1>
-      <Tabs defaultValue="all" className=" mx-auto">
-        <TabsList className="grid bg-white rounded grid-cols-2">
-          <TabsTrigger value="all">Tasks</TabsTrigger>
-          <TabsTrigger value="active">Active Tasks</TabsTrigger>
-        </TabsList>
+    <button 
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
 
-        <TabsContent value="active">
-          {renderTaskList(tasks.filter(task => task.status === 'active'))}
-        </TabsContent>
 
-        <TabsContent value="all">
-          <p className="text-black text-muted-foreground mb-4 font-semibold">Recommended For You</p>
-          {renderTaskList(tasks)}
-        </TabsContent>
-      </Tabs>
+interface SectionTitleProps {
+  children: React.ReactNode;
+}
 
-      {/* Second Section - New Filter Tabs System */}
-      <div className="w-full mx-auto mt-10">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">All Tasks</h2>
+const SectionTitle = ({ children }: SectionTitleProps) => (
+  <h3 className="mb-4 text-xl font-bold text-gray-900">{children}</h3>
+);
+
+const SectionText = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-gray-600 leading-relaxed">{children}</p>
+);
+
+function page({}: Props): React.JSX.Element {
+  const instructionSteps = [
+    "Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam.",
+    "Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam.",
+    "Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam.",
+    "Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam.",
+    "Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam."
+  ];
+
+  const standardText = "Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam. Ipsum turpis neque eros quisque aliquet vulputate sed venenatis lectus. morbi in aliquam interdum pellentesque.";
+
+  const extendedText = `${standardText} Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam. Ipsum turpis neque eros quisque aliquet vulputate sed venenatis lectus. morbi in aliquam interdum pellentesque.`;
+
+  return (
+    <div className="min-h-screen px-4 py-[3em] text-black">
+      <div className="mx-auto max-w-5xl">
+        <h1 className="mb-8 text-3xl font-bold text-gray-900">
+          Complete A Short Survey About Defi
+        </h1>
+        <div className="mb-8">
+          <Image src={doctorImage} alt="docture image" />
         </div>
+        <SectionCard>
+          <SectionTitle>Description</SectionTitle>
+          <SectionText>{extendedText}</SectionText>
+        </SectionCard>
+        <SectionCard className="p-4">
+          <IconTextItem
+            icon={Users as StaticImageData}
+            iconAlt="users icon"
+            label="Task Spots Left"
+            value="99 spots left of 100"
+          />
+        </SectionCard>
+        <SectionCard>
+          <SectionTitle>Instructions</SectionTitle>
+          <SectionText>{standardText}</SectionText>
+          
+          <div className="mb-6 mt-6 space-y-4">
+            {instructionSteps.map((description, index) => (
+              <InstructionStep
+                key={index}
+                stepNumber={index + 1}
+                description={description}
+              />
+            ))}
+          </div>
 
-        <TaskFilterTabs 
-          tabs={filterTabs}
-          activeTab={activeFilterTab}
-          onTabChange={setActiveFilterTab}
-        />
+          <SectionText>{standardText}</SectionText>
+        </SectionCard>
+        <SectionCard>
+          <SectionTitle>Reward & Deadline</SectionTitle>
+          <SectionText>{standardText}</SectionText>
 
-        <div className="mt-6">
-          {renderTaskList(filteredTasks)}
+          <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <IconTextItem
+              icon={Calendar as StaticImageData}
+              iconAlt="calendar icon"
+              label="DEADLINE"
+              value="Monday, 12th October, 2025"
+            />
+            <IconTextItem
+              icon={Diamond as StaticImageData}
+              iconAlt="diamond icon"
+              label="PRICE"
+              value="0.005ETH ≈$2,000"
+            />
+          </div>
+        </SectionCard>
+        <div className="flex flex-col gap-4 sm:flex-row max-w-4xl mx-auto justify-between">
+          <ActionButton variant="secondary">
+            Cancel Task
+          </ActionButton>
+          <ActionButton variant="primary">
+            Submit Task
+          </ActionButton>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default TasksPage;
+export default page;
