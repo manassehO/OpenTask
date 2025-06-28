@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import AuthWrapper from "~/app/_components/layout/authWrapper";
-import { CreatePassword } from "~/app/_components/ui/form/CreatePassword";
+import AuthWrapper from "~/_components/layout/authWrapper";
+import { CreatePassword } from "~/_components/ui/form/CreatePassword";
+
 
 function Password() {
   const [otp, setOtp] = useState<number | undefined>(undefined);

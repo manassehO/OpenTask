@@ -1,11 +1,12 @@
-import FaqSection from "./_components/landing_page/faqSection";
-import HeroPage from "./_components/landing_page/hero";
-import PerksSection from "./_components/landing_page/perksSection";
-import StartToFinishSection from "./_components/landing_page/startToFinishSection";
-import WhereYouBelongCard from "./_components/landing_page/whereYouBelongCard";
-import WhyTrustOpenTask from "./_components/landing_page/whyTrustOpenTask";
-import Footer from "./_components/layout/Footer";
-import { Navbar } from "./_components/layout/navbar";
+import FaqSection from "~/_components/landing_page/faqSection";
+import HeroPage from "~/_components/landing_page/hero";
+import PerksSection from "~/_components/landing_page/perksSection";
+import StartToFinishSection from "~/_components/landing_page/startToFinishSection";
+import WhereYouBelongCard from "~/_components/landing_page/whereYouBelongCard";
+import WhyTrustOpenTask from "~/_components/landing_page/whyTrustOpenTask";
+import Footer from "~/_components/layout/Footer";
+import { Navbar } from "~/_components/layout/navbar";
+
 
 function page() {
   return (

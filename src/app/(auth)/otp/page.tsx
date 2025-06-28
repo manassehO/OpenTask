@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import AuthWrapper from "~/app/_components/layout/authWrapper";
-import OTPInput from "../../_components/ui/form/OTPInput";
+import AuthWrapper from "~/_components/layout/authWrapper";
+import OTPInput from "~/_components/ui/form/OTPInput";
+
 
 function Otp() {
   const [otp, setOtp] = useState<number | undefined>(undefined);

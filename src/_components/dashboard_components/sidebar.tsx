@@ -5,19 +5,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
+
 function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useAtom(sidebarAtom);
+
   const handleLinkClick = () => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsOpen(false);
     }
   };
+
   return (
     <>
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-[60px] z-40 h-full w-[75%] transform rounded-lg bg-white px-6 py-4 shadow-sm transition-transform duration-300 ease-in-out sm:w-[60%] md:w-[40%] lg:left-[30px] lg:top-[100px] lg:h-auto lg:w-[300px] ${isOpen ? "translate-x-0" : "-translate-x-full lg:left-[-60px]"} `}
+        className={`w-[75%] rounded-lg bg-white px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
       >
         {/* Sidebar content */}
         {sidebar_list.map((list, i) => {

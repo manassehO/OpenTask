@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import AuthWrapper from "~/app/_components/layout/authWrapper";
+import AuthWrapper from "~/_components/layout/authWrapper";
+
 
 function EmailLogin() {
   const [email, setEmail] = useState("");

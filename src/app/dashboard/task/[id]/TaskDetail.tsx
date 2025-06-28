@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation"
 import type { Task } from "@/types/task"
 import { ArrowLeft, X } from "lucide-react"
 import Image from "next/image"
-import Button from "@/components/ui/button"
+
 import { useState } from "react"
-import Modal from "@/components/ui/Modal"
+import Button from "~/_components/ui/button"
+import Modal from "~/_components/ui/Modal"
+
 
 interface TaskDetailProps {
   task: Task | undefined
@@ -131,7 +133,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
               <div>
                 <div className="text-sm font-semibold">PRICE</div>
                 <div className="font-bold text-xl">
-                  {task.rewardInEth}ETH  <span className="text-blue-500 text-base">&asymp;${task.rewardInUsd.toLocaleString()}</span>
+                  {task?.rewardInEth}ETH  <span className="text-blue-500 text-base">&asymp;${task.rewardInUsd.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -171,8 +173,8 @@ export default function TaskDetail({ task }: TaskDetailProps) {
 
           {/* Cancel Confirmation Modal */}
           <Modal open={showCancelModal} onClose={() => setShowCancelModal(false)}>
-            <div className="mb-4 bg-gray-100 rounded-full p-4">  
-              <X  className="w-24 h-24"/>                
+            <div className="mb-4 bg-gray-100 rounded-full p-4">
+              <X  className="w-24 h-24"/>
             </div>
             <div className="mb-4">
               <h3 className="text-xl text-center font-bold">Cancel Task</h3>
@@ -244,4 +246,4 @@ export default function TaskDetail({ task }: TaskDetailProps) {
       </div>
     </div>
   )
-} 
+}
