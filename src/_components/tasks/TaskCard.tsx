@@ -1,7 +1,7 @@
 import React from 'react';
 import type { TaskCardProps } from '@/types/task';
-import { Card, CardContent, CardFooter, CardHeader, CardImage } from '@/components/ui/card';
-import Button from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardImage } from '~/_components/ui/card';
+import Button from '~/_components/ui/button';
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
 
