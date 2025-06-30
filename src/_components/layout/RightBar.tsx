@@ -1,6 +1,7 @@
 "use client";
 import { useAtom } from "jotai";
 import React from "react";
+import Image from "next/image";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
 import Button from "../ui/button";
 
@@ -32,7 +33,7 @@ const RightBar = () => {
 
   return (
     <div
-      className={` w-full space-y-4 overflow-y-auto bg-white p-4 shadow-md transition-all duration-300 ease-in-out max-lg:hidden `}
+      className={`w-full space-y-4 overflow-y-auto bg-white p-4 shadow-md transition-all duration-300 ease-in-out max-lg:hidden`}
       style={{
         right: isSidebarOpen ? "0px" : "0px", // if needed, you can add offset here
       }}
@@ -49,7 +50,13 @@ const RightBar = () => {
             className="flex flex-col gap-2 rounded-lg bg-[#FAFAFA] p-4"
           >
             <div className="flex items-center justify-center bg-[#06B6D41A]/15 p-1 px-2">
-              <img src={item.icon} alt={item.title} className="h-6 w-6" />
+              <Image
+                src={item.icon}
+                alt={item.title}
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
             </div>
             <h1 className="text-sm">{item.title}</h1>
             <h1 className="text-lg font-bold text-[#414141]">{item.amount}</h1>
@@ -62,7 +69,13 @@ const RightBar = () => {
       </Button>
 
       <div className="mt-4 flex flex-col gap-4 rounded-lg bg-white p-4">
-        <img src="/learning-img.png" alt="" className="h-full w-full" />
+        <Image
+          src="/learning-img.png"
+          alt="Learning"
+          width={300}
+          height={200}
+          className="h-full w-full"
+        />
         <div className="flex flex-col">
           <h1 className="text-xl font-bold">Learning Center</h1>
           <p className="text-gray-500">

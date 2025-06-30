@@ -1,5 +1,5 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -7,14 +7,11 @@ const Card = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "rounded-lg bg-card text-card-foreground ",
-      className
-    )}
+    className={cn("bg-card text-card-foreground rounded-lg", className)}
     {...props}
   />
-))
-Card.displayName = "Card"
+));
+Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
@@ -22,19 +19,19 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 pt-2 pb-0 px-2", className)}
+    className={cn("flex flex-col space-y-1.5 px-2 pb-0 pt-2", className)}
     {...props}
   />
-))
-CardHeader.displayName = "CardHeader"
+));
+CardHeader.displayName = "CardHeader";
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("px-2 pt-2 pb-2", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+  <div ref={ref} className={cn("px-2 pb-2 pt-2", className)} {...props} />
+));
+CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<
   HTMLDivElement,
@@ -42,11 +39,11 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center pb-4 px-2 pt-6", className)}
+    className={cn("flex items-center px-2 pb-4 pt-6", className)}
     {...props}
   />
-))
-CardFooter.displayName = "CardFooter"
+));
+CardFooter.displayName = "CardFooter";
 
 const CardImage = React.forwardRef<
   HTMLImageElement,
@@ -54,10 +51,11 @@ const CardImage = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <img
     ref={ref}
-    className={cn("w-full h-48 object-cover rounded-t-lg", className)}
+    className={cn("h-48 w-full rounded-t-lg object-cover", className)}
+    alt=""
     {...props}
   />
-))
-CardImage.displayName = "CardImage"
+));
+CardImage.displayName = "CardImage";
 
-export { Card, CardHeader, CardContent, CardFooter, CardImage } 
+export { Card, CardHeader, CardContent, CardFooter, CardImage };
