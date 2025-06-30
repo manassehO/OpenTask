@@ -13,6 +13,8 @@ on:
       - 'tsconfig.json'
       - '.eslintrc.cjs'
       - 'postcss.config.js'
+    paths-ignore:
+      - 'contracts/**'
 
 jobs:
   build:
