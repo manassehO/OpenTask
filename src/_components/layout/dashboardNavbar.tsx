@@ -1,14 +1,7 @@
 "use client";
 
 import { useAtom } from "jotai";
-import {
-  Bell,
-  CircleHelp,
-  Search,
-  Menu,
-  X,
-  PanelLeft,
-} from "lucide-react";
+import { Bell, CircleHelp, Search, Menu, X, PanelLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,7 +11,7 @@ const sections = ["home", "features", "contact us"];
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("home");
+  const [, setActiveSection] = useState<string>("home");
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
 
   useEffect(() => {
@@ -45,7 +38,13 @@ export function DashboardNavbar() {
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full bg-white shadow">
       <div className="mx-auto flex items-center justify-between gap-4 px-3 py-4 lg:px-10">
         <Link href="/" className="flex items-center">
-          <img src="/logo.svg" alt="OpenTask Logo" className="inline h-8" />
+          <Image
+            src="/logo.svg"
+            alt="OpenTask Logo"
+            width={120}
+            height={32}
+            className="inline h-8"
+          />
         </Link>
 
         <div className="relative hidden w-[40%] lg:flex">
