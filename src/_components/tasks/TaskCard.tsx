@@ -1,7 +1,7 @@
 import React from 'react';
-import type { TaskCardProps } from '@/types/task';
-import { Card, CardContent, CardFooter, CardHeader, CardImage } from '@/components/ui/card';
-import Button from '@/components/ui/button';
+import type { TaskCardProps } from '../../types/task';
+import { Card, CardContent, CardFooter, CardHeader, CardImage } from '../ui/card';
+import Button from '../ui/button';
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
 
@@ -48,4 +48,4 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
   );
 };
 
-export default TaskCard; 
+export default TaskCard;

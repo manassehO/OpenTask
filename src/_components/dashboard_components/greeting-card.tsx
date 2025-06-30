@@ -1,3 +1,7 @@
+'use client'
+import React from 'react'
+import { motion } from 'framer-motion'
+
 type GreetingCardProps = {
   name: string;
   className?: string;
@@ -43,10 +47,35 @@ function GreetingCard({ name, ...props }: GreetingCardProps) {
   const greeting = greetings.find(g => g.time === timeOfDay);
   const greetingText = `Good ${greeting?.time} ${greeting?.icon}`;
   return (
-    <div className={`flex flex-col capitalize ${props.className}`}>
-      <span className="text-[#414141] font-semibold text-base">{greetingText}</span>
-      <span className="text-[28px] font-bold">{name}</span>
-    </div>
+    <motion.div 
+      className={`component-padding component-margin ${props.className}`}
+      initial={{ opacity: 0, y: -30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.8, 
+        ease: "easeOut",
+        delay: 0.1
+      }}
+    >
+      <div className="space-y-2">
+        <motion.span 
+          className="text-body font-semibold capitalize"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
+          {greetingText}
+        </motion.span>
+        <motion.h1 
+          className="text-3xl font-bold text-gray-900 capitalize"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+        >
+          {name}
+        </motion.h1>
+      </div>
+    </motion.div>
   )
 }
 

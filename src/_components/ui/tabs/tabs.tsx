@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../../lib/utils"
 
 interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   defaultValue?: string;
@@ -109,4 +109,4 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
 )
 TabsContent.displayName = "TabsContent"
 
-export { Tabs, TabsList, TabsTrigger, TabsContent } 
+export { Tabs, TabsList, TabsTrigger, TabsContent }

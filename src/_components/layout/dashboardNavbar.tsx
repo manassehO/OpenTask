@@ -13,12 +13,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
+import WalletConnect from "../wallet/WalletConnect";
 
-const sections = ["home", "features", "contact us"];
+const sections = ["dashboard", "features", "contact us"];
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("home");
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export function DashboardNavbar() {
       const current = [...offsets]
         .reverse()
         .find((sec) => window.scrollY >= sec.top);
-      setActiveSection(current?.id ?? "home");
+      setActiveSection(current?.id ?? "dashboard");
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -68,6 +69,7 @@ export function DashboardNavbar() {
               🗓️ create a task
             </button>
           </a>
+          <WalletConnect size="sm" variant="outline" />
           <CircleHelp />
           <Bell />
           <Image
@@ -111,6 +113,7 @@ export function DashboardNavbar() {
               src="/icons/profileImg.svg"
             />
           </div>
+          <WalletConnect size="sm" variant="outline" className="w-full" />
           <div className="relative w-full">
             <Search className="absolute left-2 top-3 h-5 w-5 text-[#454543]" />
             <input

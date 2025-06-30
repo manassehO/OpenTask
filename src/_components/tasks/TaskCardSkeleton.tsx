@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardImage } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardImage } from '../ui/card';
 
 const TaskCardSkeleton = () => {
   return (
@@ -30,4 +30,4 @@ const TaskCardSkeleton = () => {
   );
 };
 
-export default TaskCardSkeleton; 
+export default TaskCardSkeleton;

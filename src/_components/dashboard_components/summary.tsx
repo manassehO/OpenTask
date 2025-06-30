@@ -1,4 +1,6 @@
+'use client'
 import React from 'react'
+import { motion } from 'framer-motion'
 
 const summaryData = [
   {
@@ -7,7 +9,6 @@ const summaryData = [
     cryptoAmount: "1,000 BTC",
     icon: "/icons/payments.svg",
     bgColor: "bg-[#F59E0B]/15"
-
   },
   {
     title: "Total Tasks Completed",
@@ -25,26 +26,98 @@ const summaryData = [
   }
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+}
+
+const cardVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20,
+    scale: 0.95
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+}
+
+const iconVariants = {
+  hover: {
+    scale: 1.1,
+    rotate: 5,
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut"
+    }
+  }
+}
+
 const Summary = () => {
   return (
-    <div className='w-full grid lg:grid-cols-3 grid-cols-1 sm:grid-cols-2 gap-4 items-center justify-center '>
-      {summaryData.map((item, index) => (
-        <div key={index} className='bg-white shadow-md rounded-lg p-4 mb-4 w-full max-w-md flex flex-col items-center lg:items-start justify-between h-[169px] '>
-          <div className='flex items-center lg:items-start flex-col  space-y-2'>
-            <div className={` flex items-center justify-center p-1 ${item.bgColor}   px-2`}>
-              <img src={item.icon} alt={item.title} className='w-6 h-6' />
+    <motion.div 
+      className='section-spacing'
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <div className='card-grid-responsive'>
+        {summaryData.map((item, index) => (
+          <motion.div 
+            key={index} 
+            className='card-container min-h-[180px] flex flex-col justify-between cursor-pointer'
+            variants={cardVariants}
+            whileHover={{ 
+              y: -5,
+              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+              transition: { duration: 0.2 }
+            }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className='flex flex-col space-y-4'>
+              <motion.div 
+                className={`flex-center w-12 h-12 rounded-lg ${item.bgColor}`}
+                variants={iconVariants}
+                whileHover="hover"
+              >
+                <img src={item.icon} alt={item.title} className='w-6 h-6' />
+              </motion.div>
+              <div className='space-y-2'>
+                <h3 className='text-caption'>{item.title}</h3>
+                <motion.p 
+                  className='text-heading-md'
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                >
+                  {item.amount}
+                </motion.p>
+                <motion.span 
+                  className='text-sm text-[#3B82F6] font-semibold'
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                >
+                  {item.cryptoAmount}
+                </motion.span>
+              </div>
             </div>
-            <h3 className='text-gray-600 '>{item.title}</h3>
-            <p className=' text-lg font-semibold'>{item.amount}</p>
-            <span className='text-sm text-[#3B82F6] font-semibold'>{item.cryptoAmount}</span>
-            <div>
-
-            </div>
-          </div>
-
-        </div>
-      ))}
-    </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
   )
 }
 

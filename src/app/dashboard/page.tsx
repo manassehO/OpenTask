@@ -1,23 +1,52 @@
+'use client'
+import { motion } from 'framer-motion';
 import GreetingCard from "~/_components/dashboard_components/greeting-card";
 import RecomendedTasks from "~/_components/dashboard_components/recomended-tasks";
 import Summary from "~/_components/dashboard_components/summary";
-import RightBar from "~/_components/layout/RightBar";
+
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  }
+}
+
+const contentVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+      staggerChildren: 0.2
+    }
+  }
+}
 
 function page() {
   const name = "Bartholomew Favour";
 
   return (
-    <div className="h-full w-full bg-[#FAFAFA] flex flex-row items-start text-black">
-      <div className="w-full">
+    <motion.div 
+      className="min-h-screen w-full bg-[#FAFAFA] text-black"
+      initial="hidden"
+      animate="visible"
+      variants={pageVariants}
+    >
+      <motion.div 
+        className="w-full section-spacing"
+        variants={contentVariants}
+      >
         <GreetingCard name={name} />
         <Summary />
         <RecomendedTasks />
-      </div>
-
-      <div className="w-25%">
-        <RightBar />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

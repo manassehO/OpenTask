@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { mockTasks } from "@/mocks/tasks"
+import { mockTasks } from "../../../../mocks/tasks"
 import TaskDetail from "./TaskDetail"
 
 interface PageProps {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import type { Task } from "@/types/task"
+import type { Task } from "../../../../types/task"
 import { ArrowLeft, X } from "lucide-react"
 import Image from "next/image"
 

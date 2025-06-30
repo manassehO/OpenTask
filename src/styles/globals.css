@@ -2,6 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
+/* Design System Variables */
+:root {
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+  
+  --border-radius-sm: 0.375rem;  /* 6px */
+  --border-radius-md: 0.5rem;    /* 8px */
+  --border-radius-lg: 0.75rem;   /* 12px */
+  --border-radius-xl: 1rem;      /* 16px */
+}
+
+body {
     @apply bg-[#FAFAFA] text-gray-900;
+}
+
+/* Consistent Component Spacing */
+@layer components {
+  .card-container {
+    @apply bg-white rounded-lg shadow-sm p-6 mb-6;
+  }
+  
+  .card-grid {
+    @apply grid gap-6;
+  }
+  
+  .card-grid-responsive {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  
+  .section-spacing {
+    @apply mb-8;
+  }
+  
+  .component-padding {
+    @apply p-6;
+  }
+  
+  .component-margin {
+    @apply mb-6;
+  }
+  
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+  
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+  
+  .text-heading-lg {
+    @apply text-2xl font-bold text-gray-900;
+  }
+  
+  .text-heading-md {
+    @apply text-xl font-semibold text-gray-900;
+  }
+  
+  .text-heading-sm {
+    @apply text-lg font-medium text-gray-900;
+  }
+  
+  .text-body {
+    @apply text-base text-gray-600;
+  }
+  
+  .text-caption {
+    @apply text-sm text-gray-500;
+  }
 }

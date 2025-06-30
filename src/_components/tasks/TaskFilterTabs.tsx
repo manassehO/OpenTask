@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 export interface TaskFilterTab {
   id: string
@@ -34,4 +34,4 @@ export default function TaskFilterTabs({ tabs, onTabChange, activeTab }: TaskFil
       ))}
     </div>
   )
-} 
+}

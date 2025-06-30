@@ -1,10 +1,8 @@
 import Image from "next/image";
 
-
-
 function HeroPage() {
   return (
-    <div className="lg:mt-[50px] mt-[20px] flex h-auto w-full flex-col items-center justify-center">
+    <div id="dashboard" className="lg:mt-[50px] mt-[20px] flex h-auto w-full flex-col items-center justify-center">
       <span className="text-[24px] font-bold capitalize md:text-[32px] lg:text-[64px]">
         Earn Real{" "}
         <span

@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+import { motion } from 'framer-motion';
 import { useAtom } from "jotai";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,43 +18,129 @@ function Sidebar() {
     }
   };
 
+  const sidebarVariants = {
+    hidden: {
+      x: -300,
+      opacity: 0
+    },
+    visible: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  }
+
+  const logoVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  }
+
+  const navItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  }
+
   return (
     <>
       {/* Sidebar */}
-      <div
-        className={`w-[75%] rounded-lg bg-white px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
+      <motion.div 
+        className="w-[75%] md:w-[40%] lg:w-[300px] bg-white rounded-lg shadow-sm transition-all duration-300 ease-in-out"
+        initial="hidden"
+        animate="visible"
+        variants={sidebarVariants}
       >
-        {/* Sidebar content */}
-        {sidebar_list.map((list, i) => {
-          const isActive = pathname === list.route;
+        <div className="component-padding">
+          <motion.nav 
+            className="space-y-2"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.3
+                }
+              }
+            }}
+          >
+            {sidebar_list.map((list, i) => {
+              const isActive = pathname === list.route;
 
-          return (
-            <div key={i}>
+              return (
+                <motion.div key={i} variants={navItemVariants}>
+                  <Link
+                    href={list.route}
+                    onClick={handleLinkClick}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium capitalize transition-colors duration-200 ${
+                      isActive
+                        ? "bg-[#3B82F6] text-white"
+                        : "text-[#414141] hover:bg-gray-50"
+                    }`}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Image src={list.icon} alt="" height={20} width={20} />
+                    </motion.div>
+                    {list.title}
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.nav>
+
+          <motion.div 
+            className="mt-12 pt-6 border-t border-gray-100"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <motion.div
+              whileHover={{ 
+                scale: 1.02,
+                x: 5,
+                backgroundColor: "rgba(239, 68, 68, 0.05)",
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
               <Link
-                href={list.route}
+                href="/"
                 onClick={handleLinkClick}
-                className={`flex w-full gap-3 px-6 py-4 text-base font-semibold capitalize ${
-                  isActive
-                    ? "rounded-md bg-[#3B82F6] text-white"
-                    : "text-[#414141]"
-                }`}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium capitalize text-[#FF3B30] hover:bg-red-50 transition-colors duration-200"
               >
-                <Image src={list.icon} alt="" height={20} width={20} />
-                {list.title}
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Image src="/icons/logout.svg" alt="" height={20} width={20} />
+                </motion.div>
+                Log out
               </Link>
-            </div>
-          );
-        })}
-
-        <Link
-          href="/"
-          onClick={handleLinkClick}
-          className="mt-20 flex w-full gap-3 px-6 py-4 text-base font-semibold capitalize text-[#FF3B30]"
-        >
-          <Image src="/icons/logout.svg" alt="" height={20} width={20} />
-          Log out
-        </Link>
-      </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* Backdrop for mobile only */}
       {isOpen && (

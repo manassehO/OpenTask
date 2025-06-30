@@ -6,11 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
-const sections = ["home", "features", "contact us"];
+const sections = ["dashboard", "features", "contact us"];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("home");
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,7 +23,7 @@ export function Navbar() {
       const current = [...offsets]
         .reverse()
         .find((sec) => window.scrollY >= sec.top);
-      setActiveSection(current?.id ?? "home");
+      setActiveSection(current?.id ?? "dashboard");
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -55,15 +55,27 @@ export function Navbar() {
           </button> */}
           {sections.map((section) => (
             <li key={section}>
-              <a
-                href={`#${section}`}
-                className={clsx(
-                  "capitalize text-gray-700 transition hover:text-blue-600",
-                  activeSection === section && "font-semibold text-blue-600",
-                )}
-              >
-                {section}
-              </a>
+              {section === "dashboard" ? (
+                <Link
+                  href="/dashboard"
+                  className={clsx(
+                    "capitalize text-gray-700 transition hover:text-blue-600",
+                    activeSection === section && "font-semibold text-blue-600",
+                  )}
+                >
+                  {section}
+                </Link>
+              ) : (
+                <a
+                  href={`#${section}`}
+                  className={clsx(
+                    "capitalize text-gray-700 transition hover:text-blue-600",
+                    activeSection === section && "font-semibold text-blue-600",
+                  )}
+                >
+                  {section}
+                </a>
+              )}
             </li>
           ))}
           <li>
@@ -94,16 +106,29 @@ export function Navbar() {
           <ul className="flex flex-col gap-3">
             {sections.map((section) => (
               <li key={section}>
-                <a
-                  href={`#${section}`}
-                  className={clsx(
-                    "block capitalize text-gray-700 transition hover:text-blue-600",
-                    activeSection === section && "font-semibold text-blue-600",
-                  )}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {section}
-                </a>
+                {section === "dashboard" ? (
+                  <Link
+                    href="/dashboard"
+                    className={clsx(
+                      "block capitalize text-gray-700 transition hover:text-blue-600",
+                      activeSection === section && "font-semibold text-blue-600",
+                    )}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {section}
+                  </Link>
+                ) : (
+                  <a
+                    href={`#${section}`}
+                    className={clsx(
+                      "block capitalize text-gray-700 transition hover:text-blue-600",
+                      activeSection === section && "font-semibold text-blue-600",
+                    )}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {section}
+                  </a>
+                )}
               </li>
             ))}
             <li>

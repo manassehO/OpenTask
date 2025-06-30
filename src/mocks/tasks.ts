@@ -1,4 +1,4 @@
-import { Task } from '@/types/task';
+import { Task } from '../types/task';
 
 export const mockTasks: Task[] = [
   {
@@ -133,4 +133,4 @@ export const mockTasks: Task[] = [
     rewardInUsd: 3200,
     category: 'testing'
   }
-]; 
+];

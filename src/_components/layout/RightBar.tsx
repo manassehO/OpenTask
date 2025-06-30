@@ -1,79 +1,46 @@
 "use client";
 import { useAtom } from "jotai";
 import React from "react";
+import { motion } from 'framer-motion';
 import { sidebarAtom } from "~/hooks/sidebarAtom";
-import Button from "../ui/button";
+import Button from "~/_components/ui/button";
 
 const RightBar = () => {
   const [isSidebarOpen] = useAtom(sidebarAtom);
 
-  const rightBarSummary = [
-    {
-      title: "Total Earned",
-      amount: "10ETH",
-      icon: "/icons/streak.svg",
-    },
-    {
-      title: "Fiat Value",
-      amount: "$200",
-      icon: "/icons/streak.svg",
-    },
-    {
-      title: "Task Completed",
-      amount: "25",
-      icon: "/icons/streak.svg",
-    },
-    {
-      title: "Time Spent",
-      amount: "12Hours",
-      icon: "/icons/streak.svg",
-    },
-  ];
+  const containerVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  }
 
   return (
-    <div
-      className={` w-full space-y-4 overflow-y-auto bg-white p-4 shadow-md transition-all duration-300 ease-in-out max-lg:hidden `}
-      style={{
-        right: isSidebarOpen ? "0px" : "0px", // if needed, you can add offset here
-      }}
+    <motion.div 
+      className="w-full max-lg:hidden"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
     >
-      <h1 className="text-2xl font-bold">Earning Summary</h1>
-      <p className="text-gray-500">
-        Lorem ipsum dolor sit amet consectetur. Sit morbi id.
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        {rightBarSummary.map((item, index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-2 rounded-lg bg-[#FAFAFA] p-4"
-          >
-            <div className="flex items-center justify-center bg-[#06B6D41A]/15 p-1 px-2">
-              <img src={item.icon} alt={item.title} className="h-6 w-6" />
-            </div>
-            <h1 className="text-sm">{item.title}</h1>
-            <h1 className="text-lg font-bold text-[#414141]">{item.amount}</h1>
-          </div>
-        ))}
-      </div>
-
-      <Button className="mt-4 w-full border-2 border-blue-400 bg-transparent py-2 text-blue-400">
-        View Detailed Earnings
-      </Button>
-
-      <div className="mt-4 flex flex-col gap-4 rounded-lg bg-white p-4">
-        <img src="/learning-img.png" alt="" className="h-full w-full" />
-        <div className="flex flex-col">
-          <h1 className="text-xl font-bold">Learning Center</h1>
-          <p className="text-gray-500">
-            Lorem ipsum dolor sit amet consectetur. Sit morbi id.
+      <motion.div 
+        className="card-container space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="text-center py-8">
+          <h2 className="text-heading-lg text-gray-400">Right Panel</h2>
+          <p className="text-body text-gray-500 mt-2">
+            Additional content can be added here
           </p>
         </div>
-        <Button className="mt-4 w-full border-2 border-blue-400 bg-transparent py-2 text-blue-400">
-          View Learning Center
-        </Button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
