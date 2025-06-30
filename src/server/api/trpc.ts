@@ -6,11 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { auth, type Session, type User } from "~/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -25,8 +26,35 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  // Get the authorization header (Bearer token or session token)
+  const authorization = opts.headers.get("authorization");
+  const sessionToken = authorization?.replace("Bearer ", "") ?? 
+                      opts.headers.get("cookie")?.split("better-auth.session_token=")[1]?.split(";")[0];
+
+  let session: Session | null = null;
+  let user: User | null = null;
+
+  if (sessionToken) {
+    try {
+      // Validate session using Better-Auth
+      const sessionData = await auth.api.getSession({
+        headers: opts.headers,
+      });
+      
+      if (sessionData) {
+        session = sessionData.session;
+        user = sessionData.user;
+      }
+    } catch (error) {
+      // Session invalid or expired, continue with null session
+      console.log("Session validation failed:", error);
+    }
+  }
+
   return {
     db,
+    session,
+    user,
     ...opts,
   };
 };
@@ -97,6 +125,57 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
+ * Authentication middleware
+ *
+ * This middleware verifies that a user is authenticated and throws an UNAUTHORIZED error if not.
+ * It also attaches the user and session data to the context for use in protected procedures.
+ */
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.user || !ctx.session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    });
+  }
+
+  return next({
+    ctx: {
+      user: ctx.user,
+      session: ctx.session,
+    },
+  });
+});
+
+/**
+ * Role-based authorization middleware
+ *
+ * This middleware verifies that a user has the required role(s) to access a resource.
+ */
+const hasRole = (roles: string[]) => 
+  t.middleware(({ next, ctx }) => {
+    if (!ctx.user || !ctx.session) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to access this resource",
+      });
+    }
+
+    if (!roles.includes(ctx.user.role)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You do not have permission to access this resource",
+      });
+    }
+
+    return next({
+      ctx: {
+        user: ctx.user,
+        session: ctx.session,
+      },
+    });
+  });
+
+/**
  * Public (unauthenticated) procedure
  *
  * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
@@ -104,3 +183,31 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Protected (authenticated) procedure
+ *
+ * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
+ * the session is valid and guarantees `ctx.user` and `ctx.session` are not null.
+ */
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(isAuthed);
+
+/**
+ * Admin-only procedure
+ *
+ * Only users with the "admin" role can access procedures created with this.
+ */
+export const adminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(hasRole(["admin"]));
+
+/**
+ * Moderator+ procedure
+ *
+ * Users with either "admin" or "moderator" roles can access procedures created with this.
+ */
+export const moderatorProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(hasRole(["admin", "moderator"]));

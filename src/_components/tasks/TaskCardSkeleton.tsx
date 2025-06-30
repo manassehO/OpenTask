@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardImage } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '~/_components/ui/card';
 
 const TaskCardSkeleton = () => {
   return (
