@@ -180,7 +180,26 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This project is licensed under the MIT License - see the LICENSE file for
 details.
 
+## Recent Improvements
+
+### Issues Resolved
+- **Fixed Duplicate Import Errors**: Resolved compilation errors caused by duplicate `FaqSection` imports in `src/app/page.tsx` and duplicate `Image` imports in `src/_components/landing_page/hero.tsx`
+- **Enhanced Navigation**: Updated navbar component to properly route dashboard links to `/dashboard` page using Next.js `Link` component for both desktop and mobile navigation
+- **Added New Landing Page Section**: Created a new "Learn While You Earn" section with engaging content and image placement to enhance the landing page experience
+
+### Features Added
+- **Dashboard Routing**: Implemented proper navigation from landing page to dashboard when clicking the dashboard menu item
+- **New Image Section**: Added `LearnWhileEarnSection` component with educational content, feature highlights, and a prominent image (`/learning-img.png`) to fill white space on the landing page
+- **Responsive Design**: Ensured all new components follow the existing design patterns and are fully responsive
+
+### Technical Implementation
+- Created new component: `src/_components/landing_page/learnWhileEarnSection.tsx`
+- Updated navigation logic in: `src/_components/layout/navbar.tsx`
+- Enhanced landing page structure in: `src/app/page.tsx`
+- All changes maintain code consistency and follow existing patterns
+
 ## Acknowledgments
 
+- **Original Project Owner**: Special thanks to the original creator of this OpenTask project. I happened to find this repository and took the initiative to resolve the existing build issues and enhance the user experience
 - The Starknet community for their excellent documentation and tools
 - [T3 Stack](https://create.t3.gg/) for the application boilerplate
