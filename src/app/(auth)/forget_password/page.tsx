@@ -3,21 +3,20 @@ import { useState } from "react";
 import AuthWrapper from "~/_components/layout/authWrapper";
 import { CreatePassword } from "~/_components/ui/form/CreatePassword";
 
-
 function Password() {
-  const [otp, setOtp] = useState<number | undefined>(undefined);
-  const [error, setError] = useState(false);
+  const [otp] = useState<number | undefined>(undefined);
+  // const [error, setError] = useState(false);
   const otpLength = 6;
 
-  const handleChange = (value: number | undefined) => {
-    setOtp(value);
-    setError(false);
-  };
+  // const handleChange = (value: number | undefined) => {
+  //   setOtp(value);
+  //   setError(false);
+  // };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (otp?.toString().length !== otpLength) {
-      setError(true);
+      // setError(true);
       return;
     }
   };
