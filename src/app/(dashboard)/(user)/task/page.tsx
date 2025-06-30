@@ -1,10 +1,10 @@
 import React from "react";
-import Calendar from "../../../../public/images/calendar.svg";
-import Diamond from "../../../../public/images/diamond.svg";
-import Users from "../../../../public/images/app-reg.svg";
+import Calendar from "../../../../../public/images/calendar.svg";
+import Diamond from "../../../../../public/images/diamond.svg";
+import Users from "../../../../../public/images/app-reg.svg";
 import Image from "next/image";
 import type { StaticImageData } from "next/image";
-import doctorImage from "../../../../public/images/banner.webp";
+import doctorImage from "../../../../../public/images/banner.webp";
 
 type Props = Record<string, never>;
 
@@ -26,12 +26,12 @@ interface IconTextItemProps {
   iconSize?: string;
 }
 
-const IconTextItem = ({ 
-  icon, 
-  iconAlt, 
-  label, 
-  value, 
-  iconSize = "h-10 w-10" 
+const IconTextItem = ({
+  icon,
+  iconAlt,
+  label,
+  value,
+  iconSize = "h-10 w-10"
 }: IconTextItemProps) => (
   <div className="flex items-center space-x-3">
     <div className="flex items-center justify-center rounded-full bg-gray-50 p-3">
@@ -66,11 +66,11 @@ interface ActionButtonProps {
   className?: string;
 }
 
-const ActionButton = ({ 
-  children, 
-  variant = 'primary', 
-  onClick, 
-  className = "" 
+const ActionButton = ({
+  children,
+  variant = 'primary',
+  onClick,
+  className = ""
 }: ActionButtonProps) => {
   const baseClasses = "w-[45%] rounded-lg px-6 py-3 transition-colors";
   const variantClasses = {
@@ -79,7 +79,7 @@ const ActionButton = ({
   };
 
   return (
-    <button 
+    <button
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
       onClick={onClick}
     >
@@ -138,7 +138,7 @@ function page({}: Props): React.JSX.Element {
         <SectionCard>
           <SectionTitle>Instructions</SectionTitle>
           <SectionText>{standardText}</SectionText>
-          
+
           <div className="mb-6 mt-6 space-y-4">
             {instructionSteps.map((description, index) => (
               <InstructionStep
