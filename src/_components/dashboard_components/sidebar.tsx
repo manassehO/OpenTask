@@ -68,8 +68,8 @@ function Sidebar() {
 export default Sidebar;
 
 const sidebar_list = [
-  { title: "Home", icon: "/icons/sidebar_home.svg", route: "/dashboard" },
-  { title: "Tasks", icon: "/icons/sidebar_task.svg", route: "/dashboard/task" },
+  { title: "Home", icon: "/icons/sidebar_home.svg", route: "/home" },
+  { title: "Tasks", icon: "/icons/sidebar_task.svg", route: "/task" },
   {
     title: "Earnings & Rewards",
     icon: "/icons/sidebar_earning.svg",

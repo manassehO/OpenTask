@@ -7,7 +7,7 @@ function page() {
   const name = "Bartholomew Favour";
 
   return (
-    <div className="h-full w-full bg-[#FAFAFA] flex flex-row items-start text-black">
+    <div className="flex h-full w-full flex-row items-start bg-[#FAFAFA] text-black">
       <div className="w-full">
         <GreetingCard name={name} />
         <Summary />
