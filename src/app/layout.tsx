@@ -6,7 +6,7 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 
 import { Provider } from "jotai";
-import Footer from "./_components/layout/Footer";
+// import Footer from "./_components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "OpenTask",
@@ -22,8 +22,6 @@ export default function RootLayout({
       <body>
         <Provider>
           <TRPCReactProvider>{children}</TRPCReactProvider>
-
-      
         </Provider>
       </body>
     </html>
