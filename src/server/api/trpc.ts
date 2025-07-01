@@ -28,8 +28,12 @@ import { auth, type Session, type User } from "~/lib/auth";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   // Get the authorization header (Bearer token or session token)
   const authorization = opts.headers.get("authorization");
-  const sessionToken = authorization?.replace("Bearer ", "") ?? 
-                      opts.headers.get("cookie")?.split("better-auth.session_token=")[1]?.split(";")[0];
+  const sessionToken =
+    authorization?.replace("Bearer ", "") ??
+    opts.headers
+      .get("cookie")
+      ?.split("better-auth.session_token=")[1]
+      ?.split(";")[0];
 
   let session: Session | null = null;
   let user: User | null = null;
@@ -40,7 +44,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       const sessionData = await auth.api.getSession({
         headers: opts.headers,
       });
-      
+
       if (sessionData) {
         session = sessionData.session;
         user = sessionData.user;
@@ -151,7 +155,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
  *
  * This middleware verifies that a user has the required role(s) to access a resource.
  */
-const hasRole = (roles: string[]) => 
+const hasRole = (roles: string[]) =>
   t.middleware(({ next, ctx }) => {
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
