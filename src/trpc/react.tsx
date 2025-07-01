@@ -11,6 +11,22 @@ import { type AppRouter } from "~/server/api/root";
 import { createQueryClient } from "./query-client";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
+
+// Helper function to get session token from cookies
+function getSessionToken(): string | null {
+  if (typeof window === "undefined") return null;
+  
+  const sessionCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('better-auth.session_token='));
+  
+  if (sessionCookie) {
+    const token = sessionCookie.split('=')[1];
+    return token ? decodeURIComponent(token) : null;
+  }
+  
+  return null;
+}
 const getQueryClient = () => {
   if (typeof window === "undefined") {
     // Server: always make a new query client
@@ -53,6 +69,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
+
+            const sessionToken = getSessionToken();
+            if (sessionToken) {
+              headers.set("authorization", `Bearer ${sessionToken}`);
+            }
+
             return headers;
           },
         }),

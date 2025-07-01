@@ -31,10 +31,10 @@ export function Navbar() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const [, setIsSidebarOpen] = useAtom(sidebarAtom);
+  const [,] = useAtom(sidebarAtom);
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full justify-between bg-white shadow">
-      <div className="mx-auto flex w-full items-center justify-between px-5 lg:px-20 py-4 lg:max-w-7xl">
+      <div className="mx-auto flex w-full items-center justify-between px-5 py-4 lg:max-w-7xl lg:px-20">
         <Link href="/" className="flex items-center">
           <Image
             width={50}

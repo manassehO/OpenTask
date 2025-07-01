@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import Button from "../ui/button";
 
 type AuthWrapperProps = {
@@ -30,7 +30,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, title, text }) => {
           <p className="text-base font-normal text-black">{text}</p>
         </div>
 
-        <div className="w-full mt-8 max-w-md">{children}</div>
+        <div className="mt-8 w-full max-w-md">{children}</div>
         <div className="flex w-full max-w-md flex-col items-start justify-center gap-4">
           <div className="flex w-full items-center justify-center">
             <p className="text-center text-base font-medium text-black">
