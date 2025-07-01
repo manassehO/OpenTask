@@ -30,14 +30,14 @@ pub struct TaskDetails {
 }
 
 /// Structure used for dispute tracking
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 pub struct DisputeInfo {
     // Task ID the dispute is related to
-    task_id: felt252,
+    pub task_id: felt252,
     // Address of the completer whose submission is disputed
-    completer_address: ContractAddress,
+    pub completer_address: ContractAddress,
     // Optional ID linking to the off-chain submission
-    submission_id: felt252,
+    pub submission_id: felt252,
     // Whether the dispute has been resolved
-    resolved: bool,
+    pub resolved: bool,
 }
