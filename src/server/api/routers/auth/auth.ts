@@ -11,6 +11,7 @@ import { findOrCreateUserByEmail, generateUserToken } from "./services";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { sendOtp } from "~/server/email";
+import otpGenerator from "otp-generator";
 
 export const authRouter = createTRPCRouter({
   // Get current user profile
@@ -60,7 +61,11 @@ export const authRouter = createTRPCRouter({
   requestOtp: publicProcedure
     .input(z.object({ email: z.string().email() }))
     .mutation(async ({ ctx, input }) => {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // implement a secure OTP generator later
+      const otp: string = otpGenerator.generate(6, {
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+        specialChars: false,
+      });
 
       await ctx.db.delete(otps).where(eq(otps.email, input.email));
 
