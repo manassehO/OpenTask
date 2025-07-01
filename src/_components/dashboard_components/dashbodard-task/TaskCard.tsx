@@ -149,7 +149,7 @@ export default function TaskCard({ task }: Props) {
       <div className="pt-4">
         <h2 className="text-sm font-semibold md:text-xl">{task.title}</h2>
         <div
-          className={`flex py-2 font-medium text-neutral-900 ${
+          className={`flex py-2 font-medium text-xs md:text-sm text-neutral-900 ${
             task.status === "Active task" || task.status === "Completed task"
               ? "justify-between"
               : "gap-4"
