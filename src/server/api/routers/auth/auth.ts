@@ -7,7 +7,12 @@ import {
 import { eq, and } from "drizzle-orm";
 import { addMinutes } from "date-fns";
 import { otps } from "~/server/db/schema";
-import { findOrCreateUserByEmail, generateUserToken } from "./services";
+import {
+  findOrCreateUserByEmail,
+  generateUserToken,
+  generateHashedOtp,
+  compareHashedOtp,
+} from "./services";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { sendOtp } from "~/server/email";
@@ -71,11 +76,12 @@ export const authRouter = createTRPCRouter({
       await ctx.db.delete(otps).where(eq(otps.email, input.email));
 
       const expiresAt = addMinutes(new Date(), 10);
+      const hashedOtp = await generateHashedOtp(otp);
 
       // Insert new OTP
       await ctx.db.insert(otps).values({
         email: input.email,
-        code: otp,
+        code: hashedOtp,
         expiresAt,
         createdAt: new Date(),
       });
@@ -94,10 +100,19 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const otpRecord = await ctx.db.query.otps.findFirst({
-        where: and(eq(otps.email, input.email), eq(otps.code, input.code)),
+        where: eq(otps.email, input.email),
       });
 
       if (!otpRecord) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid email Provided",
+        });
+      }
+
+      const isHashedOtp = await compareHashedOtp(input.code, otpRecord.code);
+
+      if (!isHashedOtp) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid OTP" });
       }
 
