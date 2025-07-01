@@ -1,0 +1,112 @@
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+  adminProcedure,
+} from "~/server/api/trpc";
+import { eq, and } from "drizzle-orm";
+import { addMinutes } from "date-fns";
+import { otps } from "~/server/db/schema";
+import { findOrCreateUserByEmail, generateUserToken } from "./services";
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { sendOtp } from "~/server/email";
+
+export const authRouter = createTRPCRouter({
+  // Get current user profile
+  getProfile: protectedProcedure.query(({ ctx }) => {
+    return {
+      id: ctx.user.id,
+      name: ctx.user.name,
+      email: ctx.user.email,
+      role: ctx.user.role,
+      emailVerified: ctx.user.emailVerified,
+      image: ctx.user.image,
+      createdAt: ctx.user.createdAt,
+    };
+  }),
+
+  // Admin-only endpoint
+  getAdminData: adminProcedure.query(({ ctx }) => {
+    return {
+      message: "This is admin-only data",
+      adminUser: ctx.user.name,
+      secretData: "Super secret admin information",
+    };
+  }),
+
+  // Check session status
+  getSessionStatus: publicProcedure.query(({ ctx }) => {
+    return {
+      isAuthenticated: !!ctx.user,
+      user: ctx.user
+        ? {
+            id: ctx.user.id,
+            name: ctx.user.name,
+            email: ctx.user.email,
+            role: ctx.user.role,
+          }
+        : null,
+      session: ctx.session
+        ? {
+            id: ctx.session.id,
+            expiresAt: ctx.session.expiresAt,
+          }
+        : null,
+    };
+  }),
+
+  // Request OTP
+  requestOtp: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .mutation(async ({ ctx, input }) => {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // implement a secure OTP generator later
+
+      await ctx.db.delete(otps).where(eq(otps.email, input.email));
+
+      const expiresAt = addMinutes(new Date(), 10);
+
+      await ctx.db.insert(otps).values({
+        email: input.email,
+        code: otp,
+        expiresAt,
+        createdAt: new Date(),
+      });
+
+      await sendOtp(input.email, otp);
+
+      return { success: true };
+    }),
+
+  verifyOtp: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const otpRecord = await ctx.db.query.otps.findFirst({
+        where: and(eq(otps.email, input.email), eq(otps.code, input.code)),
+      });
+
+      if (!otpRecord) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid OTP" });
+      }
+
+      if (otpRecord.expiresAt < new Date()) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "OTP expired" });
+      }
+
+      await ctx.db.delete(otps).where(eq(otps.email, input.email));
+
+      const user = await findOrCreateUserByEmail(input.email);
+      const token = generateUserToken(user);
+
+      return {
+        success: true,
+        token,
+        user,
+      };
+    }),
+});
