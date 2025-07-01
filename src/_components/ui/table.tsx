@@ -66,7 +66,7 @@ type User = {
   active: boolean;
 };
 
-const columns = [
+const columns: Column<User>[] = [
   {
     header: "ID",
     accessor: "id",
