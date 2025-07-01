@@ -14,25 +14,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sidebarAtom } from "~/hooks/sidebarAtom";
 
-const sections = ["home", "features", "contact us"];
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("home");
+  // Removed unused activeSection state
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
 
   useEffect(() => {
     const handleScroll = () => {
-      const offsets = sections.map((id) => {
-        const element = document.getElementById(id);
-        if (!element) return { id, top: Infinity };
-        return { id, top: element.offsetTop - window.innerHeight / 3 };
-      });
-
-      const current = [...offsets]
-        .reverse()
-        .find((sec) => window.scrollY >= sec.top);
-      setActiveSection(current?.id ?? "home");
+      // No operation needed as activeSection is unused and offsets was not used
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -45,7 +35,7 @@ export function DashboardNavbar() {
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full bg-white shadow">
       <div className="mx-auto flex items-center justify-between gap-4 px-3 py-4 lg:px-10">
         <Link href="/" className="flex items-center">
-          <img src="/logo.svg" alt="OpenTask Logo" className="inline h-8" />
+          <Image width={32} height={32} src="/logo.svg" alt="OpenTask Logo" className="inline h-8" />
         </Link>
 
         <div className="relative hidden w-[40%] lg:flex">
