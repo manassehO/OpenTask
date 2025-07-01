@@ -10,6 +10,8 @@ export async function findOrCreateUserByEmail(email: string): Promise<User> {
   let createdUser = await db.query.user.findFirst({
     where: eq(user.email, email),
   });
+
+  // create new user if user does not exist
   if (!createdUser) {
     const inserted = await db
       .insert(user)
@@ -20,6 +22,7 @@ export async function findOrCreateUserByEmail(email: string): Promise<User> {
   if (!createdUser) {
     throw new Error("Failed to find or create user");
   }
+
   return createdUser;
 }
 

@@ -67,10 +67,12 @@ export const authRouter = createTRPCRouter({
         specialChars: false,
       });
 
+      // Delete existing OTPs for the same email
       await ctx.db.delete(otps).where(eq(otps.email, input.email));
 
       const expiresAt = addMinutes(new Date(), 10);
 
+      // Insert new OTP
       await ctx.db.insert(otps).values({
         email: input.email,
         code: otp,
@@ -103,6 +105,7 @@ export const authRouter = createTRPCRouter({
         throw new TRPCError({ code: "BAD_REQUEST", message: "OTP expired" });
       }
 
+      // Delete OTP after successful verification
       await ctx.db.delete(otps).where(eq(otps.email, input.email));
 
       const user = await findOrCreateUserByEmail(input.email);
