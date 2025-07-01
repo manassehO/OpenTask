@@ -105,7 +105,7 @@ export default function TaskCard({ task }: Props) {
   const renderBottomButtons = () => {
     if (task.status === "Draft task") {
       return (
-        <div className="flex gap-2 py-4">
+        <div className="flex flex-col md:flex-row gap-2 py-4">
           <button className="border-primary text-primary w-full rounded border py-2.5 text-sm font-bold transition">
             Edit
           </button>
@@ -118,7 +118,7 @@ export default function TaskCard({ task }: Props) {
 
     if (task.status === "Completed task") {
       return (
-        <div className="flex gap-2 py-4">
+        <div className="flex flex-col gap-2 py-4 md:flex-row">
           <button className="border-primary text-primary w-full rounded border py-2.5 text-sm font-bold transition">
             Export Report
           </button>
@@ -139,7 +139,7 @@ export default function TaskCard({ task }: Props) {
   };
 
   return (
-    <div className="h-full w-[578px] space-y-4 rounded-lg border bg-white p-4 shadow">
+    <div className="h-full w-full space-y-4 rounded-lg border bg-white p-4 shadow md:w-[578px]">
       {/* Top Buttons */}
       <div className="flex items-center justify-between pt-2">
         {renderTopButtons()}
@@ -147,9 +147,9 @@ export default function TaskCard({ task }: Props) {
 
       {/* Task Info */}
       <div className="pt-4">
-        <h2 className="text-xl font-semibold">{task.title}</h2>
+        <h2 className="text-sm font-semibold md:text-xl">{task.title}</h2>
         <div
-          className={`flex py-2 text-sm font-medium text-neutral-900 ${
+          className={`flex py-2 font-medium text-neutral-900 ${
             task.status === "Active task" || task.status === "Completed task"
               ? "justify-between"
               : "gap-4"
@@ -164,7 +164,10 @@ export default function TaskCard({ task }: Props) {
                 width={20}
                 height={20}
               />
-              <span>{task.submissions} submissions</span>
+              <p className="text-xs md:text-base flex gap-1">
+                {task.submissions}
+                <span className="hidden md:block">submissions</span>
+              </p>
             </div>
           )}
 
@@ -175,7 +178,7 @@ export default function TaskCard({ task }: Props) {
               width={20}
               height={20}
             />
-            <span>{task.eth}</span>
+            <p className="text-xs md:text-base">{task.eth}</p>
           </div>
           <div className="flex items-center gap-2">
             <Image
@@ -184,7 +187,7 @@ export default function TaskCard({ task }: Props) {
               width={20}
               height={20}
             />
-            <span>Ends: {task.deadline}</span>
+            <p className="text-xs md:text-base">Ends: {task.deadline}</p>
           </div>
         </div>
       </div>
