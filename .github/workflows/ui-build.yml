@@ -3,16 +3,7 @@ name: UI Build and Test
 on:
   pull_request:
     branches: [develop]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.js'
-      - 'tailwind.config.ts'
-      - 'tsconfig.json'
-      - '.eslintrc.cjs'
-      - 'postcss.config.js'
+
     paths-ignore:
       - 'contracts/**'
 
