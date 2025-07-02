@@ -1,4 +1,5 @@
 "use client";
+import { ChevronBackOutline, ChevronNextOutline } from "public/svg/generalSvg";
 import React, { useState } from "react";
 import { ReusableTable } from "~/_components/ui/table";
 import { disputes } from "~/mocks/disputes";
@@ -24,18 +25,18 @@ function DisputesTable() {
 
   const statusStyle: Record<string, string> = {
     completed:
-      "bg-[#E0F2F1] text-[#00796B] px-4 text-center capitalize py-1.5 rounded-full text-sm font-medium",
+      "bg-[#E0F2F1] text-[#00796B] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
     pending:
-      "px-4 py-1.5 rounded-full  bg-[#FDECCE] text-[#F59E0B] capitalize text-sm font-medium",
+      "px-4 py-1.5 rounded-full  bg-[#FDECCE] text-center text-[#F59E0B] capitalize text-xs sm:text-sm font-medium",
     failed:
-      "px-4 py-1.5 rounded-full  bg-[#FDE2E1] text-[#DC2626] capitalize text-sm font-medium",
+      "px-4 py-1.5 rounded-full  bg-[#FDE2E1] text-center text-[#DC2626] capitalize text-xs sm:text-sm font-medium",
   };
 
   const priorityStyle: Record<string, string> = {
-    low: "bg-gray-300 text-gray-600 px-4 text-center capitalize py-1.5 rounded-full text-sm font-medium",
+    low: "bg-gray-300 text-gray-600 px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
     medium:
-      "bg-[#142B52] text-white px-4 py-1.5 text-center capitalize rounded-full text-sm font-medium",
-    high: "bg-[#FFCDD2] text-[#C62828] px-4 text-center capitalize py-1.5 rounded-full text-sm font-medium",
+      "bg-[#142B52] text-white px-4 py-1.5 text-center capitalize rounded-full text-xs sm:text-sm font-medium",
+    high: "bg-[#FFCDD2] text-[#C62828] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
   };
 
   const columns = [
@@ -43,30 +44,37 @@ function DisputesTable() {
       header: "task",
       accessor: (row: DisputesProps) => {
         return (
-          <p className="text-sm font-semibold text-[#121212]">{row.task}</p>
+          <span className="text-xs font-semibold text-[#121212] sm:text-sm">
+            {row.task}
+          </span>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "submitter",
       accessor: (row: DisputesProps) => {
         return (
-          <p className="text-sm font-semibold text-[#121212]">
+          <span className="text-xs font-semibold text-[#121212] sm:text-sm">
             {row.submitter}
-          </p>
+          </span>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "task",
       accessor: (row: DisputesProps) => {
         return (
-          <p className="text-sm font-semibold text-[#121212]">{row.company}</p>
+          <span className="text-xs font-semibold text-[#121212] sm:text-sm">
+            {row.company}
+          </span>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "Status",
@@ -74,43 +82,49 @@ function DisputesTable() {
         const status = row.status.trim().toLowerCase();
         return <span className={` ${statusStyle[status]} `}>{row.status}</span>;
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "priority",
       accessor: (row: DisputesProps) => {
         return (
-          <p className={`${priorityStyle[row.priority]}`}>{row.priority}</p>
+          <span className={`${priorityStyle[row.priority]}`}>
+            {row.priority}
+          </span>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "Date Submitted",
       accessor: (row: DisputesProps) => {
         return (
-          <p className="text-sm font-semibold text-[#121212]">
+          <span className="text-xs font-semibold text-[#121212] sm:text-sm">
             {row.dateSubmitted}
-          </p>
+          </span>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
     {
       header: "action",
       accessor: () => {
         return (
           <div className="flex items-center gap-1">
-            <button className="cursor-pointer rounded bg-transparent py-1.5 pr-4 text-sm font-medium text-[#3B82F6] hover:text-[#3B82F6]/90">
+            <button className="cursor-pointer rounded bg-transparent py-1.5 pr-4 text-xs font-medium text-[#3B82F6] hover:text-[#3B82F6]/90 sm:text-sm">
               View
             </button>{" "}
-            <button className="cursor-pointer rounded bg-[#3B82F6] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#3B82F6]/90">
+            <button className="cursor-pointer rounded bg-[#3B82F6] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#3B82F6]/90 sm:text-sm">
               Resolved
             </button>
           </div>
         );
       },
-      className: "!text-[#3B82F6] !text-base  font-semibold !capitalize",
+      className:
+        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
     },
   ];
   return (
@@ -122,18 +136,20 @@ function DisputesTable() {
           role="navigation"
           onClick={handlePrevious}
           aria-label="previous page button"
-          className={`${currentPage !== 1 ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor- cursor-not-allowed text-[#414141]"} text-base font-semibold`}
+          className={`${currentPage !== 1 ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor- cursor-not-allowed text-[#414141]"} flex items-center gap-1 text-base font-semibold`}
         >
-          Previous
+          <ChevronBackOutline />
+          <span>Previous</span>
         </button>
         <button
           type="button"
           role="navigation"
           onClick={handleNext}
           aria-label="next page button"
-          className={`${currentPage !== totalPage ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor-not-allowed text-[#414141]"} text-base font-semibold`}
+          className={`${currentPage !== totalPage ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor-not-allowed text-[#414141]"} flex items-center gap-1 text-base font-semibold`}
         >
-          Next
+          <span> Next</span>
+          <ChevronNextOutline />
         </button>
       </div>
     </div>
