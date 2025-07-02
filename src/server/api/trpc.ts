@@ -6,12 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { initTRPC, TRPCError } from '@trpc/server';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
 
-import { db } from "~/server/db";
-import { auth, type Session, type User } from "~/lib/auth";
+import { db } from '~/server/db';
+import { auth, type Session, type User } from '~/lib/auth';
 
 /**
  * 1. CONTEXT
@@ -27,9 +27,13 @@ import { auth, type Session, type User } from "~/lib/auth";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   // Get the authorization header (Bearer token or session token)
-  const authorization = opts.headers.get("authorization");
-  const sessionToken = authorization?.replace("Bearer ", "") ?? 
-                      opts.headers.get("cookie")?.split("better-auth.session_token=")[1]?.split(";")[0];
+  const authorization = opts.headers.get('authorization');
+  const sessionToken =
+    authorization?.replace('Bearer ', '') ??
+    opts.headers
+      .get('cookie')
+      ?.split('better-auth.session_token=')[1]
+      ?.split(';')[0];
 
   let session: Session | null = null;
   let user: User | null = null;
@@ -40,14 +44,14 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       const sessionData = await auth.api.getSession({
         headers: opts.headers,
       });
-      
+
       if (sessionData) {
         session = sessionData.session;
         user = sessionData.user;
       }
     } catch (error) {
       // Session invalid or expired, continue with null session
-      console.log("Session validation failed:", error);
+      console.log('Session validation failed:', error);
     }
   }
 
@@ -133,8 +137,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.user || !ctx.session) {
     throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "You must be logged in to access this resource",
+      code: 'UNAUTHORIZED',
+      message: 'You must be logged in to access this resource',
     });
   }
 
@@ -151,19 +155,19 @@ const isAuthed = t.middleware(({ next, ctx }) => {
  *
  * This middleware verifies that a user has the required role(s) to access a resource.
  */
-const hasRole = (roles: string[]) => 
+const hasRole = (roles: string[]) =>
   t.middleware(({ next, ctx }) => {
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to access this resource",
+        code: 'UNAUTHORIZED',
+        message: 'You must be logged in to access this resource',
       });
     }
 
     if (!roles.includes(ctx.user.role)) {
       throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You do not have permission to access this resource",
+        code: 'FORBIDDEN',
+        message: 'You do not have permission to access this resource',
       });
     }
 
@@ -201,7 +205,7 @@ export const protectedProcedure = t.procedure
  */
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(["admin"]));
+  .use(hasRole(['admin']));
 
 /**
  * Moderator+ procedure
@@ -210,4 +214,4 @@ export const adminProcedure = t.procedure
  */
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(["admin", "moderator"]));
+  .use(hasRole(['admin', 'moderator']));

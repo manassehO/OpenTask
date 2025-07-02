@@ -1,0 +1,1 @@
+ALTER TABLE "opentask_user" ALTER COLUMN "name" DROP NOT NULL;

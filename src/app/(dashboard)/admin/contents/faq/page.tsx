@@ -1,5 +1,5 @@
-"use client";
-import FaqGuidelines from "~/_components/admin/faq-guidelines";
+'use client';
+import FaqGuidelines from '~/_components/admin/content/faq-guidelines';
 
 export default function AdminFaq() {
   return (
