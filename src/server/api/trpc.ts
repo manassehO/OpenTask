@@ -11,6 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { verifyJwt } from "~/server/api/routers/auth/jwt";
 import { auth, type Session, type User } from "~/lib/auth";
 
 /**
@@ -52,6 +53,31 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     } catch (error) {
       // Session invalid or expired, continue with null session
       console.log("Session validation failed:", error);
+    }
+  }
+
+  if (!user && authorization?.startsWith("Bearer ")) {
+    const jwtToken = authorization.replace("Bearer ", "");
+    const payload = verifyJwt(jwtToken);
+    console.log(payload);
+
+    if (
+      payload &&
+      typeof payload === "object" &&
+      typeof payload.userId === "string"
+    ) {
+      const dbUser = await db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, payload.userId as string),
+      });
+      if (dbUser) {
+        console.log(dbUser);
+        user = dbUser;
+      } else {
+        // User not found for this JWT
+        console.log("JWT valid but user not found:", payload.userId);
+      }
+    } else {
+      console.log("JWT verification failed or payload invalid");
     }
   }
 
@@ -135,10 +161,10 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * It also attaches the user and session data to the context for use in protected procedures.
  */
 const isAuthed = t.middleware(({ next, ctx }) => {
-  if (!ctx.user || !ctx.session) {
+  if (!ctx.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "You must be logged in to access this resource",
+      message: "You mustn be logged in to access this resource",
     });
   }
 
@@ -160,7 +186,7 @@ const hasRole = (roles: string[]) =>
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: "You must be logged in to access this resource",
+        message: "You musti be logged in to access this resource",
       });
     }
 
