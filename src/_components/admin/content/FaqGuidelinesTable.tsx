@@ -22,23 +22,23 @@ export const FaqGuidelinesTable: React.FC<FaqGuidelinesTableProps> = ({
 }) => {
   return (
     <div>
-      <div className="mt-10 overflow-x-auto rounded-lg border">
+      <div className="mt-10 w-full overflow-auto rounded-lg border">
         <table className="min-w-full table-auto border text-left text-sm">
           <thead className="bg-main-50 font-semibold text-neutral-900">
             <tr>
-              <th className="px-4 py-2">Question</th>
-              <th className="px-4 py-2">Answer</th>
-              {activeTab === 'FAQs' && <th className="px-4 py-2">Category</th>}
+              <th className="p-4">Question</th>
+              <th className="p-4">Answer</th>
+              {activeTab === 'FAQs' && <th className="p-4">Category</th>}
               {activeTab === 'Guidelines' && (
-                <th className="px-4 py-2">Question Time</th>
+                <th className="p-4">Question Time</th>
               )}
-              <th className="px-4 py-2">Action</th>
+              <th className="p-4">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {filteredData.map((item) => (
-              <tr key={item.id} className="border text-neutral-800">
+              <tr key={item.id} className="border text-sm text-neutral-800">
                 <td className="w-[213px] px-4 py-2">{item.question}</td>
                 <td className="w-[503px] px-4 py-2">{item.answer}</td>
                 {activeTab === 'FAQs' && (

@@ -20,7 +20,7 @@ type DataType = {
 
 const LOCAL_STORAGE_KEY = 'admin-faq-guidelines';
 
-const allData = [
+const sampleFAQs = [
   {
     id: 1,
     category: 'General',
@@ -56,6 +56,45 @@ const allData = [
     question: 'How do I use the platform?',
     answer: 'You can start by signing up and exploring tasks.',
     time: '2025-07-01 12:00 PM',
+  },
+];
+
+const sampleGuidelines = [
+  {
+    id: 1,
+    category: '',
+    type: 'Guidelines',
+    question: 'Community Guidelines',
+    answer:
+      'Our community guidelines outline the expected behavior for all users on the platform. We expect all users to be respectful.',
+    time: '2025-07-01 12:00 PM',
+  },
+  {
+    id: 2,
+    category: '',
+    type: 'Guidelines',
+    question: 'Task Submission Guidelines?',
+    answer:
+      'When submitting work for a task, please ensure that your submission is complete, follows all instructions, and is of high',
+    time: '2025-06-30 03:45 PM',
+  },
+  {
+    id: 3,
+    category: '',
+    type: 'Guidelines',
+    question: 'Community Guidelines',
+    answer:
+      'Our community guidelines outline the expected behavior for all users on the platform. We expect all users to be respectful.',
+    time: '2025-07-01 12:00 PM',
+  },
+  {
+    id: 4,
+    category: '',
+    type: 'Guidelines',
+    question: 'Task Submission Guidelines?',
+    answer:
+      'When submitting work for a task, please ensure that your submission is complete, follows all instructions, and is of high',
+    time: '2025-06-30 03:45 PM',
   },
 ];
 
@@ -95,10 +134,13 @@ export default function FaqGuidelines() {
     'All' | 'General' | 'Reward' | 'Getting started'
   >('All');
 
+  // to filter data based on active tab and selected filter
   const filteredData =
-    selectedFilter === 'All'
-      ? allData
-      : allData.filter((item) => item.category === selectedFilter);
+    activeTab === 'FAQs'
+      ? selectedFilter === 'All'
+        ? sampleFAQs
+        : sampleFAQs.filter((item) => item.category === selectedFilter)
+      : sampleGuidelines;
 
   // category color mapping
   const getCategoryColor = (category?: string) => {
@@ -117,7 +159,7 @@ export default function FaqGuidelines() {
   return (
     <div className="mx-auto">
       {/* Tabs */}
-      <div className="mb-4 flex w-full gap-4 overflow-x-auto bg-white p-2 md:max-w-[258px]">
+      <div className="mb-4 flex w-full gap-4 overflow-x-auto bg-white p-2 md:max-w-[230px]">
         {['FAQs', 'Guidelines'].map((tab) => (
           <button
             key={tab}
@@ -146,6 +188,7 @@ export default function FaqGuidelines() {
                 : 'Manage guidelines and policies for the platform'}
             </p>
           </div>
+
           {/* Add & Save Buttons */}
           <div className="mt-6 flex justify-between">
             <button className="rounded-full border border-primary px-4 py-1 text-xs font-normal text-primary disabled:opacity-50 md:text-sm">
@@ -164,7 +207,7 @@ export default function FaqGuidelines() {
               <input
                 type="text"
                 className="w-full rounded-md bg-neutral-100 p-2 pl-12 placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                placeholder="search FAQS content...."
+                placeholder="search FAQS ...."
               />
             </div>
 
@@ -237,5 +280,3 @@ export default function FaqGuidelines() {
     </div>
   );
 }
-
-// export default FaqGuidelines;
