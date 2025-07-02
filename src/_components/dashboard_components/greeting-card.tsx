@@ -9,7 +9,7 @@ const getTimeOfDay = () => {
   const formatter = new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     hour12: false,
-    timeZone
+    timeZone,
   });
 
   const hour = parseInt(formatter.format(new Date()), 10);
@@ -18,7 +18,7 @@ const getTimeOfDay = () => {
   if (hour >= 12 && hour < 17) return 'afternoon';
   if (hour >= 17 && hour < 21) return 'evening';
   return 'night';
-}
+};
 const greetings = [
   {
     time: 'morning',
@@ -35,19 +35,21 @@ const greetings = [
   {
     time: 'night',
     icon: '✨',
-  }
-]
+  },
+];
 
 function GreetingCard({ name, ...props }: GreetingCardProps) {
   const timeOfDay = getTimeOfDay();
-  const greeting = greetings.find(g => g.time === timeOfDay);
+  const greeting = greetings.find((g) => g.time === timeOfDay);
   const greetingText = `Good ${greeting?.time} ${greeting?.icon}`;
   return (
     <div className={`flex flex-col capitalize ${props.className}`}>
-      <span className="text-[#414141] font-semibold text-base">{greetingText}</span>
+      <span className="text-base font-semibold text-[#414141]">
+        {greetingText}
+      </span>
       <span className="text-[28px] font-bold">{name}</span>
     </div>
-  )
+  );
 }
 
-export default GreetingCard
+export default GreetingCard;

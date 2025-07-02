@@ -1,9 +1,13 @@
-import React from 'react'
+'use client';
 
-type Props = {}
+import React from 'react';
+import FaqGuidelines from '~/_components/admin/content/faq-guidelines';
 
-export default function page({}: Props) {
+export default function AdminFaq() {
   return (
-    <div>page</div>
-  )
+    <div>
+      <h1 className="mb-4 font-bold md:text-[28px]">Settings</h1>
+      <FaqGuidelines />
+    </div>
+  );
 }

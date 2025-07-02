@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
-    @apply bg-[#FAFAFA] text-gray-900;
+body {
+  @apply bg-[#FAFAFA] text-gray-900;
 }

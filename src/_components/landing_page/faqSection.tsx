@@ -1,4 +1,4 @@
-import Faq from "../ui/faq";
+import Faq from '../ui/faq';
 
 function FaqSection() {
   return (
@@ -36,38 +36,38 @@ export default FaqSection;
 
 const faqs = [
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
   {
-    question: "Lorem ipsum dolor sit amet consectetur?",
+    question: 'Lorem ipsum dolor sit amet consectetur?',
     answer:
-      "Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.",
+      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
   },
 ];

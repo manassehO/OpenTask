@@ -1,11 +1,9 @@
-import React from 'react'
+import React from 'react';
 
-type Props = {}
+type Props = object;
 
 function page({}: Props) {
-  return (
-    <div>page</div>
-  )
+  return <div>learning page</div>;
 }
 
-export default page
+export default page;
