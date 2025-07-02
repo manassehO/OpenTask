@@ -81,6 +81,14 @@ const columns = [
     accessor: (row: User) => <a href={`mailto:${row.email}`}>{row.email}</a>,
   },
   {
+    header: "Email",
+    accessor: (row: User) => <a href={`mailto:${row.email}`}>{row.email}</a>,
+  },
+  {
+    header: "Email",
+    accessor: (row: User) => <a href={`mailto:${row.email}`}>{row.email}</a>,
+  },
+  {
     header: "Status",
     accessor: (row: User) => (
       <span style={{ color: row.active ? "green" : "red" }}>

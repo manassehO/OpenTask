@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const userRole = "admin";
+  const userRole = "";
   return (
     <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>
