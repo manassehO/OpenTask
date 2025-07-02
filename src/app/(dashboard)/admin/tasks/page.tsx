@@ -1,9 +1,15 @@
-import React from 'react';
+import React from "react";
+import Header from "~/_components/dashboard_components/admin/header";
+import { TasksTable } from "~/_components/dashboard_components/admin/tasks/TasksTable";
 
-type Props = object;
+function page() {
+  return (
+    <div className="relative h-screen w-full">
+      <Header title="Tasks" subText="monitor and manage platform tasks" />
+      <TasksTable />
+    </div>
+  );
 
-function page({}: Props) {
-  return <div>page</div>;
 }
 
 export default page;
