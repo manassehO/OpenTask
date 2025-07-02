@@ -1,5 +1,5 @@
 'use client';
-import { DropletIcon, Edit, SearchIcon, Trash } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -40,38 +40,38 @@ const FaqGuidelines = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }, [data]);
 
-  const handleAdd = () => {
-    const current = data[activeTab];
-    const last = current[current.length - 1];
-    if (last && last.content.trim() === '') {
-      alert('Please fill the previous entry before adding a new one.');
-      return;
-    }
+  // const handleAdd = () => {
+  //   const current = data[activeTab];
+  //   const last = current[current.length - 1];
+  //   if (last && last.content.trim() === '') {
+  //     alert('Please fill the previous entry before adding a new one.');
+  //     return;
+  //   }
 
-    const newItem: Entry = {
-      id: Date.now(),
-      content: '',
-    };
+  //   const newItem: Entry = {
+  //     id: Date.now(),
+  //     content: '',
+  //   };
 
-    setData((prev) => ({
-      ...prev,
-      [activeTab]: [...prev[activeTab], newItem],
-    }));
-  };
+  //   setData((prev) => ({
+  //     ...prev,
+  //     [activeTab]: [...prev[activeTab], newItem],
+  //   }));
+  // };
 
   // Disable "Add New" if the last entry is empty
   // const isAddDisabled =
   //   data[activeTab].length > 0 &&
   //   data[activeTab][data[activeTab].length - 1]?.content.trim() === '';
 
-  const handleEdit = (id: number, value: string) => {
-    setData((prev) => ({
-      ...prev,
-      [activeTab]: prev[activeTab].map((item) =>
-        item.id === id ? { ...item, content: value } : item,
-      ),
-    }));
-  };
+  // const handleEdit = (id: number, value: string) => {
+  //   setData((prev) => ({
+  //     ...prev,
+  //     [activeTab]: prev[activeTab].map((item) =>
+  //       item.id === id ? { ...item, content: value } : item,
+  //     ),
+  //   }));
+  // };
 
   // const handleDelete = (id: number) => {
   //   setData((prev) => ({
@@ -182,7 +182,7 @@ const FaqGuidelines = () => {
           </div>
 
           {/* Filter Button */}
-          <div className="relative inline-block w-40 text-left">
+          <div className="relative inline-block w-52 text-left">
             <button
               onClick={() => setOpen((prev) => !prev)}
               className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-white px-1 py-2 text-sm shadow-sm hover:bg-gray-50"
@@ -195,7 +195,7 @@ const FaqGuidelines = () => {
                   height={24}
                   className="text-gray-600"
                 />
-                <span>Filter</span>
+                <span>{selectedFilter}</span>
               </div>
               <Image
                 src="/icons/dropdown.svg"
@@ -206,19 +206,24 @@ const FaqGuidelines = () => {
               />
             </button>
 
+            {/*  */}
             {open && (
               <div className="absolute right-0 z-10 mt-2 w-full origin-top-right rounded-md border border-gray-200 bg-white shadow-lg">
                 <ul className="py-2 text-sm text-gray-700">
-                  {filters.map((item) => (
+                  {filters.map((filter) => (
                     <li
-                      key={item}
-                      className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                      key={filter}
                       onClick={() => {
-                        console.log('Selected:', item);
+                        setSelectedFilter(filter);
                         setOpen(false);
                       }}
+                      className={`cursor-pointer px-4 py-2 hover:bg-gray-100 ${
+                        selectedFilter === filter
+                          ? 'bg-gray-100 text-xs font-semibold'
+                          : ''
+                      }`}
                     >
-                      {item}
+                      {filter}
                     </li>
                   ))}
                 </ul>
