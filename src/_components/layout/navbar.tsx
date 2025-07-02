@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import clsx from "clsx";
-import { useAtom } from "jotai";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { sidebarAtom } from "~/hooks/sidebarAtom";
-const sections = ["home", "features", "contact us"];
+import clsx from 'clsx';
+import { useAtom } from 'jotai';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { sidebarAtom } from '~/hooks/sidebarAtom';
+const sections = ['home', 'features', 'contact us'];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("home");
+  const [activeSection, setActiveSection] = useState<string>('home');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,14 +23,15 @@ export function Navbar() {
       const current = [...offsets]
         .reverse()
         .find((sec) => window.scrollY >= sec.top);
-      setActiveSection(current?.id ?? "home");
+      setActiveSection(current?.id ?? 'home');
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
   const [,] = useAtom(sidebarAtom);
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full justify-between bg-white shadow">
@@ -58,8 +59,8 @@ export function Navbar() {
               <a
                 href={`#${section}`}
                 className={clsx(
-                  "capitalize text-gray-700 transition hover:text-blue-600",
-                  activeSection === section && "font-semibold text-blue-600",
+                  'capitalize text-gray-700 transition hover:text-blue-600',
+                  activeSection === section && 'font-semibold text-blue-600',
                 )}
               >
                 {section}
@@ -97,8 +98,8 @@ export function Navbar() {
                 <a
                   href={`#${section}`}
                   className={clsx(
-                    "block capitalize text-gray-700 transition hover:text-blue-600",
-                    activeSection === section && "font-semibold text-blue-600",
+                    'block capitalize text-gray-700 transition hover:text-blue-600',
+                    activeSection === section && 'font-semibold text-blue-600',
                   )}
                   onClick={() => setMenuOpen(false)}
                 >

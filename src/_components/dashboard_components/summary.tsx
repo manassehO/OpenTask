@@ -1,27 +1,27 @@
-import React from "react";
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
 
 const summaryData = [
   {
-    title: "Total Earnings",
-    amount: "$200,000",
-    cryptoAmount: "1,000 BTC",
-    icon: "/icons/payments.svg",
-    bgColor: "bg-[#F59E0B]/15",
+    title: 'Total Earnings',
+    amount: '$200,000',
+    cryptoAmount: '1,000 BTC',
+    icon: '/icons/payments.svg',
+    bgColor: 'bg-[#F59E0B]/15',
   },
   {
-    title: "Total Tasks Completed",
-    amount: "1,500",
-    cryptoAmount: "2,500 ETH",
-    icon: "/icons/task.svg",
-    bgColor: "bg-[#10B981]/15",
+    title: 'Total Tasks Completed',
+    amount: '1,500',
+    cryptoAmount: '2,500 ETH',
+    icon: '/icons/task.svg',
+    bgColor: 'bg-[#10B981]/15',
   },
   {
-    title: "Streak",
-    amount: "30 Days",
-    cryptoAmount: "0.5 BTC",
-    icon: "/icons/streak.svg",
-    bgColor: "bg-[#06B6D41A]/15",
+    title: 'Streak',
+    amount: '30 Days',
+    cryptoAmount: '0.5 BTC',
+    icon: '/icons/streak.svg',
+    bgColor: 'bg-[#06B6D41A]/15',
   },
 ];
 

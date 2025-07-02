@@ -9,6 +9,7 @@ function page() {
       <TasksTable />
     </div>
   );
+
 }
 
 export default page;

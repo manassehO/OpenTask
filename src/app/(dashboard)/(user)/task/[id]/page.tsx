@@ -1,21 +1,21 @@
-import { Suspense } from "react"
-import { mockTasks } from "@/mocks/tasks"
-import TaskDetail from "./TaskDetail"
+import { Suspense } from 'react';
+import { mockTasks } from '@/mocks/tasks';
+import TaskDetail from './TaskDetail';
 
 interface PageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 export default async function TaskPage({ params }: PageProps) {
   const { id } = await params;
   // Simulate API call
-  const task = mockTasks.find((t) => t.id === id)
+  const task = mockTasks.find((t) => t.id === id);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <TaskDetail task={task} />
     </Suspense>
-  )
+  );
 }

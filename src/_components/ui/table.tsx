@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type Column<T> = {
   header: string;
@@ -15,7 +15,7 @@ type ReusableTableProps<T> = {
 export function ReusableTable<T extends object>({
   columns,
   data,
-  className = "",
+  className = '',
 }: ReusableTableProps<T>) {
   return (
     <div className={`overflow-x-auto rounded-lg bg-white ${className}`}>
@@ -26,7 +26,7 @@ export function ReusableTable<T extends object>({
               <th
                 key={idx}
                 className={`px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500 ${
-                  col?.className ?? ""
+                  col?.className ?? ''
                 }`}
               >
                 {col.header}
@@ -40,9 +40,9 @@ export function ReusableTable<T extends object>({
               {columns?.map((col: Column<T>, cidx: number) => (
                 <td
                   key={cidx}
-                  className={`px-4 py-3 text-sm ${col.className ?? ""}`}
+                  className={`px-4 py-3 text-sm ${col.className ?? ''}`}
                 >
-                  {typeof col.accessor === "function"
+                  {typeof col.accessor === 'function'
                     ? col.accessor(row)
                     : (row[col.accessor] as React.ReactNode)}
                 </td>
@@ -66,33 +66,33 @@ type User = {
   active: boolean;
 };
 
-const columns = [
+const columns: Column<User>[] = [
   {
-    header: "ID",
-    accessor: "id",
-    className: "w-12",
+    header: 'ID',
+    accessor: 'id',
+    className: 'w-12',
   },
   {
-    header: "Name",
-    accessor: "name",
+    header: 'Name',
+    accessor: 'name',
   },
   {
-    header: "Email",
+    header: 'Email',
     accessor: (row: User) => <a href={`mailto:${row.email}`}>{row.email}</a>,
   },
   {
-    header: "Status",
+    header: 'Status',
     accessor: (row: User) => (
-      <span style={{ color: row.active ? "green" : "red" }}>
-        {row.active ? "Active" : "Inactive"}
+      <span style={{ color: row.active ? 'green' : 'red' }}>
+        {row.active ? 'Active' : 'Inactive'}
       </span>
     ),
   },
 ];
 
 const data = [
-  { id: 1, name: "Alice", email: "alice@email.com", active: true },
-  { id: 2, name: "Bob", email: "bob@email.com", active: false },
+  { id: 1, name: 'Alice', email: 'alice@email.com', active: true },
+  { id: 2, name: 'Bob', email: 'bob@email.com', active: false },
 ];
 
 export default function ExampleTable() {
