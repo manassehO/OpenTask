@@ -19,12 +19,15 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const userRole = "admin";
   return (
     <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>
         <DashboardNavbar />
-        <SidebarWrapper>{children}</SidebarWrapper>
+        <SidebarWrapper role={userRole}>{children}</SidebarWrapper>
       </body>
     </html>
   );
 }
+
+
