@@ -57,7 +57,7 @@ export const FaqGuidelinesTable: React.FC<FaqGuidelinesTableProps> = ({
                   <td className="px-4 py-2">{item.time}</td>
                 )}
 
-                <td className="flex items-center gap-3 px-4 py-2">
+                <td className="flex w-28 items-center justify-between gap-3 px-4 py-2">
                   <button className="text-blue-600 hover:underline">
                     <Image
                       src="/icons/tableEditIcon.svg"
@@ -66,6 +66,8 @@ export const FaqGuidelinesTable: React.FC<FaqGuidelinesTableProps> = ({
                       height={24}
                     />
                   </button>
+
+                  {/* Delete Button */}
                   <button className="text-red-600 hover:underline">
                     <Image
                       src="/icons/tableDeleteIcon.svg"
