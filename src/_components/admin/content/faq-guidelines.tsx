@@ -20,7 +20,46 @@ type DataType = {
 
 const LOCAL_STORAGE_KEY = 'admin-faq-guidelines';
 
-const FaqGuidelines = () => {
+const allData = [
+  {
+    id: 1,
+    category: 'General',
+    type: 'FAQS',
+    question: 'What is OpenTask?',
+    answer:
+      'OpenTask is an open-source platform designed to introduce non-crypto users to cryptocurrency through completing simple tasks.',
+    time: '2025-07-01 12:00 PM',
+  },
+
+  {
+    id: 2,
+    category: 'Reward',
+    type: 'FAQS',
+    question: 'How do I earn cryptocurrency?',
+    answer:
+      'You can earn cryptocurrency by completing available tasks on the platform. Once a task is completed and approved.',
+    time: '2025-06-30 03:45 PM',
+  },
+  {
+    id: 3,
+    category: 'Getting started',
+    type: 'FAQS',
+    question: 'Do I need to have cryptocurrency to start?',
+    answer:
+      "No, you don't need to have any cryptocurrency to start. OpenTask is designed for beginners and allows you to earn coins.",
+    time: '2025-06-29 09:30 AM',
+  },
+  {
+    id: 4,
+    category: 'Reward',
+    type: 'FAQS',
+    question: 'How do I use the platform?',
+    answer: 'You can start by signing up and exploring tasks.',
+    time: '2025-07-01 12:00 PM',
+  },
+];
+
+export default function FaqGuidelines() {
   const [activeTab, setActiveTab] = useState<'FAQs' | 'Guidelines'>('FAQs');
 
   const [data, setData] = useState<DataType>({
@@ -45,126 +84,9 @@ const FaqGuidelines = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }, [data]);
 
-  // const handleAdd = () => {
-  //   const current = data[activeTab];
-  //   const last = current[current.length - 1];
-  //   if (last && last.content.trim() === '') {
-  //     alert('Please fill the previous entry before adding a new one.');
-  //     return;
-  //   }
-
-  //   const newItem: Entry = {
-  //     id: Date.now(),
-  //     content: '',
-  //   };
-
-  //   setData((prev) => ({
-  //     ...prev,
-  //     [activeTab]: [...prev[activeTab], newItem],
-  //   }));
-  // };
-
-  // Disable "Add New" if the last entry is empty
-  // const isAddDisabled =
-  //   data[activeTab].length > 0 &&
-  //   data[activeTab][data[activeTab].length - 1]?.content.trim() === '';
-
-  // const handleEdit = (id: number, value: string) => {
-  //   setData((prev) => ({
-  //     ...prev,
-  //     [activeTab]: prev[activeTab].map((item) =>
-  //       item.id === id ? { ...item, content: value } : item,
-  //     ),
-  //   }));
-  // };
-
-  // const handleDelete = (id: number) => {
-  //   setData((prev) => ({
-  //     ...prev,
-  //     [activeTab]: prev[activeTab].filter((item) => item.id !== id),
-  //   }));
-  // };
-
-  // for table
   const [open, setOpen] = useState(false);
 
   const filters = ['All', 'General', 'Reward', 'Getting started'];
-  const allData = [
-    {
-      id: 1,
-      category: 'General',
-      type: 'FAQS',
-      question: 'What is OpenTask?',
-      answer:
-        'OpenTask is an open-source platform designed to introduce non-crypto users to cryptocurrency through completing simple tasks.',
-      time: '2025-07-01 12:00 PM',
-    },
-
-    {
-      id: 2,
-      category: 'Reward',
-      type: 'FAQS',
-      question: 'How do I earn cryptocurrency?',
-      answer:
-        'You can earn cryptocurrency by completing available tasks on the platform. Once a task is completed and approved.',
-      time: '2025-06-30 03:45 PM',
-    },
-    {
-      id: 3,
-      category: 'Getting started',
-      type: 'FAQS',
-      question: 'Do I need to have cryptocurrency to start?',
-      answer:
-        "No, you don't need to have any cryptocurrency to start. OpenTask is designed for beginners and allows you to earn coins.",
-      time: '2025-06-29 09:30 AM',
-    },
-    {
-      id: 4,
-      category: 'Reward',
-      type: 'FAQS',
-      question: 'How do I use the platform?',
-      answer: 'You can start by signing up and exploring tasks.',
-      time: '2025-07-01 12:00 PM',
-    },
-
-    //
-    // {
-    //   id: 5,
-    //   category: 'General',
-    //   type: 'Guidelines',
-    //   question: 'What is OpenTask?',
-    //   answer:
-    //     'OpenTask is an open-source platform designed to introduce non-crypto users to cryptocurrency through completing simple tasks.',
-    //   time: '2025-07-01 12:00 PM',
-    // },
-
-    // {
-    //   id: 6,
-    //   category: 'Reward',
-    //   type: 'Guidelines',
-    //   question: 'How do I earn cryptocurrency?',
-    //   answer:
-    //     'You can earn cryptocurrency by completing available tasks on the platform. Once a task is completed and approved.',
-    //   time: '2025-06-30 03:45 PM',
-    // },
-    // {
-    //   id: 7,
-    //   category: 'Getting started',
-    //   type: 'FAQS',
-    //   question: 'Do I need to have cryptocurrency to start?',
-    //   answer:
-    //     "No, you don't need to have any cryptocurrency to start. OpenTask is designed for beginners and allows you to earn coins.",
-    //   time: '2025-06-29 09:30 AM',
-    // },
-    // {
-    //   id: 8,
-    //   category: 'Reward',
-    //   type: 'FAQS',
-    //   question: 'How do I use the platform?',
-    //   answer: 'You can start by signing up and exploring tasks.',
-    //   time: '2025-07-01 12:00 PM',
-    // },
-  ];
 
   // filter table state
   // const [selectedFilter, setSelectedFilter] = useState('All');
@@ -275,7 +197,7 @@ const FaqGuidelines = () => {
               {/* Dropdown Menu */}
               {open && (
                 <div className="absolute right-0 z-10 mt-2 w-full origin-top-right rounded-md border border-gray-200 bg-white shadow-lg">
-                  <ul className="py-2 text-sm text-gray-700">
+                  <ul className="text-sm text-gray-700">
                     {filters.map((filter) => (
                       <li
                         key={filter}
@@ -314,6 +236,6 @@ const FaqGuidelines = () => {
       </div>
     </div>
   );
-};
+}
 
-export default FaqGuidelines;
+// export default FaqGuidelines;

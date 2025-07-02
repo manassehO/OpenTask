@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // switch between user roles for testing
   // const userRole = 'creator';
   const userRole = 'admin';
   return (

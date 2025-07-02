@@ -1,11 +1,12 @@
 'use client';
+
+import React from 'react';
 import FaqGuidelines from '~/_components/admin/content/faq-guidelines';
 
 export default function AdminFaq() {
   return (
-    <div className="">
-      <h1 className="mb-4 text-[28px] font-bold">Settings</h1>
-
+    <div>
+      <h1 className="mb-4 font-bold md:text-[28px]">Settings</h1>
       <FaqGuidelines />
     </div>
   );

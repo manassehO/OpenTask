@@ -99,13 +99,14 @@ export default function TasksPage() {
   return (
     <div className="mx-auto md:p-4">
       <h1 className="text-[28px] font-bold capitalize">task</h1>
+
       {/* Tab Navigation */}
       <div className="mb-4 flex w-full max-w-[464px] overflow-x-auto bg-white p-2">
         {['Active task', 'Draft task', 'Completed task'].map((status) => (
           <button
             key={status}
             onClick={() => setTab(status)}
-            className={`w-full whitespace-nowrap rounded px-4 py-2 text-sm font-medium ${
+            className={`w-full whitespace-nowrap rounded px-2 py-2 text-sm font-medium md:px-4 ${
               tab === status
                 ? 'bg-primary text-white'
                 : 'border-gray-300 bg-white text-gray-700'
@@ -117,7 +118,7 @@ export default function TasksPage() {
       </div>
 
       {/* Task Cards */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 md:flex-row">
         {filteredTasks.map((task) => (
           <TaskCard key={task.id} task={task} />
         ))}

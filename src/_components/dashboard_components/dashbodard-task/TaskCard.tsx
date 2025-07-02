@@ -1,22 +1,22 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 type Task = {
   id: string;
   title: string;
-  status: "Active task" | "Draft task" | "Completed task";
+  status: 'Active task' | 'Draft task' | 'Completed task';
   type:
-    | "testing"
-    | "survey"
-    | "pending"
-    | "review"
-    | "draft"
-    | "research"
-    | "completed";
+    | 'testing'
+    | 'survey'
+    | 'pending'
+    | 'review'
+    | 'draft'
+    | 'research'
+    | 'completed';
   progress: number;
   submissions: number;
   eth: string;
   deadline: string;
-  substatus: "testing" | "survey";
+  substatus: 'testing' | 'survey';
 };
 
 type Props = {
@@ -27,13 +27,13 @@ export default function TaskCard({ task }: Props) {
   // top button
   const renderTopButtons = () => {
     //  Active top button
-    if (task.status === "Active task") {
+    if (task.status === 'Active task') {
       const typeLabel =
-        task.type === "testing"
-          ? "Testing"
-          : task.type === "survey"
-            ? "Survey"
-            : "Unknown";
+        task.type === 'testing'
+          ? 'Testing'
+          : task.type === 'survey'
+            ? 'Survey'
+            : 'Unknown';
 
       return (
         <div className="flex gap-2">
@@ -43,13 +43,13 @@ export default function TaskCard({ task }: Props) {
           </button>
 
           {/* Conditional Status Button */}
-          {task.type === "testing" && (
+          {task.type === 'testing' && (
             <button className="w-[112px] rounded-full border border-yellow-400 bg-yellow-50 py-1 text-sm text-yellow-600">
               Pending
             </button>
           )}
 
-          {task.type === "survey" && (
+          {task.type === 'survey' && (
             <button className="w-[112px] rounded-full border border-green-400 bg-green-100 py-1 text-sm text-green-700">
               Active
             </button>
@@ -59,20 +59,20 @@ export default function TaskCard({ task }: Props) {
     }
 
     //   draft top button
-    if (task.status === "Draft task") {
+    if (task.status === 'Draft task') {
       const typeLabel =
-        task.type === "research"
-          ? "Research"
-          : task.type === "review"
-            ? "Review"
-            : "Draft";
+        task.type === 'research'
+          ? 'Research'
+          : task.type === 'review'
+            ? 'Review'
+            : 'Draft';
 
       return (
         <div className="flex gap-2">
           <button className="w-[112px] rounded-full border border-neutral-300 py-1 text-sm text-neutral-700">
             {typeLabel}
           </button>
-          <button className="border-warning-400 bg-warning-50 text-warning-400 w-[112px] rounded-full border py-1 text-sm">
+          <button className="w-[112px] rounded-full border border-warning-400 bg-warning-50 py-1 text-sm text-warning-400">
             Draft
           </button>
         </div>
@@ -80,13 +80,13 @@ export default function TaskCard({ task }: Props) {
     }
 
     //   completed top button
-    if (task.status === "Completed task") {
+    if (task.status === 'Completed task') {
       const typeLabel =
-        task.type === "testing"
-          ? "Testing"
-          : task.type === "review"
-            ? "Completed"
-            : "Review";
+        task.type === 'testing'
+          ? 'Testing'
+          : task.type === 'review'
+            ? 'Completed'
+            : 'Review';
 
       return (
         <div className="flex gap-2">
@@ -103,26 +103,26 @@ export default function TaskCard({ task }: Props) {
 
   // bottom button for the card
   const renderBottomButtons = () => {
-    if (task.status === "Draft task") {
+    if (task.status === 'Draft task') {
       return (
-        <div className="flex flex-col md:flex-row gap-2 py-4">
-          <button className="border-primary text-primary w-full rounded border py-2.5 text-sm font-bold transition">
+        <div className="flex flex-col gap-2 py-4 md:flex-row">
+          <button className="w-full rounded border border-primary py-2.5 text-sm font-bold text-primary transition">
             Edit
           </button>
-          <button className="bg-primary w-full rounded py-2.5 text-sm font-bold text-white transition">
+          <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
             Publish
           </button>
         </div>
       );
     }
 
-    if (task.status === "Completed task") {
+    if (task.status === 'Completed task') {
       return (
         <div className="flex flex-col gap-2 py-4 md:flex-row">
-          <button className="border-primary text-primary w-full rounded border py-2.5 text-sm font-bold transition">
+          <button className="w-full rounded border border-primary py-2.5 text-sm font-bold text-primary transition">
             Export Report
           </button>
-          <button className="bg-primary w-full rounded py-2.5 text-sm font-bold text-white transition">
+          <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
             View Details
           </button>
         </div>
@@ -131,7 +131,7 @@ export default function TaskCard({ task }: Props) {
 
     return (
       <div className="py-4">
-        <button className="bg-primary w-full rounded py-2.5 text-sm font-bold text-white transition">
+        <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
           View Details
         </button>
       </div>
@@ -149,29 +149,29 @@ export default function TaskCard({ task }: Props) {
       <div className="pt-4">
         <h2 className="text-sm font-semibold md:text-xl">{task.title}</h2>
         <div
-          className={`flex py-2 font-medium text-xs md:text-sm text-neutral-900 ${
-            task.status === "Active task" || task.status === "Completed task"
-              ? "justify-between"
-              : "gap-4"
+          className={`flex py-2 font-medium text-neutral-900 ${
+            task.status === 'Active task' || task.status === 'Completed task'
+              ? 'justify-between text-xs md:text-sm'
+              : 'gap-4'
           }`}
         >
-          {(task.status === "Active task" ||
-            task.status === "Completed task") && (
-            <div className="flex items-center gap-2">
+          {(task.status === 'Active task' ||
+            task.status === 'Completed task') && (
+            <div className="flex items-center gap-1 text-xs md:text-sm">
               <Image
                 src="/icons/submitIcon.svg"
                 alt="submission icon"
                 width={20}
                 height={20}
               />
-              <p className="text-xs md:text-base flex gap-1">
+              <p className="flex gap-1 text-xs md:text-base">
                 {task.submissions}
                 <span className="hidden md:block">submissions</span>
               </p>
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 text-xs md:text-sm">
             <Image
               src="/icons/etheriumIcon.svg"
               alt="eth"
@@ -180,7 +180,8 @@ export default function TaskCard({ task }: Props) {
             />
             <p className="text-xs md:text-base">{task.eth}</p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1">
             <Image
               src="/icons/timeLineIcon.svg"
               alt="deadline"
@@ -193,16 +194,16 @@ export default function TaskCard({ task }: Props) {
       </div>
 
       {/* Progress Bar */}
-      {(task.status === "Active task" || task.status === "Completed task") &&
+      {(task.status === 'Active task' || task.status === 'Completed task') &&
         task.progress !== undefined && (
-          <div className="space-y-2 py-4">
+          <div className="space-y-2 md:py-4">
             <div className="flex items-center justify-between py-3 font-medium">
-              <h1 className="text-grey text-sm">Progress</h1>
-              <h1 className="text-primary text-sm">{task.progress}%</h1>
+              <h1 className="text-sm text-grey">Progress</h1>
+              <h1 className="text-sm text-primary">{task.progress}%</h1>
             </div>
-            <div className="bg-main-50 h-2.5 w-full rounded-full">
+            <div className="h-2.5 w-full rounded-full bg-main-50">
               <div
-                className="bg-primary h-2.5 rounded-full"
+                className="h-2.5 rounded-full bg-primary"
                 style={{ width: `${task.progress}%` }}
               />
             </div>
