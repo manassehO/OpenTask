@@ -54,7 +54,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     {
       title: 'Tasks',
       icon: '/icons/darkTask.svg',
-      route: '/creator/tasks',
+      route: '/creator/task',
     },
     {
       title: 'Analytics',

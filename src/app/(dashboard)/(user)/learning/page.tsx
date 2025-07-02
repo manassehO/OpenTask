@@ -3,7 +3,7 @@ import React from 'react';
 type Props = object;
 
 function page({}: Props) {
-  return <div>page</div>;
+  return <div>learning page</div>;
 }
 
 export default page;

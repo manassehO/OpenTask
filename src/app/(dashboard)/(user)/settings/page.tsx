@@ -3,7 +3,7 @@ import React from 'react';
 type Props = object;
 
 function page({}: Props) {
-  return <div>page</div>;
+  return <div>settingspage</div>;
 }
 
 export default page;
