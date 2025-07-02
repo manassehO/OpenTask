@@ -1,19 +1,11 @@
-"use client";
+'use client';
 
-import { useAtom } from "jotai";
-import {
-  Bell,
-  CircleHelp,
-  Search,
-  Menu,
-  X,
-  PanelLeft,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { sidebarAtom } from "~/hooks/sidebarAtom";
-
+import { useAtom } from 'jotai';
+import { Bell, CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { sidebarAtom } from '~/hooks/sidebarAtom';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,17 +17,23 @@ export function DashboardNavbar() {
       // No operation needed as activeSection is unused and offsets was not used
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full bg-white shadow">
       <div className="mx-auto flex items-center justify-between gap-4 px-3 py-4 lg:px-10">
         <Link href="/" className="flex items-center">
-          <Image width={32} height={32} src="/logo.svg" alt="OpenTask Logo" className="inline h-8" />
+          <Image
+            width={32}
+            height={32}
+            src="/logo.svg"
+            alt="OpenTask Logo"
+            className="inline h-8"
+          />
         </Link>
 
         <div className="relative hidden w-[40%] lg:flex">

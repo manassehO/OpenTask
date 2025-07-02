@@ -36,7 +36,7 @@ async function withdraw() {
       attoAlphAmount: DUST_AMOUNT * 2n,
       args: {
         amount: 1n
-      },
+      }
     })
 
     // Fetch the latest state of the token contract

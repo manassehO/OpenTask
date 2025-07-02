@@ -1,6 +1,6 @@
-import Image from "next/image";
-import React, { type ReactNode } from "react";
-import Button from "../ui/button";
+import Image from 'next/image';
+import React, { type ReactNode } from 'react';
+import Button from '../ui/button';
 
 type AuthWrapperProps = {
   children: ReactNode;

@@ -16,4 +16,4 @@ export interface Task {
 export interface TaskCardProps {
   task: Task;
   onAction: (taskId: string) => void;
-} 
+}

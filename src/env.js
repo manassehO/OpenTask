@@ -1,19 +1,19 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
-  NODE_ENV: z.enum(["development", "production", "test"]),
+  NODE_ENV: z.enum(['development', 'production', 'test']),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error(
-    "❌ Invalid environment variables:",
+    '❌ Invalid environment variables:',
     parsed.error.flatten().fieldErrors,
   );
-  throw new Error("Invalid environment variables");
+  throw new Error('Invalid environment variables');
 }
 
 export const env = createEnv({
@@ -24,8 +24,8 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+      .enum(['development', 'test', 'production'])
+      .default('development'),
     BETTER_AUTH_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),

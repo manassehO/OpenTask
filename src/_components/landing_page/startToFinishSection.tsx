@@ -1,5 +1,5 @@
-import Image from "next/image";
-import Faq from "../ui/faq";
+import Image from 'next/image';
+import Faq from '../ui/faq';
 
 function StartToFinishSection() {
   return (
@@ -10,10 +10,10 @@ function StartToFinishSection() {
         </button>
       </div>
       <div className="mx-auto max-w-4xl text-center">
-        <h2 className="mx-auto text-2xl lg:text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:w-[618px]">
+        <h2 className="mx-auto text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl md:w-[618px] lg:text-3xl">
           From Start to Finish – What to Expect
         </h2>
-        <p className="mt-4 text-sm lg:text-lg text-gray-600">
+        <p className="mt-4 text-sm text-gray-600 lg:text-lg">
           Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
           imperdiet.
         </p>
@@ -44,23 +44,23 @@ export default StartToFinishSection;
 
 const faqItems = [
   {
-    question: "Sign Up Simply",
+    question: 'Sign Up Simply',
     answer:
-      "Use your existing social account No wallet setup required Instant access to tasks",
+      'Use your existing social account No wallet setup required Instant access to tasks',
   },
   {
-    question: "Choose Your Tasks",
+    question: 'Choose Your Tasks',
     answer:
-      "Use your existing social account No wallet setup required Instant access to tasks",
+      'Use your existing social account No wallet setup required Instant access to tasks',
   },
   {
-    question: "Complete & Earn",
+    question: 'Complete & Earn',
     answer:
-      "Use your existing social account No wallet setup required Instant access to tasks",
+      'Use your existing social account No wallet setup required Instant access to tasks',
   },
   {
-    question: "Track & Learn",
+    question: 'Track & Learn',
     answer:
-      "Use your existing social account No wallet setup required Instant access to tasks",
+      'Use your existing social account No wallet setup required Instant access to tasks',
   },
 ];

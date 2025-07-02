@@ -1,17 +1,17 @@
-import "~/styles/globals.css";
+import '~/styles/globals.css';
 
-import { GeistSans } from "geist/font/sans";
-import { type Metadata } from "next";
+import { GeistSans } from 'geist/font/sans';
+import { type Metadata } from 'next';
 
-import { TRPCReactProvider } from "~/trpc/react";
+import { TRPCReactProvider } from '~/trpc/react';
 
-import { Provider } from "jotai";
+import { Provider } from 'jotai';
 // import Footer from "./_components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "OpenTask",
-  description: "Micro-task Management on the Blockchain",
-  icons: [{ rel: "icon", url: "/logo.svg" }],
+  title: 'OpenTask',
+  description: 'Micro-task Management on the Blockchain',
+  icons: [{ rel: 'icon', url: '/logo.svg' }],
 };
 
 export default function RootLayout({

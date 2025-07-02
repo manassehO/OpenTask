@@ -1,8 +1,7 @@
-"use client";
-import { useState } from "react";
-import AuthWrapper from "~/_components/layout/authWrapper";
-import OTPInput from "~/_components/ui/form/OTPInput";
-
+'use client';
+import { useState } from 'react';
+import AuthWrapper from '~/_components/layout/authWrapper';
+import OTPInput from '~/_components/ui/form/OTPInput';
 
 function Otp() {
   const [otp, setOtp] = useState<number | undefined>(undefined);
@@ -24,7 +23,10 @@ function Otp() {
 
   return (
     <div className="flex h-svh w-full items-center justify-center">
-      <AuthWrapper text="Welcome to open task. Sign in with your email or connect a wallet to get started" title="Welcome">
+      <AuthWrapper
+        text="Welcome to open task. Sign in with your email or connect a wallet to get started"
+        title="Welcome"
+      >
         <form onSubmit={handleSubmit} className="flex w-96 flex-col gap-4">
           <OTPInput
             value={otp}

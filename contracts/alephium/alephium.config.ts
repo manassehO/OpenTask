@@ -7,7 +7,7 @@ export type Settings = {
   openaiAPIKey?: string
   ipfs?: {
     infura?: {
-      projectId: string,
+      projectId: string
       projectSecret: string
     }
   }
