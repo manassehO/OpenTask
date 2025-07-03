@@ -3,24 +3,22 @@ import {
   publicProcedure,
   protectedProcedure,
   adminProcedure,
-} from "~/server/api/trpc";
-import { eq, and } from "drizzle-orm";
-import { addMinutes } from "date-fns";
-import { otps } from "~/server/db/schema";
+} from '~/server/api/trpc';
+import { eq, and } from 'drizzle-orm';
+import { addMinutes } from 'date-fns';
+import { otps } from '~/server/db/schema';
 import {
   findOrCreateUserByEmail,
   generateUserToken,
   generateHashedOtp,
   compareHashedOtp,
-} from "./services";
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { sendOtp } from "~/server/email";
-import otpGenerator from "otp-generator";
-import * as starknetSvc from "~/services/starknetSvc";
-
-import { user } from "~/server/db/schema";
-
+} from './services';
+import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
+import { sendOtp } from '~/server/email';
+import otpGenerator from 'otp-generator';
+import * as starknetSvc from '~/services/starknetSvc';
+import { user } from '~/server/db/schema';
 
 export const authRouter = createTRPCRouter({
   // Get current user profile
@@ -39,9 +37,9 @@ export const authRouter = createTRPCRouter({
   // Admin-only endpoint
   getAdminData: adminProcedure.query(({ ctx }) => {
     return {
-      message: "This is admin-only data",
+      message: 'This is admin-only data',
       adminUser: ctx.user.name,
-      secretData: "Super secret admin information",
+      secretData: 'Super secret admin information',
     };
   }),
 
@@ -65,7 +63,7 @@ export const authRouter = createTRPCRouter({
         : null,
     };
   }),
-   // Post-Login Onboarding Logic
+  // Post-Login Onboarding Logic
   postLoginCheck: protectedProcedure.mutation(async ({ ctx }) => {
     const { id } = ctx.user;
     const existingUser = await ctx.db.query.user.findFirst({
@@ -77,7 +75,6 @@ export const authRouter = createTRPCRouter({
     if (isNewUser) {
       console.log(`[AuthRouter] New user detected: ${id}`);
       await starknetSvc.deployAAWallet(id);
-
     }
 
     return { isNewUser };
@@ -126,19 +123,19 @@ export const authRouter = createTRPCRouter({
 
       if (!otpRecord) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid email Provided",
+          code: 'BAD_REQUEST',
+          message: 'Invalid email Provided',
         });
       }
 
       const isHashedOtp = await compareHashedOtp(input.code, otpRecord.code);
 
       if (!isHashedOtp) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid OTP" });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid OTP' });
       }
 
       if (otpRecord.expiresAt < new Date()) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "OTP expired" });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'OTP expired' });
       }
 
       // Delete OTP after successful verification
