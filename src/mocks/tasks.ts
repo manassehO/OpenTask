@@ -262,6 +262,6 @@ export const mockTasks: Task[] = [
     category: 'defi',
     creator: 'BridgeChain',
     isFlagged: false,
-    // category: 'testing',
+    //category: 'testing',
   },
 ];
