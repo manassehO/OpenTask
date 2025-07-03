@@ -7,26 +7,25 @@ export const deployAAWallet = async (userId: string) => {
 };
 
 export const approve = () => {
-  console.log("Stub: Approving transaction");
+  console.log('Stub: Approving transaction');
 };
 
 export const fundTask = () => {
-  console.log("Stub: Funding task");
+  console.log('Stub: Funding task');
 };
 
 export const transfer = () => {
-  console.log("Stub: Transferring tokens");
+  console.log('Stub: Transferring tokens');
 };
 
 export const verifyMessage = () => {
-  console.log("Stub: Verifying message");
+  console.log('Stub: Verifying message');
 };
 
 export const flagDispute = () => {
-  console.log("Stub: Flagging dispute");
+  console.log('Stub: Flagging dispute');
 };
 
 export const resolveDispute = () => {
-  console.log("Stub: Resolving dispute");
+  console.log('Stub: Resolving dispute');
 };
-

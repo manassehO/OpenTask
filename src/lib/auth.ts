@@ -40,6 +40,5 @@ export const auth = betterAuth({
 // TODO: When Better Auth exposes a new user callback or OAuth success hook,
 // call deployAAWallet(user.id) here to trigger AA Wallet creation.
 
-
 export type Session = typeof auth.$Infer.Session.session;
 export type User = typeof auth.$Infer.Session.user;
