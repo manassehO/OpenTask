@@ -147,8 +147,8 @@ export default function LearningPage() {
 
       {/* Recommended Courses */}
       {activeTab === 'Course' && (
-        <div>
-          <div className="py-4 text-xl font-semibold capitalize">
+        <div className="py-10">
+          <div className="text-xl font-semibold capitalize">
             <h1 className="">courses for you</h1>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

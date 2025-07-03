@@ -28,6 +28,7 @@ interface ContentCardProps {
     progress?: number;
     duration?: string;
     started?: boolean; // For courses, to indicate if the course has been started
+    type?: string;
   };
   buttonLabel?: string;
   onAction: (id: string | number) => void;

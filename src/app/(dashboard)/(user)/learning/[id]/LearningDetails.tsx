@@ -13,13 +13,14 @@ interface LearningItem {
   duration: string;
   rewardInEth: number;
   rewardInUsd?: number;
+  modules?: string; // For courses
+  type: 'course' | 'tutorial';
 }
 
-interface CourseDetailProps {
-  course?: LearningItem;
-}
-
-export default function LearningDetail({ course }: CourseDetailProps) {
+export default function LearningDetail({ course }: { course?: LearningItem }) {
+  if (!course) {
+    /* …not-found UI… */
+  }
   const router = useRouter();
 
   // when course page is empty
@@ -48,7 +49,7 @@ export default function LearningDetail({ course }: CourseDetailProps) {
     <div className="mx-auto py-8">
       {/* Task Content */}
       <div className="rounded-lg">
-        <h1 className="pb-0 text-[40px] font-bold capitalize">
+        <h1 className="pb-0 text-xl font-bold capitalize md:text-[40px]">
           {course.title}
         </h1>
 
@@ -89,60 +90,102 @@ export default function LearningDetail({ course }: CourseDetailProps) {
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h2 className="mb-3 text-lg font-bold md:text-2xl">
-                Reward & Deadline
-              </h2>
-              <p className="text- mb-4 text-sm leading-[32px] md:text-base">
-                Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
-                tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
-                turpis neque eros quisque aliquet vulputate sed venenatis
-                lectus. Morbi in aliquam interdum pellentesque. Lorem ipsum
-                dolor sit amet consectetur. Dolor justo diam amet tincidunt ut
-                nunc. Dictum non fermentum proin sed etiam. Ipsum turpis neque
-                eros quisque aliquet vulputate sed venenatis lectus. Morbi in
-                aliquam interdum pellentesque.
-              </p>
+            {course.type === 'tutorial' && (
+              <div className="rounded-lg bg-white p-6">
+                <h2 className="mb-3 text-lg font-bold md:text-2xl">
+                  Reward & Deadline
+                </h2>
+                <p className="text- mb-4 text-sm leading-[32px] md:text-base">
+                  Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
+                  tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
+                  turpis neque eros quisque aliquet vulputate sed venenatis
+                  lectus. Morbi in aliquam interdum pellentesque. Lorem ipsum
+                  dolor sit amet consectetur. Dolor justo diam amet tincidunt ut
+                  nunc. Dictum non fermentum proin sed etiam. Ipsum turpis neque
+                  eros quisque aliquet vulputate sed venenatis lectus. Morbi in
+                  aliquam interdum pellentesque.
+                </p>
 
-              <div className="mb-8 flex flex-wrap gap-8">
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/icons/calendar.svg"
-                    alt="Task icon"
-                    width={60}
-                    height={60}
-                    className="h-[60px] w-[60px]"
-                  />
-                  <div>
-                    <div className="text-sm font-semibold">Watch time</div>
-                    <div className="text-xl font-bold">{course.duration}</div>
+                <div className="mb-8 flex flex-wrap gap-8">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/icons/calendar.svg"
+                      alt="Task icon"
+                      width={60}
+                      height={60}
+                      className="h-[60px] w-[60px]"
+                    />
+                    <div>
+                      <div className="text-sm font-semibold">Watch time</div>
+                      <div className="text-base font-bold md:text-xl">
+                        {course.duration}
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/icons/diamond.svg"
-                    alt="course icon"
-                    width={60}
-                    height={60}
-                    className="h-[60px] w-[60px]"
-                  />
-                  <div>
-                    <div className="text-sm font-semibold">PRICE</div>
-                    <div className="text-xl font-bold">
-                      {course.rewardInEth}ETH{' '}
-                      <span className="text-base text-blue-500">
-                        &asymp;${course.rewardInUsd?.toLocaleString() ?? '0'}
-                      </span>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/icons/diamond.svg"
+                      alt="course icon"
+                      width={60}
+                      height={60}
+                      className="h-[60px] w-[60px]"
+                    />
+                    <div>
+                      <div className="text-sm font-semibold">PRICE</div>
+                      <div className="text-base font-bold md:text-xl">
+                        {course.rewardInEth}ETH{' '}
+                        <span className="text-base text-blue-500">
+                          &asymp;$
+                          {course.rewardInUsd?.toLocaleString() ?? '0'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Modules – show only for Course (when modules exists) */}
+            {course.type === 'course' && (
+              <div className="rounded-lg bg-white p-6">
+                <h2 className="mb-3 text-lg font-bold md:text-2xl">Modules</h2>
+
+                <div className="">
+                  <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
+                    <div className="flex w-full items-center justify-between rounded-md bg-main p-4 text-sm font-semibold md:text-base">
+                      <h1 className="text medium">
+                        Module 1: Introduction to Micro Tasks
+                      </h1>
+
+                      <Image
+                        src="/icons/success.svg"
+                        alt="Task icon"
+                        width={20}
+                        height={20}
+                        className="h-[20px] w-[20px]"
+                      />
+                    </div>
+
+                    <div className="flex w-full items-center justify-between rounded-md bg-main p-4 text-sm font-semibold md:text-base">
+                      <h1 className="text medium">Module 2: Getting Started</h1>
+
+                      <Image
+                        src="/icons/play.svg"
+                        alt="Task icon"
+                        width={20}
+                        height={20}
+                        className="h-[20px] w-[20px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex w-full justify-end gap-4 py-5">
               <Button
-                className="h-[60px] w-full md:w-[450px]"
+                className="w-full p-3 md:w-[450px]"
                 onClick={() => router.back()}
               >
                 done
