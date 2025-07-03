@@ -18,10 +18,6 @@ import { TRPCError } from '@trpc/server';
 import { sendOtp } from '~/server/email';
 import otpGenerator from 'otp-generator';
 
-import * as starknetSvc from '~/services/starknetSvc';
-import { user } from '~/server/db/schema';
-
-
 export const authRouter = createTRPCRouter({
   // Get current user profile
   getProfile: protectedProcedure.query(({ ctx }) => {
@@ -64,22 +60,6 @@ export const authRouter = createTRPCRouter({
           }
         : null,
     };
-  }),
-  // Post-Login Onboarding Logic
-  postLoginCheck: protectedProcedure.mutation(async ({ ctx }) => {
-    const { id } = ctx.user;
-    const existingUser = await ctx.db.query.user.findFirst({
-      where: eq(user.id, id),
-    });
-
-    const isNewUser = !existingUser;
-
-    if (isNewUser) {
-      console.log(`[AuthRouter] New user detected: ${id}`);
-      await starknetSvc.deployAAWallet(id);
-    }
-
-    return { isNewUser };
   }),
 
   // Request OTP
