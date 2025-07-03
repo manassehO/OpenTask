@@ -95,7 +95,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     <>
       {/* Sidebar */}
       <div
-        className={`w-[75%] rounded-lg bg-white px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
+        className={`w-[75%] rounded-lg bg-white/10 px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
       >
         {/* Sidebar content */}
         {sidebar_list.map((list, i) => {

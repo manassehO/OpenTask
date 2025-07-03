@@ -11,7 +11,31 @@ const mockCourses = [
       'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
     image: '/images/courseImg.png',
     modules: '4 modules',
-    progress: 60, //
+    progress: 60,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+    duration: '10 mins watch',
+  },
+  {
+    id: 2,
+    title: 'Micro Tasks, Big Rewards: A Beginner’s Guide to Earning Online',
+    description:
+      'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
+    image: '/images/courseImg.png',
+    modules: '4 modules',
+    progress: 60,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+    duration: '10 mins watch',
+  },
+  {
+    id: 3,
+    title: 'Micro Tasks, Big Rewards: A Beginner’s Guide to Earning Online',
+    description:
+      'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
+    image: '/images/courseImg.png',
+    modules: '4 modules',
+    progress: 60,
     rewardInUsd: 100,
     rewardInEth: 0.05,
     duration: '10 mins watch',
@@ -21,9 +45,30 @@ const mockCourses = [
 const mockTutorials = [
   {
     id: 101,
-    title: 'Git & GitHub Guide',
-    description:
-      'Learn Git basics, branching, and using GitHub for collaboration.',
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
+    image: '/images/cyptoImg.png',
+    modules: '4 modules',
+    duration: '10 mins watch',
+    progress: 80,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+  },
+  {
+    id: 102,
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
+    image: '/images/cyptoImg.png',
+    modules: '4 modules',
+    duration: '10 mins watch',
+    progress: 80,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+  },
+  {
+    id: 103,
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
     image: '/images/cyptoImg.png',
     modules: '4 modules',
     duration: '10 mins watch',
@@ -46,6 +91,7 @@ export default function LearningPage() {
 
   const handleViewTask = (id: string | number): void => {
     console.log('continue learning:', id);
+    console.log('start course:', id);
   };
 
   return (
@@ -70,10 +116,12 @@ export default function LearningPage() {
         ))}
       </div>
 
+      {/* Your Courses */}
       <div className="py-4 text-xl font-semibold capitalize">
         {activeTab === 'Course' && <h1 className="">your courses</h1>}
       </div>
 
+      {/* Main Card Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {(activeTab === 'Course' ? mockCourses : mockTutorials).map((item) => (
           <ContentCard
@@ -82,18 +130,53 @@ export default function LearningPage() {
               id: item.id,
               title: item.title,
               description: item.description,
-              image: item.image, // use actual image path
+              image: item.image,
               ...(activeTab === 'Course' && { modules: item.modules }),
               ...(activeTab === 'Course' && { progress: item.progress }),
               ...(activeTab === 'Tutorial' && { duration: item.duration }),
               rewardInUsd: item.rewardInUsd,
               rewardInEth: String(item.rewardInEth),
             }}
-            buttonLabel={`View ${(activeTab ?? '').toLowerCase()}`}
-            onAction={handleViewTask}
+            buttonLabel={
+              item.progress && item.progress > 0
+                ? 'Continue learning'
+                : 'Start Course'
+            }
+            onAction={() => handleViewTask(item.id)}
           />
         ))}
       </div>
+
+      {/* Recommended Courses */}
+      {activeTab === 'Course' && (
+        <div>
+          <div className="py-4 text-xl font-semibold capitalize">
+            <h1 className="">courses for you</h1>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {mockCourses.map((item) => (
+              <ContentCard
+                key={`recommend-${item.id}`}
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  description: item.description,
+                  image: item.image,
+                  modules: item.modules,
+                  rewardInUsd: item.rewardInUsd,
+                  rewardInEth: String(item.rewardInEth),
+                }}
+                buttonLabel={
+                  item.progress && item.progress > 0
+                    ? 'Start Course'
+                    : 'Continue learning'
+                }
+                onAction={() => handleViewTask(item.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

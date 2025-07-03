@@ -26,6 +26,7 @@ interface ContentCardProps {
     modules?: string; // For courses
     progress?: number;
     duration?: string;
+    started?: boolean; // For courses, to indicate if the course has been started
   };
   buttonLabel?: string;
   onAction: (id: string | number) => void;
@@ -68,17 +69,23 @@ const ContentCard: React.FC<ContentCardProps> = ({
               : item.description}
           </p>
         </CardHeader>
+
         <CardContent className="flex-1 space-y-2">
-          {item.progress && (
-            <div className="space-y-1 md:py-2">
-              <div className="flex items-center justify-between py-3 font-medium">
-                <h1 className="text-sm text-grey">Progress</h1>
-                <h1 className="text-sm text-primary">{item.progress}%</h1>
+          {typeof item.progress === 'number' && (
+            <div className="w-full">
+              <div className="mb-1 flex items-center justify-between text-sm text-gray-500">
+                <span>Progress</span>
+                <span>{item.progress ?? 0}%</span>
               </div>
+
+              {/* Progress bar background */}
               <div className="h-2.5 w-full rounded-full bg-main-50">
+                {/* Progress fill bar */}
                 <div
-                  className="h-2.5 rounded-full bg-primary"
-                  style={{ width: `${item.progress}%` }}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    (item.progress ?? 0) === 0 ? 'bg-gray-300' : 'bg-primary'
+                  }`}
+                  style={{ width: `${item.progress ?? 0}%` }}
                 />
               </div>
             </div>
