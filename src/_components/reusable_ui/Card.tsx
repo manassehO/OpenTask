@@ -1,0 +1,135 @@
+// src/components/ContentCard.tsx
+'use client';
+
+import React from 'react';
+import { useRouter } from 'next/navigation';
+
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardImage,
+} from '~/_components/ui/card';
+import Button from '~/_components/ui/button';
+import Image from 'next/image';
+
+interface ContentCardProps {
+  item: {
+    id: string | number;
+    title: string;
+    description: string;
+    image?: string;
+    deadline?: string; // For tasks
+    rewardInUsd?: number; // For tasks
+    rewardInEth?: string; // For tasks
+    modules?: string; // For courses
+    progress?: number;
+    duration?: string;
+  };
+  buttonLabel?: string;
+  onAction: (id: string | number) => void;
+}
+const ContentCard: React.FC<ContentCardProps> = ({
+  item,
+  onAction: _onAction,
+  buttonLabel = 'View',
+}) => {
+  const router = useRouter();
+  return (
+    <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+      {item.image && (
+        <div className="group relative cursor-pointer overflow-hidden rounded-t-lg">
+          <CardImage
+            src={item.image}
+            alt={item.title}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-200 group-hover:bg-black/40">
+            <Image
+              width={32}
+              height={32}
+              src="/icons/play.svg"
+              alt="Play"
+              className="h-12 w-12"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-1 flex-col px-2">
+        <CardHeader className="flex flex-col items-start justify-between space-y-2 pb-2">
+          <h3 className="tracking-1 font-semibold capitalize md:text-xl">
+            {item.title}
+          </h3>
+          <p className="text-muted-foreground text-sm font-medium text-[#414141]">
+            {item.description.length > 100
+              ? `${item.description.substring(0, 100)}...`
+              : item.description}
+          </p>
+        </CardHeader>
+        <CardContent className="flex-1 space-y-2">
+          {item.progress && (
+            <div className="space-y-1 md:py-2">
+              <div className="flex items-center justify-between py-3 font-medium">
+                <h1 className="text-sm text-grey">Progress</h1>
+                <h1 className="text-sm text-primary">{item.progress}%</h1>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-main-50">
+                <div
+                  className="h-2.5 rounded-full bg-primary"
+                  style={{ width: `${item.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+
+        <CardContent className="flex-1">
+          <div className="flex h-full flex-row items-center justify-between">
+            {item.deadline && (
+              <div>
+                <div className="text-base text-[#414141]">Deadline</div>
+                <div className="font-semibold">{item.deadline}</div>
+              </div>
+            )}
+
+            {item.modules && (
+              <div>
+                <div className="font-semibold">{item.modules}</div>
+                <div className="font-semibold">{item.duration}</div>
+              </div>
+            )}
+
+            {item.duration && (
+              <div>
+                <div className="font-semibold">{item.duration}</div>
+              </div>
+            )}
+
+            {item.rewardInUsd && (
+              <div className="flex items-center text-right">
+                <div className="text-sm font-semibold">
+                  {item.rewardInEth} ETH
+                </div>
+                <div className="font-semibold text-[#3B82F6]">
+                  ≈ ${item.rewardInUsd.toLocaleString()}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onClick={() => router.push(`/learning/${item.id}`)}
+            className="flex w-full bg-primary text-[14px]"
+          >
+            {buttonLabel}
+          </Button>
+        </CardFooter>
+      </div>
+    </Card>
+  );
+};
+
+export default ContentCard;

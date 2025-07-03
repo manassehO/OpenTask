@@ -16,6 +16,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     }
   };
 
+  // admin side bar list
   const adminList = [
     {
       title: 'Dashboard',
@@ -45,6 +46,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     },
   ];
 
+  // creator side bar list
   const creatorList = [
     {
       title: 'Dashboard',
@@ -63,6 +65,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     },
   ];
 
+  // user side bar list
   const userList = [
     { title: 'Home', icon: '/icons/sidebar_home.svg', route: '/home' },
     { title: 'Tasks', icon: '/icons/sidebar_task.svg', route: '/task' },

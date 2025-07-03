@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -50,7 +49,7 @@ const CardImage = React.forwardRef<
   HTMLImageElement,
   React.ImgHTMLAttributes<HTMLImageElement>
 >(({ className, ...props }, ref) => (
-  <Image
+  <img
     ref={ref}
     className={cn('h-48 w-full rounded-t-lg object-cover', className)}
     alt=""
