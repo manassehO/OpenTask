@@ -1,6 +1,5 @@
 import { db } from "~/server/db";
 import { user } from "~/server/db/schema";
-import { signJwt } from "./jwt";
 import { eq } from "drizzle-orm";
 import type { InferModel } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -25,10 +24,6 @@ export async function findOrCreateUserByEmail(email: string): Promise<User> {
   }
 
   return createdUser;
-}
-
-export function generateUserToken(user: User): string {
-  return signJwt({ userId: user.id, email: user.email, role: user.role });
 }
 
 export async function generateHashedOtp(otp: string): Promise<string> {
