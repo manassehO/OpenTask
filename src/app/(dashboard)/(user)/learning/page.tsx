@@ -96,7 +96,7 @@ export default function LearningPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-lg font-bold capitalize md:text-xl">
+      <h1 className="mb-4 font-bold capitalize md:text-[28px] md:text-xl">
         learning center
       </h1>
 

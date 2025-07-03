@@ -94,43 +94,54 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
   return (
     <>
       {/* Sidebar */}
-      <div
-        className={`w-[75%] rounded-lg bg-white/10 px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
+      <aside
+        className={`w-70 fixed left-0 top-0 z-40 h-full transform bg-white px-4 py-6 shadow-lg transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:w-full lg:translate-x-0 lg:rounded-lg lg:bg-white/40 lg:shadow-none`}
       >
-        {/* Sidebar content */}
-        {sidebar_list.map((list, i) => {
-          console.log(list);
-          const isActive = pathname === list.route;
+        {/* Close button (mobile only) */}
+        <div className="mb-4 flex items-center justify-between lg:hidden">
+          <h2 className="text-lg font-bold">Menu</h2>
+          <button
+            className="rounded-md p-2 hover:bg-gray-100"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Sidebar items */}
+        {sidebar_list.map((item, index) => {
+          const isActive = pathname === item.route;
 
           return (
-            <div key={i}>
-              <Link
-                href={list.route}
-                onClick={handleLinkClick}
-                className={`flex w-full gap-3 px-6 py-4 text-base font-semibold capitalize ${
-                  isActive
-                    ? 'rounded-md bg-[#3B82F6] text-white'
-                    : 'text-[#414141]'
-                }`}
-              >
-                <Image src={list.icon} alt="" height={20} width={20} />
-                {list.title}
-              </Link>
-            </div>
+            <Link
+              key={index}
+              href={item.route}
+              onClick={handleLinkClick}
+              className={`mb-2 flex items-center gap-3 rounded-md px-6 py-4 text-base font-semibold capitalize transition-colors ${
+                isActive
+                  ? 'bg-primary text-white'
+                  : 'text-[#414141] hover:bg-[#E5EFFF]'
+              }`}
+            >
+              <Image src={item.icon} alt={item.title} height={20} width={20} />
+              {item.title}
+            </Link>
           );
         })}
 
+        {/* Logout */}
         <Link
           href="/"
           onClick={handleLinkClick}
-          className="mt-20 flex w-full gap-3 bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30]"
+          className="mt-20 flex items-center gap-3 rounded-md bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30] hover:bg-[#FFE8E7]"
         >
-          <Image src="/icons/logout.svg" alt="" height={20} width={20} />
+          <Image src="/icons/logout.svg" alt="Log out" height={20} width={20} />
           Log out
         </Link>
-      </div>
+      </aside>
 
-      {/* Backdrop for mobile only */}
+      {/* Backdrop for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/30 lg:hidden"

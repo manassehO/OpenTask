@@ -46,10 +46,10 @@ export default function LearningDetail({ course }: { course?: LearningItem }) {
   }
 
   return (
-    <div className="mx-auto py-8">
+    <div className="mx-auto">
       {/* Task Content */}
       <div className="rounded-lg">
-        <h1 className="pb-0 text-xl font-bold capitalize md:text-[40px]">
+        <h1 className="pb-0 text-xl font-bold capitalize leading-[100%] md:max-w-[980px] md:text-[40px]">
           {course.title}
         </h1>
 
