@@ -100,15 +100,13 @@ export default function LearningPage() {
         learning center
       </h1>
 
-      <div className="flex space-x-2">
+      <div className="mb-4 flex w-full max-w-[464px] overflow-x-auto bg-white p-2">
         {['Course', 'Tutorial'].map((tab) => (
           <button
             key={tab}
             onClick={() => onTabChange(tab)}
             className={`rounded-[4px] px-8 py-3 text-sm font-semibold transition-colors ${
-              activeTab === tab
-                ? 'bg-[#3B82F6] text-white'
-                : 'bg-white text-black'
+              activeTab === tab ? 'bg-[#3B82F6] text-white' : 'text-black'
             }`}
           >
             {tab}
