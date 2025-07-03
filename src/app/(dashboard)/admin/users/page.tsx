@@ -87,7 +87,8 @@ export default function Page() {
               setActiveTab("all");
             }}
             className={classNames("rounded-md px-4 py-2 transition-colors", {
-              "bg-[#3b82f6] font-semibold text-white": activeTab === "all",
+              "bg-[#3b82f6] font-semibold text-white hover:bg-[#3b73f6]":
+                activeTab === "all",
               "text-gray-500 hover:bg-gray-100": activeTab !== "all",
             })}
           >
@@ -99,7 +100,8 @@ export default function Page() {
               setActiveTab("creators");
             }}
             className={classNames("rounded-md px-4 py-2 transition-colors", {
-              "bg-[#3b82f6] font-semibold text-white": activeTab === "creators",
+              "bg-[#3b82f6] font-semibold text-white hover:bg-[#3b73f6]":
+                activeTab === "creators",
               "text-gray-500 hover:bg-gray-100": activeTab !== "creators",
             })}
           >
@@ -193,7 +195,7 @@ export default function Page() {
                 <td className="px-4 py-3 text-sm">
                   <div className="flex items-center gap-3">
                     <Link
-                      href={`/dashboard/admin/users/${user.id}`} // Changed this line
+                      href={`/admin/users/${user.id}`} // Changed this line
                       className="mr-2 text-xs text-blue-600 hover:underline"
                     >
                       View

@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import classNames from "classnames";
+import { FaPhone, FaEnvelope, FaUserCircle } from "react-icons/fa";
 
 interface UserDetailPageClientProps {
   userId: string;
@@ -13,17 +16,19 @@ interface Task {
   description: string;
   rewardETH: string;
   rewardUSD: string;
+  type: "active" | "created";
 }
 
-export default function UserDetailPage({ params }: { params: { id: string } }) {
+export default function UserDetailPageClient({
+  userId,
+}: UserDetailPageClientProps) {
   const router = useRouter();
-  const userId = params.id;
 
-  // Mock user data – replace with real API fetch
-  const user = {
+  // mock user data (replace later)
+  const [user, setUser] = useState({
     id: userId,
-    name: "Ikem Hood",
-    email: "kelvinthetechbro@gmail.com",
+    name: "username",
+    email: "user123@gmail.com",
     phone: "+2348078868319",
     status: "active",
     avatar: "",
@@ -32,115 +37,193 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
     tasksCompleted: 2000,
     tasksCreated: 15,
     activeTasks: 3,
+  });
+
+  // mock tasks
+  const [tasks] = useState<Task[]>(
+    Array(16)
+      .fill(null)
+      .flatMap((_, i) => [
+        {
+          id: `a${i}`,
+          title: "Complete a Short Survey About DeFi",
+          description:
+            "Lorem ipsum dolor sit amet consectetur. Ultricies ultricies mauris morbi aenean pellentesque",
+          rewardETH: "0.005 ETH",
+          rewardUSD: "$2,000",
+          type: "active" as const,
+        },
+        {
+          id: `c${i}`,
+          title: "Share a DeFi Article on Twitter",
+          description:
+            "Lorem ipsum dolor sit amet consectetur. Ultricies ultricies mauris morbi aenean pellentesque",
+          rewardETH: "0.002 ETH",
+          rewardUSD: "$800",
+          type: "created" as const,
+        },
+      ]),
+  );
+
+  // task tab logic
+  const [taskTab, setTaskTab] = useState<"active" | "created">("active");
+  const filteredTasks = tasks.filter((t) => t.type === taskTab);
+
+  const handleDeactivate = () => {
+    setUser((prev) => ({ ...prev, status: "inactive" }));
+    alert("User deactivated (mock)");
   };
 
-  const tasks: Task[] = Array(6)
-    .fill(null)
-    .map((_, i) => ({
-      id: i.toString(),
-      title: "Complete a short survey about defi",
-      description: "Lorem ipsum dolor sit amet consectetur...",
-      rewardETH: "0.005 ETH",
-      rewardUSD: "$2,000",
-    }));
   return (
-    <div className="space-y-8 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => router.push("/dashboard/admin/users")}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          ← Back to Users
-        </button>
-        <h1 className="text-2xl font-bold text-blue-600">User Details</h1>
-      </div>
+    <div className="space-y-8 bg-gray-50 p-4 md:p-8">
+      <button
+        onClick={() => router.back()}
+        className="mb-4 text-xs text-blue-600 hover:underline"
+      >
+        ← Back to Users
+      </button>
 
-      {/* Profile */}
-      <div className="flex flex-col gap-6 rounded-lg bg-white p-6 shadow md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
-          <a
-            href={user.avatar || "/noavatar.png"}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      {/* profile & deactivate */}
+      <div className="flex w-full flex-col justify-between gap-6 sm:flex-row md:items-start">
+        {/* profile */}
+        <div className="flex flex-col items-start gap-4">
+          <div className="flex items-center gap-4">
             <Image
               src={user.avatar || "/noavatar.png"}
               alt={user.name}
-              width={64}
-              height={64}
-              className="rounded-full transition-transform hover:scale-105"
+              width={62}
+              height={62}
+              className="rounded-full object-cover"
             />
-          </a>
-          <div>
-            <h2 className="text-xl font-semibold">{user.name}</h2>
-            <p className="text-sm text-gray-600">{user.email}</p>
-            <p className="text-sm text-gray-600">{user.phone}</p>
-            <span
-              className={`mt-1 inline-block rounded-full px-2 py-1 text-xs ${
-                user.status === "active"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {user.status}
-            </span>
+            <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
+          </div>
+          <div className="ml-5 rounded bg-white px-5 py-2">
+            <p className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+              <FaPhone className="rotate-90 text-blue-500" /> {user.phone}
+              <FaEnvelope className="ml-4 text-blue-500" /> {user.email}
+            </p>
           </div>
         </div>
-        <button className="rounded bg-red-50 px-4 py-2 text-sm text-red-600 hover:bg-red-100">
+
+        <button
+          onClick={handleDeactivate}
+          className="h-10 whitespace-nowrap rounded bg-red-600 px-8 py-2 text-sm text-white hover:bg-red-700"
+        >
           Deactivate
         </button>
       </div>
 
-      {/* Analytics */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Total Balance" value={"$" + user.balanceUSD} />
+      {/* stats */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <StatCard
+          label="Total Balance"
+          value={`$${user.balanceUSD}`}
+          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+        />
         <StatCard
           label="Tasks Completed"
           value={user.tasksCompleted.toString()}
+          icon={<FaUserCircle className="text-2xl text-blue-500" />}
         />
-        <StatCard label="Tasks Created" value={user.tasksCreated.toString()} />
-        <StatCard label="Active Tasks" value={user.activeTasks.toString()} />
-        <StatCard label="Disputes" value={user.disputes.toString()} />
+        <StatCard
+          label="Tasks Created"
+          value={user.tasksCreated.toString()}
+          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+        />
+        <StatCard
+          label="Active Tasks"
+          value={user.activeTasks.toString()}
+          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+        />
       </div>
 
-      {/* Admin Actions */}
-      <div className="flex flex-wrap gap-4">
-        <button className="rounded bg-yellow-50 px-4 py-2 text-sm text-yellow-700 hover:bg-yellow-100">
-          Warn User
-        </button>
-        <button className="rounded bg-red-100 px-4 py-2 text-sm text-red-700 hover:bg-red-200">
-          Suspend User
-        </button>
-        <button className="rounded bg-blue-50 px-4 py-2 text-sm text-blue-700 hover:bg-blue-100">
-          Refund
-        </button>
-      </div>
-
-      {/* Task History */}
-      <div>
-        <h3 className="mb-4 text-lg font-semibold">Task History</h3>
-        <div className="grid gap-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="rounded-lg bg-white p-4 shadow">
-              <h4 className="mb-1 font-semibold text-gray-800">{task.title}</h4>
-              <p className="mb-2 text-sm text-gray-600">{task.description}</p>
-              <div className="space-x-4 text-sm text-gray-500">
-                <span>{task.rewardETH}</span>
-                <span>{task.rewardUSD}</span>
-              </div>
-            </div>
+      {/* tasks section */}
+      <section>
+        <h3 className="mb-4 text-xl font-bold text-gray-700">Tasks</h3>
+        {/* tabs */}
+        <div className="mb-6 flex space-x-4">
+          {[
+            { label: `Active Tasks`, key: "active" },
+            { label: `Created Tasks `, key: "created" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setTaskTab(tab.key as "active" | "created")}
+              className={classNames("rounded px-6 py-2 transition-colors", {
+                "bg-[#3b82f6] text-sm text-white": taskTab === tab.key,
+                "text-sm text-gray-700 hover:bg-gray-100": taskTab !== tab.key,
+              })}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
-      </div>
+
+        {/* tasks grid (horizontal scroll) */}
+        {filteredTasks.length === 0 ? (
+          <div className="space-y-2 text-center text-sm text-gray-500">
+            <Image
+              src="/empty.svg"
+              alt="No tasks"
+              width={120}
+              height={120}
+              className="mx-auto"
+            />
+            <p>No tasks found.</p>
+          </div>
+        ) : (
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+            {filteredTasks.map((task) => (
+              <div
+                key={task.id}
+                className="min-w-[240px] snap-start overflow-hidden rounded-lg bg-white sm:min-w-[280px] lg:min-w-[395px]"
+              >
+                <div className="relative h-36">
+                  <Image
+                    src="/task-img.png"
+                    alt="Task illustration"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="space-y-2 p-4">
+                  <h4 className="line-clamp-2 text-sm font-semibold text-gray-800">
+                    {task.title}
+                  </h4>
+                  <p className="line-clamp-2 text-xs text-gray-600">
+                    {task.description}
+                  </p>
+                  <div className="flex justify-between py-5 text-xs font-medium text-gray-500">
+                    <span className="font-semibold text-gray-700">
+                      {task.rewardETH}
+                    </span>
+                    <span className="text-xl font-semibold text-[#5492f7]">
+                      {task.rewardUSD}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+}) {
   return (
-    <div className="rounded-lg bg-white p-4 shadow">
-      <p className="mb-1 text-xs uppercase text-gray-500">{label}</p>
+    <div className="flex flex-col items-start gap-2 rounded bg-white p-4 text-center">
+      <span className="text-2xl">{icon}</span>
+      <p className="text-xs text-gray-600">{label}</p>
       <p className="text-lg font-semibold text-gray-800">{value}</p>
     </div>
   );
