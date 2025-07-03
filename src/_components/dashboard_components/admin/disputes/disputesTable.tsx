@@ -1,9 +1,9 @@
-"use client";
-import { ChevronBackOutline, ChevronNextOutline } from "public/svg/generalSvg";
-import React, { useState } from "react";
-import { ReusableTable } from "~/_components/ui/table";
-import { disputes } from "~/mocks/disputes";
-import { type DisputesProps } from "~/types/disputes";
+'use client';
+import { ChevronBackOutline, ChevronNextOutline } from 'public/svg/generalSvg';
+import React, { useState } from 'react';
+import { ReusableTable } from '~/_components/ui/table';
+import { disputes } from '~/mocks/disputes';
+import { type DisputesProps } from '~/types/disputes';
 function DisputesTable() {
   const [allDisputes, setAllDisputes] = useState<DisputesProps[]>(disputes);
   const disputesPerPage = 16;
@@ -25,23 +25,23 @@ function DisputesTable() {
 
   const statusStyle: Record<string, string> = {
     completed:
-      "bg-[#E0F2F1] text-[#00796B] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
+      'bg-[#E0F2F1] text-[#00796B] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium',
     pending:
-      "px-4 py-1.5 rounded-full  bg-[#FDECCE] text-center text-[#F59E0B] capitalize text-xs sm:text-sm font-medium",
+      'px-4 py-1.5 rounded-full  bg-[#FDECCE] text-center text-[#F59E0B] capitalize text-xs sm:text-sm font-medium',
     failed:
-      "px-4 py-1.5 rounded-full  bg-[#FDE2E1] text-center text-[#DC2626] capitalize text-xs sm:text-sm font-medium",
+      'px-4 py-1.5 rounded-full  bg-[#FDE2E1] text-center text-[#DC2626] capitalize text-xs sm:text-sm font-medium',
   };
 
   const priorityStyle: Record<string, string> = {
-    low: "bg-gray-300 text-gray-600 px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
+    low: 'bg-gray-300 text-gray-600 px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium',
     medium:
-      "bg-[#142B52] text-white px-4 py-1.5 text-center capitalize rounded-full text-xs sm:text-sm font-medium",
-    high: "bg-[#FFCDD2] text-[#C62828] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium",
+      'bg-[#142B52] text-white px-4 py-1.5 text-center capitalize rounded-full text-xs sm:text-sm font-medium',
+    high: 'bg-[#FFCDD2] text-[#C62828] px-4 text-center capitalize py-1.5 rounded-full text-xs sm:text-sm font-medium',
   };
 
   const columns = [
     {
-      header: "task",
+      header: 'task',
       accessor: (row: DisputesProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
@@ -50,10 +50,10 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "submitter",
+      header: 'submitter',
       accessor: (row: DisputesProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
@@ -62,10 +62,10 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "task",
+      header: 'task',
       accessor: (row: DisputesProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
@@ -74,19 +74,19 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "Status",
+      header: 'Status',
       accessor: (row: DisputesProps) => {
         const status = row.status.trim().toLowerCase();
         return <span className={` ${statusStyle[status]} `}>{row.status}</span>;
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "priority",
+      header: 'priority',
       accessor: (row: DisputesProps) => {
         return (
           <span className={`${priorityStyle[row.priority]}`}>
@@ -95,10 +95,10 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "Date Submitted",
+      header: 'Date Submitted',
       accessor: (row: DisputesProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
@@ -107,16 +107,16 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
     {
-      header: "action",
+      header: 'action',
       accessor: () => {
         return (
           <div className="flex items-center gap-1">
             <button className="cursor-pointer rounded bg-transparent py-1.5 pr-4 text-xs font-medium text-[#3B82F6] hover:text-[#3B82F6]/90 sm:text-sm">
               View
-            </button>{" "}
+            </button>{' '}
             <button className="cursor-pointer rounded bg-[#3B82F6] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#3B82F6]/90 sm:text-sm">
               Resolved
             </button>
@@ -124,7 +124,7 @@ function DisputesTable() {
         );
       },
       className:
-        "!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize",
+        '!text-[#3B82F6] lg:!text-base !text-sm  font-semibold !capitalize',
     },
   ];
   return (
@@ -136,7 +136,7 @@ function DisputesTable() {
           role="navigation"
           onClick={handlePrevious}
           aria-label="previous page button"
-          className={`${currentPage !== 1 ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor- cursor-not-allowed text-[#414141]"} flex items-center gap-1 text-base font-semibold`}
+          className={`${currentPage !== 1 ? 'cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80' : 'cursor- cursor-not-allowed text-[#414141]'} flex items-center gap-1 text-base font-semibold`}
         >
           <ChevronBackOutline />
           <span>Previous</span>
@@ -146,7 +146,7 @@ function DisputesTable() {
           role="navigation"
           onClick={handleNext}
           aria-label="next page button"
-          className={`${currentPage !== totalPage ? "cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80" : "cursor-not-allowed text-[#414141]"} flex items-center gap-1 text-base font-semibold`}
+          className={`${currentPage !== totalPage ? 'cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80' : 'cursor-not-allowed text-[#414141]'} flex items-center gap-1 text-base font-semibold`}
         >
           <span> Next</span>
           <ChevronNextOutline />
