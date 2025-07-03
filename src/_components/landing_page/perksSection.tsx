@@ -1,6 +1,6 @@
-import Image from "next/image";
-import Section1 from "../../../public/section1.png";
-import Section2 from "../../../public/section2.png";
+import Image from 'next/image';
+import Section1 from '../../../public/section1.png';
+import Section2 from '../../../public/section2.png';
 
 export default function PerksSection() {
   return (

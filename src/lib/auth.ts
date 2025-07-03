@@ -1,19 +1,19 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "~/server/db";
-import { env } from "~/env";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from '~/server/db';
+import { env } from '~/env';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
   }),
   secret: env.BETTER_AUTH_SECRET,
   user: {
     additionalFields: {
       role: {
-        type: "string",
+        type: 'string',
         required: true,
-        defaultValue: "user",
+        defaultValue: 'user',
       },
     },
   },
@@ -27,15 +27,15 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
     },
   },
   trustedOrigins: [
-    "http://localhost:3000",
-    env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    'http://localhost:3000',
+    env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   ],
 });
 
 export type Session = typeof auth.$Infer.Session.session;
-export type User = typeof auth.$Infer.Session.user; 
+export type User = typeof auth.$Infer.Session.user;

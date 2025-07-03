@@ -1,4 +1,4 @@
-declare module "otp-generator" {
+declare module 'otp-generator' {
   interface OTPOptions {
     upperCaseAlphabets?: boolean;
     specialChars?: boolean;

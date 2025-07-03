@@ -40,7 +40,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "contracts/alephium/**/*"
   ],
-  "exclude": ["node_modules", "contracts/**/*"]
+  "exclude": ["node_modules", "contracts"]
 }

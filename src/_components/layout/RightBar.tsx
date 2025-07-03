@@ -1,33 +1,33 @@
-"use client";
-import { useAtom } from "jotai";
-import React from "react";
-import Image from "next/image";
-import { sidebarAtom } from "~/hooks/sidebarAtom";
-import Button from "../ui/button";
+'use client';
+import { useAtom } from 'jotai';
+import React from 'react';
+import Image from 'next/image';
+import { sidebarAtom } from '~/hooks/sidebarAtom';
+import Button from '../ui/button';
 
 const RightBar = () => {
   const [isSidebarOpen] = useAtom(sidebarAtom);
 
   const rightBarSummary = [
     {
-      title: "Total Earned",
-      amount: "10ETH",
-      icon: "/icons/streak.svg",
+      title: 'Total Earned',
+      amount: '10ETH',
+      icon: '/icons/streak.svg',
     },
     {
-      title: "Fiat Value",
-      amount: "$200",
-      icon: "/icons/streak.svg",
+      title: 'Fiat Value',
+      amount: '$200',
+      icon: '/icons/streak.svg',
     },
     {
-      title: "Task Completed",
-      amount: "25",
-      icon: "/icons/streak.svg",
+      title: 'Task Completed',
+      amount: '25',
+      icon: '/icons/streak.svg',
     },
     {
-      title: "Time Spent",
-      amount: "12Hours",
-      icon: "/icons/streak.svg",
+      title: 'Time Spent',
+      amount: '12Hours',
+      icon: '/icons/streak.svg',
     },
   ];
 
@@ -35,7 +35,7 @@ const RightBar = () => {
     <div
       className={`w-full space-y-4 overflow-y-auto bg-white p-4 shadow-md transition-all duration-300 ease-in-out max-lg:hidden`}
       style={{
-        right: isSidebarOpen ? "0px" : "0px", // if needed, you can add offset here
+        right: isSidebarOpen ? '0px' : '0px', // if needed, you can add offset here
       }}
     >
       <h1 className="text-2xl font-bold">Earning Summary</h1>
