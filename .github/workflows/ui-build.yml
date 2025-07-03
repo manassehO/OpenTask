@@ -12,6 +12,10 @@ jobs:
     name: Build and Test UI
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
+      BETTER_AUTH_SECRET: 'placeholder-secret-for-ci'
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
@@ -31,15 +35,9 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        env:
-          DATABASE_URL: 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
-          BETTER_AUTH_SECRET: 'placeholder-secret-for-ci'
 
       - name: Run TypeScript type check
         run: npm run typecheck
-        env:
-          DATABASE_URL: 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
-          BETTER_AUTH_SECRET: 'placeholder-secret-for-ci'
 
       - name: Check code formatting
         run: npm run format:check
@@ -48,5 +46,3 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          DATABASE_URL: 'postgresql://placeholder:placeholder@localhost:5432/placeholder'
-          BETTER_AUTH_SECRET: 'placeholder-secret-for-ci'
