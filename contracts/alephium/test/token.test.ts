@@ -1,4 +1,11 @@
-import { web3, TestContractParams, addressFromContractId, AssetOutput, DUST_AMOUNT, enableDebugMode } from '@alephium/web3'
+import {
+  web3,
+  TestContractParams,
+  addressFromContractId,
+  AssetOutput,
+  DUST_AMOUNT,
+  enableDebugMode
+} from '@alephium/web3'
 import { expectAssertionError, randomContractId, testAddress, testNodeWallet } from '@alephium/web3-test'
 import { deployToDevnet } from '@alephium/cli'
 import { TokenFaucet, TokenFaucetTypes } from '../artifacts/ts'

@@ -17,8 +17,10 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { sendOtp } from '~/server/email';
 import otpGenerator from 'otp-generator';
+
 import * as starknetSvc from '~/services/starknetSvc';
 import { user } from '~/server/db/schema';
+
 
 export const authRouter = createTRPCRouter({
   // Get current user profile
