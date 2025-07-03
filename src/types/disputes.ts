@@ -3,7 +3,7 @@ export interface DisputesProps {
   task: string;
   submitter: string;
   company: string;
-  status: "failed" | "pending" | "completed";
-  priority: "low" | "medium" | "high";
+  status: 'failed' | 'pending' | 'completed';
+  priority: 'low' | 'medium' | 'high';
   dateSubmitted: string;
 }

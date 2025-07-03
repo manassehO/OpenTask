@@ -1,7 +1,6 @@
-
-import React from "react";
-import DisputesTable from "~/_components/dashboard_components/admin/disputes/disputesTable";
-import Header from "~/_components/dashboard_components/admin/header";
+import React from 'react';
+import DisputesTable from '~/_components/dashboard_components/admin/disputes/disputesTable';
+import Header from '~/_components/dashboard_components/admin/header';
 function page() {
   return (
     <div className="relative h-screen w-full">
@@ -12,7 +11,6 @@ function page() {
       <DisputesTable />
     </div>
   );
-
 }
 
 export default page;
