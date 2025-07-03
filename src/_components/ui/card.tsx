@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import Image, { type ImageProps } from 'next/image';
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -47,12 +48,14 @@ CardFooter.displayName = 'CardFooter';
 
 const CardImage = React.forwardRef<
   HTMLImageElement,
-  React.ImgHTMLAttributes<HTMLImageElement>
->(({ className, ...props }, ref) => (
-  <img
+  Omit<ImageProps, 'alt'> & { alt?: string }
+>(({ className, alt = '', ...props }, ref) => (
+  <Image
     ref={ref}
+    width={500}
+    height={500}
     className={cn('h-48 w-full rounded-t-lg object-cover', className)}
-    alt=""
+    alt={alt}
     {...props}
   />
 ));

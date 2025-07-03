@@ -73,7 +73,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
           </p>
         </CardHeader>
 
-        <CardContent className="flex-1 space-y-2">
+        <CardContent className="flex-1 space-y-2 py-4">
           {typeof item.progress === 'number' && (
             <div className="w-full">
               <div className="mb-1 flex items-center justify-between text-sm text-gray-500">
