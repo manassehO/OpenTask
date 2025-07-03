@@ -6,24 +6,23 @@ import Image from 'next/image';
 
 import Button from '~/_components/ui/button';
 
-interface Course {
-  id: string;
+interface LearningItem {
+  id: number;
   title: string;
-  description: string;
   image: string;
-  deadline: string;
+  duration: string;
   rewardInEth: number;
   rewardInUsd?: number;
-  duration?: string;
 }
 
 interface CourseDetailProps {
-  course: Course | undefined;
+  course?: LearningItem;
 }
 
 export default function LearningDetail({ course }: CourseDetailProps) {
   const router = useRouter();
 
+  // when course page is empty
   if (!course) {
     return (
       <div className="mx-auto py-8">
@@ -49,94 +48,106 @@ export default function LearningDetail({ course }: CourseDetailProps) {
     <div className="mx-auto py-8">
       {/* Task Content */}
       <div className="rounded-lg">
-        <h1 className="pb-0 text-4xl font-bold capitalize">{course.title}</h1>
+        <h1 className="pb-0 text-[40px] font-bold capitalize">
+          {course.title}
+        </h1>
 
-        <div className="relative mt-6 h-[300px] w-full md:h-[500px] md:max-w-[1058px]">
-          <div className="absolute inset-0 bg-black">
-            <div className="relative h-full w-full">
+        <div className="space-y-4 md:max-w-[1058px]">
+          <div className="group relative mt-6 h-[300px] w-full md:h-[500px]">
+            {/* Course Image */}
+            <Image
+              src={course.image}
+              alt="course banner"
+              fill
+              className="rounded-lg object-cover opacity-70"
+            />
+
+            {/* Overlay with Play Icon */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-300 group-hover:bg-black/40">
               <Image
-                src={course.image}
-                alt="course banner"
-                fill
-                className="object-cover opacity-70"
+                src="/icons/play.svg"
+                alt="Play"
+                width={48}
+                height={48}
+                className="h-12 w-12"
               />
             </div>
           </div>
-        </div>
 
-        <div className="grid w-full grid-cols-1 gap-y-8 p-6 md:max-w-[886px]">
-          <div className="rounded-md bg-white p-6">
-            <h2 className="mb-3 text-lg font-bold md:text-2xl">Summary</h2>
-            <p className="mb-4 text-sm leading-[32px] text-[#414141] md:text-base">
-              Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
-              tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
-              turpis neque eros quisque aliquet vulputate sed venenatis lectus.
-              Morbi in aliquam interdum pellentesque. Lorem ipsum dolor sit amet
-              consectetur. Dolor justo diam amet tincidunt ut nunc. Dictum non
-              fermentum proin sed etiam. Ipsum turpis neque eros quisque aliquet
-              vulputate sed venenatis lectus. Morbi in aliquam interdum
-              pellentesque.
-            </p>
-          </div>
+          <div className="mx-auto flex w-full flex-col space-y-4 py-4 md:max-w-[886px]">
+            <div className="rounded-lg bg-white p-6">
+              <h2 className="mb-3 text-lg font-bold md:text-2xl">Summary</h2>
+              <p className="mb-4 text-sm text-[#414141] md:text-base md:leading-[32px]">
+                Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
+                tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
+                turpis neque eros quisque aliquet vulputate sed venenatis
+                lectus. Morbi in aliquam interdum pellentesque. Lorem ipsum
+                dolor sit amet consectetur. Dolor justo diam amet tincidunt ut
+                nunc. Dictum non fermentum proin sed etiam. Ipsum turpis neque
+                eros quisque aliquet vulputate sed venenatis lectus. Morbi in
+                aliquam interdum pellentesque.
+              </p>
+            </div>
 
-          <div className="rounded-md bg-white p-6">
-            <h2 className="mb-3 text-lg font-bold md:text-2xl">
-              Reward & Deadline
-            </h2>
-            <p className="text- mb-4 text-sm leading-[32px] md:text-base">
-              Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
-              tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
-              turpis neque eros quisque aliquet vulputate sed venenatis lectus.
-              Morbi in aliquam interdum pellentesque. Lorem ipsum dolor sit amet
-              consectetur. Dolor justo diam amet tincidunt ut nunc. Dictum non
-              fermentum proin sed etiam. Ipsum turpis neque eros quisque aliquet
-              vulputate sed venenatis lectus. Morbi in aliquam interdum
-              pellentesque.
-            </p>
+            <div className="rounded-lg bg-white p-6">
+              <h2 className="mb-3 text-lg font-bold md:text-2xl">
+                Reward & Deadline
+              </h2>
+              <p className="text- mb-4 text-sm leading-[32px] md:text-base">
+                Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
+                tincidunt ut nunc. Dictum non fermentum proin sed etiam. Ipsum
+                turpis neque eros quisque aliquet vulputate sed venenatis
+                lectus. Morbi in aliquam interdum pellentesque. Lorem ipsum
+                dolor sit amet consectetur. Dolor justo diam amet tincidunt ut
+                nunc. Dictum non fermentum proin sed etiam. Ipsum turpis neque
+                eros quisque aliquet vulputate sed venenatis lectus. Morbi in
+                aliquam interdum pellentesque.
+              </p>
 
-            <div className="mb-8 flex flex-wrap gap-8">
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/icons/calendar.svg"
-                  alt="Task icon"
-                  width={60}
-                  height={60}
-                  className="h-[60px] w-[60px]"
-                />
-                <div>
-                  <div className="text-sm font-semibold">Watch time</div>
-                  <div className="text-xl font-bold">{course.duration}</div>
+              <div className="mb-8 flex flex-wrap gap-8">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/icons/calendar.svg"
+                    alt="Task icon"
+                    width={60}
+                    height={60}
+                    className="h-[60px] w-[60px]"
+                  />
+                  <div>
+                    <div className="text-sm font-semibold">Watch time</div>
+                    <div className="text-xl font-bold">{course.duration}</div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/icons/diamond.svg"
-                  alt="course icon"
-                  width={60}
-                  height={60}
-                  className="h-[60px] w-[60px]"
-                />
-                <div>
-                  <div className="text-sm font-semibold">PRICE</div>
-                  <div className="text-xl font-bold">
-                    {course.rewardInEth}ETH{' '}
-                    <span className="text-base text-blue-500">
-                      &asymp;${course.rewardInUsd?.toLocaleString() ?? '0'}
-                    </span>
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/icons/diamond.svg"
+                    alt="course icon"
+                    width={60}
+                    height={60}
+                    className="h-[60px] w-[60px]"
+                  />
+                  <div>
+                    <div className="text-sm font-semibold">PRICE</div>
+                    <div className="text-xl font-bold">
+                      {course.rewardInEth}ETH{' '}
+                      <span className="text-base text-blue-500">
+                        &asymp;${course.rewardInUsd?.toLocaleString() ?? '0'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex w-full justify-end gap-4">
-            <Button
-              className="h-[60px] xl:w-[450px]"
-              onClick={() => router.back()}
-            >
-              done
-            </Button>
+            <div className="flex w-full justify-end gap-4 py-5">
+              <Button
+                className="h-[60px] w-full md:w-[450px]"
+                onClick={() => router.back()}
+              >
+                done
+              </Button>
+            </div>
           </div>
         </div>
       </div>

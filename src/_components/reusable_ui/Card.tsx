@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardImage,
 } from '~/_components/ui/card';
+
 import Button from '~/_components/ui/button';
 import Image from 'next/image';
 
@@ -37,6 +38,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
   buttonLabel = 'View',
 }) => {
   const router = useRouter();
+
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
       {item.image && (

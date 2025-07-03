@@ -100,7 +100,7 @@ export default function LearningPage() {
         learning center
       </h1>
 
-      <div className="mb-4 flex w-full max-w-[464px] overflow-x-auto bg-white p-2">
+      <div className="mb-4 flex w-full max-w-[244px] overflow-x-auto bg-white p-2">
         {['Course', 'Tutorial'].map((tab) => (
           <button
             key={tab}
