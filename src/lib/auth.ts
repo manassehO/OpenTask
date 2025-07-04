@@ -1,23 +1,23 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "~/server/db";
-import { env } from "~/env";
-import { sendOtp } from "~/server/email";
-import { emailOTP } from "better-auth/plugins";
-import * as schema from "~/server/db/schema";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from '~/server/db';
+import { env } from '~/env';
+import { sendOtp } from '~/server/email';
+import { emailOTP } from 'better-auth/plugins';
+import * as schema from '~/server/db/schema';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
     schema,
   }),
   secret: env.BETTER_AUTH_SECRET,
   user: {
     additionalFields: {
       role: {
-        type: "string",
+        type: 'string',
         required: true,
-        defaultValue: "CREATOR",
+        defaultValue: 'CREATOR',
       },
     },
   },
@@ -31,20 +31,19 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+      clientId: env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
     },
   },
   trustedOrigins: [
-    "http://localhost:3000",
-    env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    'http://localhost:3000',
+    env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   ],
   plugins: [
     emailOTP({
       otpLength: 6,
-      expiresIn: 600, // 10 minutes
+      expiresIn: 600, // 10 days
       async sendVerificationOTP({ email, otp, type }) {
-        console.log("SENDING OTP:", otp, "TO:", email, "TYPE:", type);
         await sendOtp(email, otp);
       },
     }),

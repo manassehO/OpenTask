@@ -9,11 +9,12 @@ export interface Task {
   deadline: string;
   rewardInEth: number;
   rewardInUsd: number;
-
+  isFlagged?: boolean;
+  creator?: string;
   category: string;
 }
 
 export interface TaskCardProps {
   task: Task;
   onAction: (taskId: string) => void;
-} 
+}

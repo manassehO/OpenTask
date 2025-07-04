@@ -1,6 +1,6 @@
-import React from "react";
-import Image from "next/image";
-import Button from "../ui/button";
+import React from 'react';
+import Image from 'next/image';
+import Button from '../ui/button';
 
 interface RecommendedTask {
   taskImg: string;
@@ -14,14 +14,14 @@ interface RecommendedTask {
 
 const RecomendedTasks = () => {
   const task: RecommendedTask = {
-    taskImg: "/task-img.png",
-    taskName: "Complete a short survey about defi",
+    taskImg: '/task-img.png',
+    taskName: 'Complete a short survey about defi',
     taskDescription:
-      "Lorem ipsum dolor sit amet consectetur. Ultricies ultricies mauris morbi aenean pellentesque",
-    priceCrypto: "0.05 ETH",
-    priceUSD: "$100",
-    taskLink: "#",
-    deadline: "Mon, 12th Oct, 2025",
+      'Lorem ipsum dolor sit amet consectetur. Ultricies ultricies mauris morbi aenean pellentesque',
+    priceCrypto: '0.05 ETH',
+    priceUSD: '$100',
+    taskLink: '#',
+    deadline: 'Mon, 12th Oct, 2025',
   };
   const tasks: RecommendedTask[] = Array(8).fill(task) as RecommendedTask[];
   return (
