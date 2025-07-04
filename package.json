@@ -10,7 +10,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --ignore-path .prettierignore --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "next lint",
