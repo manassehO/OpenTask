@@ -5,6 +5,7 @@ import {
   UserIcon,
 } from 'public/svg/generalSvg';
 import React from 'react';
+import { ChartBar } from '~/_components/dashboard_components/admin/dashboard/Chart';
 import { StatsCard } from '~/_components/dashboard_components/admin/dashboard/statsCard';
 
 function page() {
@@ -39,12 +40,13 @@ function page() {
     },
   ];
   return (
-    <div>
-      <div className="grid grid-cols-4 gap-2">
+    <div className="space-y-6">
+      <div className="grid max-w-6xl grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((sts, index) => (
           <StatsCard key={index} {...sts} />
         ))}
       </div>
+      <ChartBar />
     </div>
   );
 }
