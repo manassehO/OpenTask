@@ -1,4 +1,4 @@
-import { auth } from "~/lib/auth";
+import { auth } from '~/lib/auth';
 
 export async function GET(request: Request) {
   return auth.handler(request);
@@ -6,4 +6,4 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   return auth.handler(request);
-} 
+}

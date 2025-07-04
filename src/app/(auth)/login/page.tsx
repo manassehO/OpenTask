@@ -1,13 +1,12 @@
-"use client";
-import { useState } from "react";
-import AuthWrapper from "~/_components/layout/authWrapper";
-
+'use client';
+import { useState } from 'react';
+import AuthWrapper from '~/_components/layout/authWrapper';
 
 function EmailLogin() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [error, setError] = useState({
     email: false,
-    emailMessage: ""
+    emailMessage: '',
   });
 
   // Standard email regex pattern
@@ -21,7 +20,7 @@ function EmailLogin() {
     if (error.email) {
       setError({
         email: false,
-        emailMessage: ""
+        emailMessage: '',
       });
     }
   };
@@ -30,7 +29,7 @@ function EmailLogin() {
     if (!email) {
       setError({
         email: true,
-        emailMessage: "Email is required"
+        emailMessage: 'Email is required',
       });
       return false;
     }
@@ -38,7 +37,7 @@ function EmailLogin() {
     if (!emailRegex.test(email)) {
       setError({
         email: true,
-        emailMessage: "Please enter a valid email address"
+        emailMessage: 'Please enter a valid email address',
       });
       return false;
     }
@@ -56,7 +55,7 @@ function EmailLogin() {
     }
 
     // Proceed with form submission if email is valid
-    console.log("Form submitted with email:", email);
+    console.log('Form submitted with email:', email);
   };
 
   return (
@@ -67,7 +66,10 @@ function EmailLogin() {
       >
         <form onSubmit={handleSubmit} className="flex w-96 flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700"
+            >
               Email
             </label>
             <input
@@ -76,7 +78,7 @@ function EmailLogin() {
               value={email}
               onChange={handleEmailChange}
               onBlur={validateEmail}
-              className={`rounded-md border p-4 ${error.email ? "border-red-500" : "border-gray-300"}`}
+              className={`rounded-md border p-4 ${error.email ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Enter your email"
               required
             />

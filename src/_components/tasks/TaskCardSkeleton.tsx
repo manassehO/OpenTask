@@ -1,33 +1,38 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '~/_components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '~/_components/ui/card';
 
 const TaskCardSkeleton = () => {
   return (
-    <Card className="w-full shadow-sm hover:shadow-md bg-white transition-shadow duration-200">
-      <div className="w-full h-48 bg-gray-200 animate-pulse rounded-t-lg" />
+    <Card className="w-full bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <div className="h-48 w-full animate-pulse rounded-t-lg bg-gray-200" />
       <CardHeader className="flex flex-col items-start justify-between space-y-0 pb-2">
-        <div className="space-y-1 w-full">
-          <div className="h-6 bg-gray-200 rounded animate-pulse w-3/4" />
+        <div className="w-full space-y-1">
+          <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200" />
         </div>
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-full mt-2" />
+        <div className="mt-2 h-4 w-full animate-pulse rounded bg-gray-200" />
       </CardHeader>
       <CardContent>
         <div className="flex flex-row items-center justify-between">
-          <div className="flex gap-y-1 flex-col items-start justify-between">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-20" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-32 mt-2" />
+          <div className="flex flex-col items-start justify-between gap-y-1">
+            <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+            <div className="mt-2 h-4 w-32 animate-pulse rounded bg-gray-200" />
           </div>
-          <div className="flex gap-y-2 flex-col items-end justify-between">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32 mt-2" />
+          <div className="flex flex-col items-end justify-between gap-y-2">
+            <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+            <div className="mt-2 h-6 w-32 animate-pulse rounded bg-gray-200" />
           </div>
         </div>
       </CardContent>
       <CardFooter>
-        <div className="w-full h-10 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-full animate-pulse rounded bg-gray-200" />
       </CardFooter>
     </Card>
   );
 };
 
-export default TaskCardSkeleton; 
+export default TaskCardSkeleton;

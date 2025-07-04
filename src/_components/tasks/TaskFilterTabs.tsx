@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { cn } from "~/lib/utils";
+import { cn } from '~/lib/utils';
 
 export interface TaskFilterTab {
   id: string;
@@ -26,10 +26,10 @@ export default function TaskFilterTabs({
           key={idx}
           onClick={() => onTabChange(tab.id)}
           className={cn(
-            "flex-shrink-0 whitespace-nowrap rounded-full px-4 py-1 text-sm font-medium transition-colors duration-200",
+            'flex-shrink-0 whitespace-nowrap rounded-full px-4 py-1 text-sm font-medium transition-colors duration-200',
             activeTab === tab.id
-              ? "bg-blue-500 text-white shadow-sm"
-              : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-100",
+              ? 'bg-blue-500 text-white shadow-sm'
+              : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-100',
           )}
         >
           {tab.label}

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as yup from "yup";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as yup from 'yup';
 
 const schema = yup.object({
   createPassword: yup
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
 });
 
 export const CreatePassword = () => {
   const initialValues = {
-    createPassword: "",
+    createPassword: '',
   };
 
   const handleSubmit = (values: typeof initialValues) => {
-    console.log("Form submitted!", values);
+    console.log('Form submitted!', values);
   };
 
   return (
