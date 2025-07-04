@@ -120,6 +120,20 @@
       "when": 1751641857148,
       "tag": "0016_cuddly_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1751647987434,
+      "tag": "0017_green_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1751648437181,
+      "tag": "0018_typical_eddie_brock",
+      "breakpoints": true
     }
   ]
 }

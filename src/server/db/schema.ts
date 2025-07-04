@@ -52,10 +52,7 @@ export const user = createTable('user', {
   displayName: varchar('display_name', { length: 150 }),
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
-  // password: text("password"),
   role: rolesEnum('role').default('CREATOR').notNull(), // CREATOR, COMPLETER, ADMIN
-  walletAddress: varchar('wallet_address', { length: 100 }),
-  hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
