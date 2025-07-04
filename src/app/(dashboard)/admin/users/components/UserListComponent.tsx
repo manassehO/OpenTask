@@ -75,11 +75,11 @@ export default function UserListPageClientProps() {
   };
 
   return (
-    <div className="bg-gray-50 p-4 md:p-8">
+    <div className="bg-gray-50 pb-2 md:pb-8">
       <h1 className="mb-4 text-2xl font-bold text-gray-700">Users</h1>
 
       {/* Tabs */}
-      <div className="mb-6 flex flex-col gap-4 pb-4 md:flex-row md:items-center md:justify-between">
+      <div className="mb-2 flex flex-col gap-4 pb-4 md:flex-row md:items-start md:justify-between">
         <div className="flex space-x-4">
           <button
             onClick={() => {
@@ -110,7 +110,9 @@ export default function UserListPageClientProps() {
         </div>
 
         <div className="flex w-full flex-col items-start gap-4 text-gray-600 md:w-auto md:flex-row md:items-center">
-          <div className="md:w-120 relative w-full">
+          <div className="relative w-full sm:w-[500px]">
+            {' '}
+            {/* Wider search container */}
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
                 className="h-5 w-5 text-gray-400"
@@ -144,20 +146,20 @@ export default function UserListPageClientProps() {
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-[#155dfc]">
+            <tr className="bg-white">
+              <th className="px-4 py-6 text-left text-xs font-medium uppercase text-[#155dfc]">
                 Name
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-[#155dfc]">
+              <th className="px-4 py-6 text-left text-xs font-medium uppercase text-[#155dfc]">
                 Email
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-[#155dfc]">
+              <th className="px-4 py-6 text-left text-xs font-medium uppercase text-[#155dfc]">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-[#155dfc]">
+              <th className="px-4 py-6 text-left text-xs font-medium uppercase text-[#155dfc]">
                 Type
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-[#155dfc]">
+              <th className="px-4 py-6 text-left text-xs font-medium uppercase text-[#155dfc]">
                 Actions
               </th>
             </tr>

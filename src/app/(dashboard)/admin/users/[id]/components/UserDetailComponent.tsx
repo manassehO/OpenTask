@@ -75,10 +75,10 @@ export default function UserDetailPageClient({
   };
 
   return (
-    <div className="space-y-8 bg-gray-50 p-4 md:p-8">
+    <div className="space-y-8 bg-gray-50">
       <button
         onClick={() => router.back()}
-        className="mb-4 text-xs text-blue-600 hover:underline"
+        className="text-xs text-blue-600 hover:underline"
       >
         ← Back to Users
       </button>
