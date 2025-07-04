@@ -127,6 +127,7 @@ export const wallets = createTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
     userIdIndex: index('user_id_idx').on(table.userId),
