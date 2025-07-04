@@ -110,7 +110,7 @@ export const ChartBar: FC = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-6xl space-y-6 rounded bg-white p-10 shadow">
+    <div className="w-full space-y-6 rounded bg-white p-10 shadow">
       <Header
         title="user growth"
         subText="Track how your user base is expanding over time."
