@@ -1,4 +1,5 @@
 import { provider } from "starknet";
+
 interface StarknetProvider {
   verifyMessageInStarknet: (
     originalMessage: string,
@@ -7,7 +8,6 @@ interface StarknetProvider {
   ) => Promise<boolean>;
 }
 
-// Assuming the provider is imported and matches the StarknetProvider interface
 const provider: StarknetProvider = provider;
 
 export async function verifyStarknetSignature(
