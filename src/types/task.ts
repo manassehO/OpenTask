@@ -9,7 +9,8 @@ export interface Task {
   deadline: string;
   rewardInEth: number;
   rewardInUsd: number;
-
+  isFlagged?: boolean;
+  creator?: string;
   category: string;
 }
 

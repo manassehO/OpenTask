@@ -1,9 +1,7 @@
 import React from 'react';
 
-type Props = object;
-
-function page({}: Props) {
-  return <div>page</div>;
+function page() {
+  return <div>page ewrr</div>;
 }
 
 export default page;
