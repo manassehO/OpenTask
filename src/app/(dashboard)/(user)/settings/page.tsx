@@ -50,7 +50,7 @@ export default function SettingPage() {
         ))}
       </div>
 
-      <div className="h-[680px] w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
+      <div className="h-full w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
         {/* <ProfileForm /> */}
         {activeTab === 'Profile' && profileStep === 'initial' && (
           <div className="flex- mx-auto h-full w-full items-center justify-center text-center md:w-[440px]">
@@ -72,7 +72,7 @@ export default function SettingPage() {
               match you with better tasks.
             </p>
 
-            <div className="w-full pt-4 md:pt-8">
+            <div className="w-full pt-4 md:py-8">
               <button
                 onClick={() => setProfileStep('form')}
                 className="w-full rounded bg-primary p-4 text-sm font-bold capitalize text-white"
@@ -191,7 +191,7 @@ export default function SettingPage() {
         {/* profile edit */}
         {activeTab === 'Profile' && profileStep === 'summary' && (
           <div className="py-4 text-sm font-medium capitalize">
-            <div className="flex flex-col items-center gap-4 md:flex-row">
+            <div className="flex flex-col items-center gap-4 pt-4 md:flex-row">
               <Image
                 className="h-20 w-20 rounded-full border pt-4"
                 width={100}
@@ -208,16 +208,16 @@ export default function SettingPage() {
               </div>
             </div>
 
-            <div className="space-y-4 pt-10 capitalize">
-              <div className="space-y-1 rounded bg-main p-3">
+            <div className="space-y-6 pt-10 capitalize">
+              <div className="space-y-1 rounded bg-main p-5">
                 <p className="text-sm">phone number</p>
                 <p className="text-lg font-medium md:text-2xl">0801234567890</p>
               </div>
-              <div className="space-y-1 rounded bg-main p-3">
+              <div className="space-y-1 rounded bg-main p-5">
                 <p className="text-sm">gender</p>
                 <p className="text-lg font-medium md:text-2xl">male</p>
               </div>
-              <div className="space-y-1 rounded bg-main p-3">
+              <div className="space-y-1 rounded bg-main p-5">
                 <p className="text-sm">preferred niche </p>
                 <p className="text-lg font-medium md:text-2xl">de-fi</p>
               </div>
