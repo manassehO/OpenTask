@@ -1,6 +1,6 @@
 // src/app/(main)/learning/page.tsx
 'use client';
-
+import React, { useState } from 'react';
 import ContentCard from '~/_components/reusable_ui/Card';
 
 const mockCourses = [
@@ -80,14 +80,17 @@ const mockTutorials = [
 
 const tabs = ['Course', 'Tutorial'];
 
-import React, { useState } from 'react';
-
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
   const onTabChange = (tab: string): void => {
     setActiveTab(tab);
   };
+
+  // Function to handle the action when a user clicks on a course or tutorial
+  // This could be navigating to a detailed view, starting the course, etc.
+  // For now, it just logs the ID of the course or tutorial
+  // You can replace this with your actual logic, such as navigation or API calls
 
   const handleViewTask = (id: string | number): void => {
     console.log('continue learning:', id);
@@ -100,12 +103,12 @@ export default function LearningPage() {
         learning center
       </h1>
 
-      <div className="mb-4 flex w-full max-w-[244px] overflow-x-auto bg-white p-2">
+      <div className="mb-4 flex w-full overflow-x-auto bg-white p-2 md:max-w-[244px]">
         {['Course', 'Tutorial'].map((tab) => (
           <button
             key={tab}
             onClick={() => onTabChange(tab)}
-            className={`rounded-[4px] px-8 py-3 text-sm font-semibold transition-colors ${
+            className={`w-full rounded-[4px] px-8 py-3 text-sm font-semibold transition-colors ${
               activeTab === tab ? 'bg-[#3B82F6] text-white' : 'text-black'
             }`}
           >
