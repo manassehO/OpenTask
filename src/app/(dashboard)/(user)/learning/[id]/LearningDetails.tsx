@@ -54,24 +54,26 @@ export default function LearningDetail({ course }: { course?: LearningItem }) {
         </h1>
 
         <div className="space-y-4 md:max-w-[1058px]">
-          <div className="group relative mt-6 h-[300px] w-full md:h-[500px]">
-            {/* Course Image */}
-            <Image
-              src={course.image}
-              alt="course banner"
-              fill
-              className="rounded-lg object-cover opacity-70"
-            />
-
-            {/* Overlay with Play Icon */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-300 group-hover:bg-black/40">
+          <div className="relative z-0">
+            {/* Thumbnail with overlay play icon */}
+            <div className="group relative mt-6 h-[200px] w-full md:h-[500px]">
               <Image
-                src="/icons/play.svg"
-                alt="Play"
-                width={48}
-                height={48}
-                className="h-12 w-12"
+                src={course.image}
+                alt="course banner"
+                fill
+                className="rounded-lg object-cover opacity-70"
               />
+
+              {/* Overlay with Play Icon */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-300 group-hover:bg-black/40">
+                <Image
+                  src="/icons/play.svg"
+                  alt="Play"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12"
+                />
+              </div>
             </div>
           </div>
 

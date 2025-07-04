@@ -176,8 +176,8 @@ export default function FaqGuidelines() {
       </div>
 
       {/* List of Entries */}
-      <div className="w-full max-w-[1184px] rounded-lg border bg-white p-6 shadow-sm">
-        <div className="flex w-full items-center justify-between">
+      <div className="w-full max-w-[1184px] rounded-lg border bg-white p-4 shadow-sm md:p-6">
+        <div className="flex w-full flex-col justify-between md:flex-row md:items-center">
           <div className="flex flex-col gap-2">
             <h1 className="text-sm font-semibold text-neutral-900 md:text-2xl">
               {activeTab === 'FAQs' ? 'Task Categories' : 'Platform Guidelines'}
@@ -190,15 +190,15 @@ export default function FaqGuidelines() {
           </div>
 
           {/* Add & Save Buttons */}
-          <div className="mt-6 flex justify-between">
-            <button className="rounded-full border border-primary px-4 py-1 text-xs font-normal text-primary disabled:opacity-50 md:text-sm">
+          <div className="mt-6 flex w-full justify-between md:w-auto">
+            <button className="w-full rounded-full border border-primary px-4 py-2 text-xs font-normal text-primary disabled:opacity-50 md:text-sm">
               {activeTab === 'FAQs' ? ' + Add FAQ' : ' + Add Guideline'}
             </button>
           </div>
         </div>
 
         {activeTab === 'FAQs' && (
-          <div className="flex w-full justify-between gap-4 py-4">
+          <div className="flex w-full flex-col justify-between gap-4 py-4 md:flex-row">
             <div className="relative md:w-full">
               <SearchIcon
                 className="absolute left-3 top-1/2 -translate-y-1/2"
@@ -216,7 +216,7 @@ export default function FaqGuidelines() {
             <div className="relative inline-block w-full text-left md:w-52">
               <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="flex w-full items-center justify-between gap-2 rounded-md border border-gray-300 bg-white px-1 py-2 text-sm shadow-sm hover:bg-gray-50"
+                className="flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-gray-300 bg-white px-1 py-2 text-sm shadow-sm hover:bg-gray-50"
               >
                 <div className="flex items-center gap-2">
                   <Image

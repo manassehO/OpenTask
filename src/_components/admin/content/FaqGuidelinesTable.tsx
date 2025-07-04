@@ -22,7 +22,7 @@ export const FaqGuidelinesTable: React.FC<FaqGuidelinesTableProps> = ({
 }) => {
   return (
     <div>
-      <div className="mt-10 w-full overflow-auto rounded-lg border">
+      <div className="mt-5 w-full overflow-auto whitespace-nowrap rounded-lg border md:mt-10">
         <table className="min-w-full table-auto border text-left text-sm">
           <thead className="bg-main-50 font-semibold text-neutral-900">
             <tr>

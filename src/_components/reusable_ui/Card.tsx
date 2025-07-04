@@ -49,7 +49,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
             alt={item.title}
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-200 group-hover:bg-black/40">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/10 transition duration-200 group-hover:bg-black/40">
             <Image
               width={32}
               height={32}

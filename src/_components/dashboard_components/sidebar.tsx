@@ -144,7 +144,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
       {/* Backdrop for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
