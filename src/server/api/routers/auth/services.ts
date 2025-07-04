@@ -1,8 +1,8 @@
-import { db } from "~/server/db";
-import { user } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
-import type { InferModel } from "drizzle-orm";
-import bcrypt from "bcryptjs";
+import { db } from '~/server/db';
+import { user } from '~/server/db/schema';
+import { eq } from 'drizzle-orm';
+import type { InferModel } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 type User = InferModel<typeof user>;
 
@@ -20,7 +20,7 @@ export async function findOrCreateUserByEmail(email: string): Promise<User> {
     createdUser = inserted[0];
   }
   if (!createdUser) {
-    throw new Error("Failed to find or create user");
+    throw new Error('Failed to find or create user');
   }
 
   return createdUser;

@@ -1,7 +1,7 @@
-import { auth } from "~/lib/auth";
+import { auth } from '~/lib/auth';
 
 export async function GET() {
-  return new Response("Hello from test route");
+  return new Response('Hello from test route');
 }
 
 /* export async function GET(request: Request) {

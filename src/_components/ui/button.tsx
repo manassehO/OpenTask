@@ -1,5 +1,5 @@
-import clsx from "clsx";
-import React from "react";
+import clsx from 'clsx';
+import React from 'react';
 
 type ButtonProps = {
   children: React.ReactNode;
@@ -10,10 +10,10 @@ type ButtonProps = {
   padding?: string;
   rounded?: string;
   className?: string;
-  type?: "button" | "submit" | "reset";
+  type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
   icon?: React.ReactNode | string;
-  iconPosition?: "left" | "right";
+  iconPosition?: 'left' | 'right';
   iconAlt?: string;
   iconSize?: number;
 };
@@ -21,21 +21,21 @@ type ButtonProps = {
 const Button: React.FC<ButtonProps> = ({
   children,
   onClick,
-  backgroundColor = "bg-[#3B82F6]",
-  textColor = "text-white",
-  borderColor = "border-transparent",
-  padding = "px-4 py-2",
-  rounded = "rounded-[4px]",
-  className = "",
-  type = "button",
+  backgroundColor = 'bg-[#3B82F6]',
+  textColor = 'text-white',
+  borderColor = 'border-transparent',
+  padding = 'px-4 py-2',
+  rounded = 'rounded-[4px]',
+  className = '',
+  type = 'button',
   disabled = false,
   icon,
-  iconPosition = "left",
-  iconAlt = "icon",
+  iconPosition = 'left',
+  iconAlt = 'icon',
   iconSize = 20,
 }) => {
   const renderIcon = () => {
-    if (typeof icon === "string") {
+    if (typeof icon === 'string') {
       return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -62,19 +62,19 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "inline-flex items-center xl:h-[50px] justify-center gap-2 border font-medium transition duration-200",
+        'inline-flex items-center justify-center gap-2 border font-medium transition duration-200 xl:h-[50px]',
         backgroundColor,
         textColor,
         borderColor,
         padding,
         rounded,
-        disabled ? "cursor-not-allowed opacity-50" : "hover:opacity-90",
+        disabled ? 'cursor-not-allowed opacity-50' : 'hover:opacity-90',
         className,
       )}
     >
-      {icon && iconPosition === "left" && renderIcon()}
+      {icon && iconPosition === 'left' && renderIcon()}
       <span>{children}</span>
-      {icon && iconPosition === "right" && renderIcon()}
+      {icon && iconPosition === 'right' && renderIcon()}
     </button>
   );
 };

@@ -3,7 +3,7 @@ type TaskTabProps = {
   onTabChange: (tab: string) => void;
 };
 
-const tabs = ["Tasks", "Active Task"];
+const tabs = ['Tasks', 'Active Task'];
 
 export const TaskTabs = ({ activeTab, onTabChange }: TaskTabProps) => {
   return (
@@ -14,8 +14,8 @@ export const TaskTabs = ({ activeTab, onTabChange }: TaskTabProps) => {
           onClick={() => onTabChange(tab)}
           className={`rounded-[4px] px-8 py-3 transition-colors ${
             activeTab === tab
-              ? "bg-[#3B82F6] text-white"
-              : "bg-white text-black"
+              ? 'bg-[#3B82F6] text-white'
+              : 'bg-white text-black'
           }`}
         >
           {tab}

@@ -1,18 +1,18 @@
-import React from "react";
-import type { TaskCardProps } from "@/types/task";
+import React from 'react';
+import type { TaskCardProps } from '@/types/task';
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardImage,
-} from "~/_components/ui/card";
-import Button from "~/_components/ui/button";
+} from '~/_components/ui/card';
+import Button from '~/_components/ui/button';
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <CardImage src={"/tasks/task_image.png"} alt={task.title} />
+      <CardImage src={'/tasks/task_image.png'} alt={task.title} />
       <div className="flex flex-1 flex-col">
         <CardHeader className="flex flex-col items-start justify-between space-y-0 pb-2">
           <div className="space-y-1">
@@ -44,7 +44,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
               </div>
               <div className="text-sm">
                 <span className="text-[24px] font-semibold text-[#3B82F6]">
-                  ${task.rewardInUsd.toLocaleString()}{" "}
+                  ${task.rewardInUsd.toLocaleString()}{' '}
                 </span>
               </div>
             </div>
@@ -53,7 +53,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
         <CardFooter>
           <Button
             onClick={() => onAction(task.id)}
-            className={`flex w-full text-[14px] ${task.status === "active" ? "bg-primary" : "bg-secondary"}`}
+            className={`flex w-full text-[14px] ${task.status === 'active' ? 'bg-primary' : 'bg-secondary'}`}
           >
             View Task
           </Button>

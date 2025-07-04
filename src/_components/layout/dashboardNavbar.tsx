@@ -1,37 +1,26 @@
-"use client";
+'use client';
 
-import { useAtom } from "jotai";
-import { Bell, CircleHelp, Search, Menu, X, PanelLeft } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { sidebarAtom } from "~/hooks/sidebarAtom";
-
-const sections = ["home", "features", "contact us"];
+import { useAtom } from 'jotai';
+import { Bell, CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { sidebarAtom } from '~/hooks/sidebarAtom';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [, setActiveSection] = useState<string>("home");
+  // Removed unused activeSection state
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
 
   useEffect(() => {
     const handleScroll = () => {
-      const offsets = sections.map((id) => {
-        const element = document.getElementById(id);
-        if (!element) return { id, top: Infinity };
-        return { id, top: element.offsetTop - window.innerHeight / 3 };
-      });
-
-      const current = [...offsets]
-        .reverse()
-        .find((sec) => window.scrollY >= sec.top);
-      setActiveSection(current?.id ?? "home");
+      // No operation needed as activeSection is unused and offsets was not used
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -39,10 +28,10 @@ export function DashboardNavbar() {
       <div className="mx-auto flex items-center justify-between gap-4 px-3 py-4 lg:px-10">
         <Link href="/" className="flex items-center">
           <Image
+            width={32}
+            height={32}
             src="/logo.svg"
             alt="OpenTask Logo"
-            width={120}
-            height={32}
             className="inline h-8"
           />
         </Link>
