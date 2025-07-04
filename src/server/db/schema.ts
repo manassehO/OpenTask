@@ -138,3 +138,14 @@ export const otps = createTable('otps', {
     () => new Date(),
   ),
 });
+
+export const onchainEvents = createTable('onchain_events', {
+  eventId: uuid('id').primaryKey().defaultRandom(),
+  walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
+  token: varchar('token', { length: 50 }),
+  eventType: varchar('event_type', { length: 50 }),
+  amount: varchar('amount', { length: 50 }),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
