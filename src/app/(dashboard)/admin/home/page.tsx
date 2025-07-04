@@ -41,7 +41,7 @@ function page() {
   ];
   return (
     <div className="space-y-6">
-      <div className="grid max-w-6xl grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="w-6xl grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((sts, index) => (
           <StatsCard key={index} {...sts} />
         ))}
