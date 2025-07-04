@@ -2,7 +2,7 @@
 import { SearchIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { FaqGuidelinesTable } from './FaqGuidelinesTable';
+import { FaqGuidelinesTable } from '../content/FaqGuidelinesTable';
 
 interface Entry {
   id: number;
