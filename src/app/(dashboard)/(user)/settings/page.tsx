@@ -31,7 +31,7 @@ export default function SettingPage() {
         ))}
       </div>
 
-      <div className="h-[680px] w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
+      <div className="h-full w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
         {activeTab === 'Profile' && (
           <div className="hidden py-4 text-sm font-medium capitalize">
             {/* Profile content goes here */}
@@ -57,7 +57,7 @@ export default function SettingPage() {
           </div>
         )}
 
-        <div className="mx-auto flex h-full w-full flex-col items-center justify-center text-center md:w-[440px]">
+        <div className="mx-auto hidden h-full w-full flex-col items-center justify-center text-center md:w-[440px]">
           <Image
             className="mb-4 h-[200px] w-[200px] rounded-full"
             width={200}
@@ -78,6 +78,70 @@ export default function SettingPage() {
             <button className="w-full rounded bg-primary p-4 text-sm font-bold capitalize text-white">
               complete profile
             </button>
+          </div>
+        </div>
+
+        <div className="space-y-4 py-4 md:space-y-6">
+          <Image
+            className="mb-4 h-[120px] w-[120px] rounded-full"
+            width={200}
+            height={200}
+            src="/icons/profileImg.svg"
+            alt="Profile"
+          />
+
+          <div className="flex flex-col gap-1 text-sm md:text-base">
+            <label htmlFor="" className="text-sm font-medium capitalize">
+              full name
+            </label>
+            <input
+              type="text"
+              className="w-full rounded border p-3"
+              placeholder="enter full name"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 text-sm md:text-base">
+            <label htmlFor="" className="text-sm font-medium capitalize">
+              phone number
+            </label>
+            <input
+              type="text"
+              className="w-full rounded border p-3"
+              placeholder="enter phone number"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1 text-sm md:text-base">
+            <label htmlFor="" className="text-sm font-medium capitalize">
+              gender
+            </label>
+
+            <select
+              name=""
+              id=""
+              className="rounded border bg-white p-3 capitalize"
+            >
+              <option value="">select gender</option>
+              <option value="">male</option>
+              <option value="">female</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1 text-sm md:text-base">
+            <label htmlFor="" className="text-sm font-medium capitalize">
+              preferred niche
+            </label>
+
+            <select
+              name=""
+              id=""
+              className="rounded border bg-white p-3 capitalize"
+            >
+              <option value="">select niche</option>
+              <option value="">...</option>
+              <option value="">.....</option>
+            </select>
           </div>
         </div>
 
