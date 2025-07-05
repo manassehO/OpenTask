@@ -1,8 +1,15 @@
+'use client';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
-
+import { containerVariants, imageVariants } from '~/lib/animations';
 function HeroPage() {
   return (
-    <div className="mt-[20px] flex h-auto w-full flex-col items-center justify-center lg:mt-[50px]">
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      className="mt-[20px] flex h-auto w-full flex-col items-center justify-center lg:mt-[50px]"
+    >
       <span className="text-[24px] font-bold capitalize md:text-[32px] lg:text-[64px]">
         Earn Real{' '}
         <span
@@ -33,7 +40,10 @@ function HeroPage() {
           Register
         </button>
       </div>
-      <div className="mt-[80px] h-auto w-[80%] lg:mt-[150px]">
+      <motion.div
+        variants={imageVariants}
+        className="mt-[80px] h-auto w-[80%] lg:mt-[150px]"
+      >
         <Image
           width={100}
           height={100}
@@ -41,8 +51,8 @@ function HeroPage() {
           alt=""
           className="h-full w-full"
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.section>
   );
 }
 
