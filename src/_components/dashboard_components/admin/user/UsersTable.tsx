@@ -12,28 +12,50 @@ interface User {
   id: string;
   name: string;
   email: string;
-  isTaskCreator: boolean;
-  image: string;
+  dateJoined: string;
   status: 'active' | 'inactive';
+  lastTask: string;
+  image: string;
+  isTaskCreator: boolean;
 }
 
-// Initialize mock users outside the component
+// Helper function to format dates consistently
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+// Initialize mock users with properly formatted dates
 const initialMockUsers: User[] = Array(20)
   .fill(null)
-  .map((_, i) => ({
-    id: i.toString(),
-    name: `User ${i + 1}`,
-    email: `user${i + 1}@mail.com`,
-    isTaskCreator: i % 2 === 0,
-    image: '',
-    status: i % 3 === 0 ? 'inactive' : 'active',
-  }));
+  .map((_, i) => {
+    const joinDate = new Date(
+      Date.now() - Math.floor(Math.random() * 10000000000),
+    );
+    const lastTaskDate = new Date(
+      Date.now() - Math.floor(Math.random() * 100000000),
+    );
+
+    return {
+      id: i.toString(),
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@mail.com`,
+      dateJoined: formatDate(joinDate),
+      lastTask: formatDate(lastTaskDate),
+      status: i % 3 === 0 ? 'inactive' : 'active',
+      image: '',
+      isTaskCreator: i % 2 === 0,
+    };
+  });
 
 export default function UsersTable() {
   const [activeTab, setActiveTab] = useState<'all' | 'creators'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUsers] = useState<User[]>(initialMockUsers); // Use state for users
+  const [users, setUsers] = useState<User[]>(initialMockUsers);
   const usersPerPage = 15;
 
   const filteredUsers = useMemo(() => {
@@ -47,7 +69,7 @@ export default function UsersTable() {
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [activeTab, searchQuery, users]); // Add users to dependencies
+  }, [activeTab, searchQuery, users]);
 
   // Pagination logic
   const indexOfLastUser = currentPage * usersPerPage;
@@ -66,22 +88,15 @@ export default function UsersTable() {
   // Status style configuration
   const statusStyle: Record<string, string> = {
     active:
-      'bg-[#E0F2F1] text-[#00796B] px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium',
+      'bg-[#E0F2F1] text-[#00796B] px-4 py-1 rounded-full text-xs font-medium',
     inactive:
-      'bg-[#FDE2E1] text-[#DC2626] px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium',
+      'bg-[#FDE2E1] text-[#DC2626] px-4 py-1 rounded-full text-xs font-medium',
   };
 
-  // User type style configuration
-  const userTypeStyle: Record<string, string> = {
-    true: 'bg-[#E0F7FA] text-[#00ACC1] px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium',
-    false:
-      'bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium',
-  };
-
-  // Table columns configuration
+  // Table columns configuration with exact headers
   const columns = [
     {
-      header: 'Name',
+      header: 'name',
       accessor: (row: User) => (
         <div className="flex items-center gap-2">
           <Image
@@ -91,37 +106,34 @@ export default function UsersTable() {
             height={32}
             className="h-8 w-8 rounded-full"
           />
-          <span className="text-xs font-semibold text-[#121212] sm:text-sm">
-            {row.name}
-          </span>
+          <span className="text-sm">{row.name}</span>
         </div>
       ),
-      className: '!text-[#3B82F6] !text-sm font-semibold',
+      className: '!text-sm',
     },
     {
-      header: 'Email',
+      header: 'email address',
+      accessor: (row: User) => <span className="text-sm">{row.email}</span>,
+      className: '!text-sm',
+    },
+    {
+      header: 'date joined',
       accessor: (row: User) => (
-        <span className="text-xs font-semibold text-[#121212] sm:text-sm">
-          {row.email}
-        </span>
+        <span className="text-sm">{row.dateJoined}</span>
       ),
-      className: '!text-[#3B82F6] !text-sm font-semibold',
+      className: '!text-sm',
     },
     {
-      header: 'Status',
+      header: 'status',
       accessor: (row: User) => (
         <span className={statusStyle[row.status]}>{row.status}</span>
       ),
-      className: '!text-[#3B82F6] !text-sm font-semibold !capitalize',
+      className: '!text-sm',
     },
     {
-      header: 'Type',
-      accessor: (row: User) => (
-        <span className={userTypeStyle[String(row.isTaskCreator)]}>
-          {row.isTaskCreator ? 'Task Creator' : 'General User'}
-        </span>
-      ),
-      className: '!text-[#3B82F6] !text-sm font-semibold !capitalize',
+      header: 'last task',
+      accessor: (row: User) => <span className="text-sm">{row.lastTask}</span>,
+      className: '!text-sm',
     },
     {
       header: 'Actions',
@@ -129,23 +141,23 @@ export default function UsersTable() {
         <div className="flex items-center gap-2">
           <Link
             href={`/admin/users/${row.id}`}
-            className="rounded bg-transparent px-3 py-1 text-xs font-medium text-[#3B82F6] hover:text-[#3B82F6]/90 sm:text-sm"
+            className="text-sm text-[#3B82F6] hover:underline"
           >
-            View
+            view
           </Link>
           <button
             onClick={() => toggleUserStatus(row.id)}
-            className={`rounded px-3 py-1 text-xs font-medium sm:text-sm ${
+            className={`rounded px-3 py-1 text-sm ${
               row.status === 'active'
-                ? 'bg-[#FEE2E2] text-[#DC2626] hover:bg-[#FECACA]'
-                : 'bg-[#DCFCE7] text-[#16A34A] hover:bg-[#BBF7D0]'
+                ? 'bg-[#FEE2E2] text-[#DC2626]'
+                : 'bg-[#DCFCE7] text-[#16A34A]'
             }`}
           >
-            {row.status === 'active' ? 'Deactivate' : 'Activate'}
+            {row.status === 'active' ? 'deactivate' : 'activate'}
           </button>
         </div>
       ),
-      className: '!text-[#3B82F6] !text-sm font-semibold',
+      className: '!text-sm',
     },
   ];
 
