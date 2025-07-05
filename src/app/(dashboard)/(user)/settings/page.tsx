@@ -126,7 +126,7 @@ export default function SettingPage() {
               />
 
               {/* Upload Button */}
-              <div className="mt-10 flex w-[123px] cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2 shadow-md md:-ml-8">
+              <div className="flex w-[123px] cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2 shadow-md md:-ml-8 md:mt-10">
                 <label htmlFor="file-upload" className="flex gap-1">
                   <Image
                     className="h-4 w-4"
