@@ -30,6 +30,35 @@ export default function SettingPage() {
       setProfileImage(URL.createObjectURL(file));
     }
   };
+
+  // loop of taks
+  const tasks = [
+    {
+      id: 1,
+      title: 'task approved',
+      message: 'Your reward has been added to your account. Great job!',
+      icon: '/icons/addTask.svg',
+    },
+    {
+      id: 2,
+      title: 'task approved',
+      message: 'Your reward has been added to your account. Great job!',
+      icon: '/icons/addTask.svg',
+    },
+    {
+      id: 3,
+      title: 'task approved',
+      message: 'Your reward has been added to your account. Great job!',
+      icon: '/icons/addTask.svg',
+    },
+    {
+      id: 4,
+      title: 'task approved',
+      message: 'Your reward has been added to your account. Great job!',
+      icon: '/icons/addTask.svg',
+    },
+  ];
+
   return (
     <div>
       <h1 className="mb-4 font-bold capitalize md:text-[28px] md:text-xl">
@@ -53,12 +82,12 @@ export default function SettingPage() {
       <div className="h-full w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
         {/* <ProfileForm /> */}
         {activeTab === 'Profile' && profileStep === 'initial' && (
-          <div className="flex- mx-auto h-full w-full items-center justify-center text-center md:w-[440px]">
+          <div className="mx-auto h-full w-full items-center justify-center py-4 text-center md:w-[440px]">
             <div className="flex flex-col items-center justify-center">
               <Image
-                className="mb-4 h-[200px] w-[200px] rounded-full bg-main pt-8"
-                width={200}
-                height={200}
+                className="mb-4 rounded-full bg-main pt-8 md:h-[200px] md:w-[200px]"
+                width={100}
+                height={100}
                 src={profileImage ?? '/icons/emptyProfile.svg'}
                 alt="Profile"
               />
@@ -235,7 +264,7 @@ export default function SettingPage() {
 
         {/* notification settings */}
         {activeTab === 'Notifications' && (
-          <div className="text-xl font-semibold capitalize">
+          <div className="space-y-2 text-xl font-semibold capitalize">
             <div className="flex w-full justify-end">
               <button className="rounded text-sm font-bold capitalize text-error">
                 <Image
@@ -248,6 +277,28 @@ export default function SettingPage() {
                 clear all
               </button>
             </div>
+            {tasks.map((task) => (
+              <div key={task.id} className="space-y-4 capitalize">
+                <div className="flex items-center space-x-4 rounded py-4 hover:scale-[1.02] hover:bg-main md:px-4 md:py-6">
+                  <div className="flex items-center justify-center rounded bg-primary-50 p-2 md:h-14 md:w-14">
+                    <Image
+                      width={30}
+                      height={30}
+                      src={task.icon}
+                      alt="Profile"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-bold capitalize md:text-xl">
+                      {task.title}{' '}
+                    </p>
+                    <p className="text-xs font-normal md:text-sm">
+                      {task.message}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

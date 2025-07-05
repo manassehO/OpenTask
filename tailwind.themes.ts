@@ -3,7 +3,7 @@ import { type Config } from 'tailwindcss';
 
 const themes: Partial<Config['theme']> = {
   colors: {
-    primary: { DEFAULT: '#3B82F6' },
+    primary: { DEFAULT: '#3B82F6', 50: '#D8E6FD80' },
     secondary: { DEFAULT: '#9333EA' }, // use a valid value
     grey: { DEFAULT: '#414141' },
 
