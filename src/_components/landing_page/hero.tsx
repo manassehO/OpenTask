@@ -6,16 +6,13 @@ import Image from 'next/image';
 import { containerVariants } from '~/lib/animations';
 
 const imageVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-  },
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.8,
-      ease: easeOut, // ✅ fix
+      ease: easeOut, // ✅ Correct type
     },
   },
 };

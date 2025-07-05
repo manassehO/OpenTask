@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Faq from '../ui/faq';
 import { motion } from 'framer-motion';
-import { imageVariants } from '~/lib/animations';
+
 function StartToFinishSection() {
   return (
     <div className="mt-8 flex h-auto w-full flex-col px-[4%] lg:px-0">
