@@ -13,8 +13,6 @@ import {
 } from '~/_components/ui/card';
 
 import Button from '~/_components/ui/button';
-import Image from 'next/image';
-
 interface ContentCardProps {
   item: {
     id: string | number;
@@ -29,23 +27,26 @@ interface ContentCardProps {
     duration?: string;
     started?: boolean; // For courses, to indicate if the course has been started
     type?: string;
+    video?: string; // For courses with video
   };
   buttonLabel?: string;
   onAction: (id: string | number) => void;
 }
+
 const ContentCard: React.FC<ContentCardProps> = ({
   item,
   onAction: _onAction,
   buttonLabel = 'View',
 }) => {
   const router = useRouter();
+  const [isPlaying, setIsPlaying] = React.useState(false);
 
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
-      {item.image && (
-        <div className="group relative cursor-pointer overflow-hidden rounded-t-lg">
+      {/* {item.image && (
+        <div className="group relative hidden cursor-pointer overflow-hidden rounded-t-lg">
           <CardImage
-            src={item.image}
+            src={item.image || '/placeholder.png'}
             alt={item.title}
             className="h-full w-full object-cover"
           />
@@ -58,6 +59,31 @@ const ContentCard: React.FC<ContentCardProps> = ({
               className="h-12 w-12"
             />
           </div>
+        </div>
+      )} */}
+
+      {!isPlaying ? (
+        // Thumbnail with play button
+        <div
+          onClick={() => setIsPlaying(true)}
+          className="group h-[200px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg hover:bg-black/40"
+        >
+          {/* Background Image */}
+          <CardImage
+            src={item.image ?? '/placeholder.png'}
+            alt={item.title}
+            quality={100}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : item.video ? (
+        <video className="h-[200px] w-full rounded-lg" controls autoPlay>
+          <source src={item.video} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      ) : (
+        <div className="flex h-[200px] w-full items-center justify-center rounded-lg bg-gray-200 md:h-[500px]">
+          <span className="text-gray-500">No video available</span>
         </div>
       )}
 

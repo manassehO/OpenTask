@@ -54,7 +54,7 @@ export default function SettingPage() {
         {/* <ProfileForm /> */}
         {activeTab === 'Profile' && profileStep === 'initial' && (
           <div className="flex- mx-auto h-full w-full items-center justify-center text-center md:w-[440px]">
-            <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <Image
                 className="mb-4 h-[200px] w-[200px] rounded-full bg-main pt-8"
                 width={200}
@@ -86,33 +86,32 @@ export default function SettingPage() {
         {/* profile form deatils  */}
         {activeTab === 'Profile' && profileStep === 'form' && (
           <div className="py-4">
-            <div className="relative flex flex-col items-center justify-center md:block">
+            <div className="flex flex-col items-center md:flex-row">
               {/* Profile Image */}
               <Image
-                className="mb-4 h-[120px] w-[120px] rounded-full bg-main pt-5"
-                width={200}
-                height={200}
+                className="mb-4 h-[120px] w-[120px] rounded-full bg-main object-cover"
+                width={120}
+                height={120}
                 src="/icons/emptyProfile.svg"
                 alt="Profile"
               />
 
               {/* Upload Button */}
-              <div className="absolute inset-20 md:left-20">
-                <label
-                  htmlFor="file-upload"
-                  className="flex w-28 cursor-pointer items-center justify-center gap-2 rounded-full bg-white p-2 shadow"
-                >
+              <div className="mt-10 flex w-[123px] cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2 shadow-md md:-ml-8">
+                <label htmlFor="file-upload" className="flex gap-1">
                   <Image
                     className="h-4 w-4"
                     width={16}
                     height={16}
                     src="/icons/uploadPhotoIcon.svg"
-                    alt="Upload Photo"
+                    alt="Upload"
                   />
-                  <h6 className="text-xs capitalize text-primary">add photo</h6>
+                  <span className="text-xs font-medium capitalize text-primary">
+                    add photo
+                  </span>
                 </label>
 
-                {/* Hidden file input */}
+                {/* Hidden File Input */}
                 <input
                   id="file-upload"
                   type="file"
