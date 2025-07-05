@@ -1,9 +1,11 @@
-import React from 'react';
+// import UserListSkeleton from "@/components/UserListSkeleton";
+// import UsersPageClient from "@/components/UsersPageClient";
 
-type Props = object;
+import UserListSkeleton from '~/_components/admin/user/UserListSkeleton';
+import UsersPageClient from '~/_components/admin/user/UsersPageClient';
 
-function page({}: Props) {
-  return <div>page</div>;
+export default function UsersPage() {
+  const isLoading = false; // replace with real loading state
+
+  return isLoading ? <UserListSkeleton /> : <UsersPageClient />;
 }
-
-export default page;
