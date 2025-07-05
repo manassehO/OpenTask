@@ -1,8 +1,14 @@
 import Image from 'next/image';
-
+import { motion } from 'framer-motion';
+import { containerVariants, zoomInUpVariants } from '~/lib/animations';
 export default function WhyTrustOpenTask() {
   return (
-    <div className="mt-8 flex h-auto w-full flex-col items-center justify-center bg-[#FAFAFA] px-[4%] lg:px-0">
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      className="mt-8 flex h-auto w-full flex-col items-center justify-center bg-[#FAFAFA] px-[4%] lg:px-0"
+    >
       <div className="flex w-full flex-col items-center justify-center">
         <button className="my-3 h-[38px] rounded-[32px] bg-[#D8E6FD66] px-4 text-center text-[#3B82F6] lg:my-6">
           Why Trust OpenTask
@@ -51,7 +57,7 @@ export default function WhyTrustOpenTask() {
           See available task now
         </button>
       </div>
-    </div>
+    </motion.section>
   );
 }
 
@@ -65,7 +71,12 @@ const Card = ({
   text: string;
 }) => {
   return (
-    <div className="flex h-[236px] w-auto flex-col justify-center gap-5 bg-white p-5">
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      variants={zoomInUpVariants}
+      className="flex h-[236px] w-auto flex-col justify-center gap-5 bg-white p-5"
+    >
       <div className="w-fit rounded-[4px] bg-[#3B82F6] p-2">
         <Image src={src} alt="" width={20} height={20} />
       </div>
@@ -79,6 +90,6 @@ const Card = ({
       <button className="text-start text-sm font-medium text-[#3B82F6] lg:text-base">
         Get Started
       </button>
-    </div>
+    </motion.div>
   );
 };
