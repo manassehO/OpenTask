@@ -25,9 +25,7 @@ const themes: Partial<Config['theme']> = {
       900: '#161616',
     },
 
-    main: {
-      50: '#D8E6FD',
-    },
+    main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD' },
 
     green: {
       DEFAULT: '#34C759',

@@ -148,7 +148,7 @@ export const TasksTable = () => {
     },
   ];
   return (
-    <div className="custom-scrollbar h-screen max-w-7xl space-y-6 overflow-y-scroll rounded-md bg-white py-4 pl-4 sm:py-8 sm:pl-8 md:pb-10 md:pl-10 md:pt-4">
+    <div className="custom-scrollbar h-screen max-w-full space-y-6 overflow-y-scroll rounded-md bg-white py-4 pl-4 sm:py-8 sm:pl-8 md:pb-10 md:pl-10 md:pt-4">
       <ReusableTable<TaskProps> columns={columns} data={paginatedItems} />
       <div className="flex items-center justify-between pr-9">
         <button

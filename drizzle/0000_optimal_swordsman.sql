@@ -1,5 +1,6 @@
 CREATE TYPE "status" AS ENUM ('ACTIVE', 'SUSPENDED', 'BANNED');
 CREATE TYPE "wallet_type" AS ENUM ('managed', 'self_custody');
+CREATE TYPE "roles" AS ENUM ('CREATOR', 'COMPLETER', 'ADMIN');
 
 CREATE TABLE IF NOT EXISTS "opentask_account" (
 	"id" text PRIMARY KEY NOT NULL,
