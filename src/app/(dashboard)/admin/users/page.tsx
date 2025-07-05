@@ -1,11 +1,16 @@
-// import UserListSkeleton from "@/components/UserListSkeleton";
-// import UsersPageClient from "@/components/UsersPageClient";
-
-import UserListSkeleton from '~/_components/admin/user/UserListSkeleton';
-import UsersPageClient from '~/_components/admin/user/UsersPageClient';
+import UserListSkeleton from '~/_components/dashboard_components/admin/user/UserListSkeleton';
+import Header from '~/_components/dashboard_components/admin/header';
+import UsersTable from '~/_components/dashboard_components/admin/user/UsersTable';
 
 export default function UsersPage() {
   const isLoading = false; // replace with real loading state
 
-  return isLoading ? <UserListSkeleton /> : <UsersPageClient />;
+  return isLoading ? (
+    <UserListSkeleton />
+  ) : (
+    <div className="relative h-screen w-full">
+      <Header title="Users" subText="manage platform users" />
+      <UsersTable />
+    </div>
+  );
 }

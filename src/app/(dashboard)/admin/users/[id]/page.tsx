@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import UserDetailPageClient from '~/_components/admin/user/UserDetailPageClient';
-import UserDetailSkeleton from '~/_components/admin/user/UserDetailSkeleton';
+import UserDetailPageClient from '~/_components/dashboard_components/admin/user/UserDetailPageClient';
+import UserDetailSkeleton from '~/_components/dashboard_components/admin/user/UserDetailSkeleton';
 
 export default async function UserDetailPage({
   params,
