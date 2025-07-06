@@ -9,7 +9,7 @@ const tabs = ['Overview', 'Submissions', 'Funding'];
 
 export const AnalyticsTabs = ({ activeTab, onTabChange }: TaskTabProps) => {
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-2 max-sm:overflow-x-scroll">
       {tabs.map((tab) => (
         <button
           key={tab}
