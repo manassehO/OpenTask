@@ -29,7 +29,7 @@ const formatDate = (date: Date) => {
 };
 
 // Initialize mock users with properly formatted dates
-const initialMockUsers: User[] = Array(20)
+const initialMockUsers: User[] = Array(35)
   .fill(null)
   .map((_, i) => {
     const joinDate = new Date(
@@ -92,8 +92,7 @@ export default function UsersTable() {
     inactive:
       'bg-[#FDE2E1] text-[#DC2626] px-4 py-1 rounded-full text-xs font-medium',
   };
-
-  // Table columns configuration with exact headers
+  // Table columns configuration
   const columns = [
     {
       header: 'name',
@@ -104,36 +103,48 @@ export default function UsersTable() {
             alt={row.name}
             width={32}
             height={32}
-            className="h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full text-gray-700 transition-opacity hover:opacity-80"
           />
-          <span className="text-sm">{row.name}</span>
+          <span className="text-sm text-gray-700 transition-colors hover:text-[#3B82F6]">
+            {row.name}
+          </span>
         </div>
       ),
-      className: '!text-sm',
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
     {
       header: 'email address',
-      accessor: (row: User) => <span className="text-sm">{row.email}</span>,
-      className: '!text-sm',
+      accessor: (row: User) => (
+        <span className="text-sm text-gray-700 transition-colors hover:text-[#3B82F6]">
+          {row.email}
+        </span>
+      ),
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
     {
       header: 'date joined',
       accessor: (row: User) => (
-        <span className="text-sm">{row.dateJoined}</span>
+        <span className="text-sm text-gray-700 transition-colors hover:text-[#3B82F6]">
+          {row.dateJoined}
+        </span>
       ),
-      className: '!text-sm',
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
     {
       header: 'status',
       accessor: (row: User) => (
         <span className={statusStyle[row.status]}>{row.status}</span>
       ),
-      className: '!text-sm',
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
     {
       header: 'last task',
-      accessor: (row: User) => <span className="text-sm">{row.lastTask}</span>,
-      className: '!text-sm',
+      accessor: (row: User) => (
+        <span className="text-sm text-gray-700 transition-colors hover:text-[#3B82F6]">
+          {row.lastTask}
+        </span>
+      ),
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
     {
       header: 'Actions',
@@ -141,23 +152,23 @@ export default function UsersTable() {
         <div className="flex items-center gap-2">
           <Link
             href={`/admin/users/${row.id}`}
-            className="text-sm text-[#3B82F6] hover:underline"
+            className="text-sm text-[#3B82F6] transition-colors hover:text-[#3B82F6]/80 hover:underline"
           >
             view
           </Link>
           <button
             onClick={() => toggleUserStatus(row.id)}
-            className={`rounded px-3 py-1 text-sm ${
+            className={`rounded px-3 py-1 text-sm transition-colors ${
               row.status === 'active'
-                ? 'bg-[#FEE2E2] text-[#DC2626]'
-                : 'bg-[#DCFCE7] text-[#16A34A]'
+                ? 'bg-[#FEE2E2] text-[#DC2626] hover:bg-[#FEE2E2]/50'
+                : 'bg-[#DCFCE7] text-[#16A34A] hover:bg-[#DCFCE7]/50'
             }`}
           >
             {row.status === 'active' ? 'deactivate' : 'activate'}
           </button>
         </div>
       ),
-      className: '!text-sm',
+      className: '!text-sm !text-[#3B82F6] !capitalize',
     },
   ];
 
@@ -212,7 +223,7 @@ export default function UsersTable() {
           <input
             type="text"
             placeholder="Search"
-            className="w-full rounded bg-[#ffffff] py-2 pl-10 pr-3"
+            className="w-full rounded bg-[#ffffff] py-2 pl-10 pr-3 transition-colors hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#6ca1f8]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -237,7 +248,7 @@ export default function UsersTable() {
           onClick={handlePrevious}
           aria-label="previous page button"
           disabled={currentPage === 1}
-          className={`flex items-center gap-1 text-base font-semibold ${
+          className={`flex items-center gap-1 text-base font-semibold transition-colors ${
             currentPage !== 1
               ? 'cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80'
               : 'cursor-not-allowed text-[#414141]'
@@ -257,7 +268,7 @@ export default function UsersTable() {
           onClick={handleNext}
           aria-label="next page button"
           disabled={currentPage === totalPages}
-          className={`flex items-center gap-1 text-base font-semibold ${
+          className={`flex items-center gap-1 text-base font-semibold transition-colors ${
             currentPage !== totalPages
               ? 'cursor-pointer text-[#3B82F6] hover:text-[#3B82F6]/80'
               : 'cursor-not-allowed text-[#414141]'
