@@ -7,11 +7,9 @@ import {
 import { user } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
-// import { type InferModel } from "drizzle-orm";
-import type { InferModel } from 'drizzle-orm';
-type User = InferModel<typeof user, 'select'>;
+import { type InferModel } from 'drizzle-orm';
 
-// type User = InferModel<typeof user>;
+type User = InferModel<typeof user>;
 
 const updateProfileSelfSchema = z
   .object({
@@ -116,9 +114,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      // const updatedUser: User = result[0];
-      const updatedUser: User = result[0]!; // 👈 the `!` tells TypeScript “this is not undefined”
-
+      const updatedUser: User = result[0];
       return {
         success: true,
         user: {
@@ -140,15 +136,9 @@ export const profileRouter = createTRPCRouter({
     .input(updateProfileAdminSchema)
     .mutation(async ({ ctx, input }) => {
       const { userId, ...fields } = input;
-
-      // const foundUser: User | null = await ctx.db.query.user.findFirst({
-      //   where: (u, { eq }) => eq(u.id, userId as string),
-      // });
-
-      const foundUser: InferModel<typeof user> | undefined =
-        await ctx.db.query.user.findFirst({
-          where: (u, { eq }) => eq(u.id, userId as string),
-        });
+      const foundUser: User | null = await ctx.db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, userId as string),
+      });
 
       if (!foundUser) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
