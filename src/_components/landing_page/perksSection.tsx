@@ -2,10 +2,24 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { containerVariants, itemVariants } from '~/lib/animations';
+import { containerVariants } from '~/lib/animations';
 import Section1 from '../../../public/section1.png';
 import Section2 from '../../../public/section2.png';
 
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
 export default function PerksSection() {
   return (
     <motion.section
@@ -111,7 +125,7 @@ export default function PerksSection() {
         variants={itemVariants}
         className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2"
       >
-        <div className="relative flex hidden h-64 w-full items-center justify-center bg-[#ffffff] md:block md:h-80 lg:h-96"></div>
+        <div className="relative hidden h-64 w-full items-center justify-center bg-[#ffffff] md:block md:h-80 lg:h-96"></div>
         <div>
           <h3 className="mb-4 text-2xl font-semibold text-gray-900">
             Learn While You Earn
