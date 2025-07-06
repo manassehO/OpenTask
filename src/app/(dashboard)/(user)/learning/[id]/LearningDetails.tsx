@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 
 import Button from '~/_components/ui/button';
+import { useState } from 'react';
 
 interface LearningItem {
   id: number;
@@ -15,12 +16,15 @@ interface LearningItem {
   rewardInUsd?: number;
   modules?: string; // For courses
   type: 'course' | 'tutorial';
+  video?: string; // Optional video property
 }
 
 export default function LearningDetail({ course }: { course?: LearningItem }) {
   if (!course) {
     /* …not-found UI… */
   }
+
+  const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
 
   // when course page is empty
@@ -54,18 +58,18 @@ export default function LearningDetail({ course }: { course?: LearningItem }) {
         </h1>
 
         <div className="space-y-4 md:max-w-[1058px]">
-          <div className="relative z-0">
-            {/* Thumbnail with overlay play icon */}
-            <div className="group relative mt-6 h-[200px] w-full md:h-[500px]">
+          <div className="mt-6 h-[200px] w-full md:h-[500px]">
+            {/* the main figma ui */}
+            {/* <div className="hidden h-full w-full items-center justify-center overflow-hidden rounded-lg hover:bg-black/40">
               <Image
                 src={course.image}
                 alt="course banner"
-                fill
-                className="rounded-lg object-cover opacity-70"
+                width={1000}
+                height={500}
+                className="h-full w-full object-cover"
               />
 
-              {/* Overlay with Play Icon */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition duration-300 group-hover:bg-black/40">
+              <div className="z-20 flex h-full w-full items-center justify-center">
                 <Image
                   src="/icons/play.svg"
                   alt="Play"
@@ -74,7 +78,38 @@ export default function LearningDetail({ course }: { course?: LearningItem }) {
                   className="h-12 w-12"
                 />
               </div>
-            </div>
+            </div> */}
+
+            {!isPlaying ? (
+              // Thumbnail with play button
+              <div
+                onClick={() => setIsPlaying(true)}
+                className="group h-[200px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg hover:bg-black/40 md:h-[500px]"
+              >
+                {/* Background Image */}
+                <Image
+                  src={course.image}
+                  alt="course banner"
+                  width={1000}
+                  height={500}
+                  quality={100}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : course.video ? (
+              <video
+                className="h-[200px] w-full rounded-lg md:h-[500px]"
+                controls
+                autoPlay
+              >
+                <source src={course.video} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="flex h-[200px] w-full items-center justify-center rounded-lg bg-gray-200 md:h-[500px]">
+                <span className="text-gray-500">No video available</span>
+              </div>
+            )}
           </div>
 
           <div className="mx-auto flex w-full flex-col space-y-4 py-4 md:max-w-[886px]">
