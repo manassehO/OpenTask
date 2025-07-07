@@ -5,9 +5,9 @@ import UserDetailSkeleton from '~/_components/dashboard_components/admin/user/Us
 export default async function UserDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>; // 👈 Make params a Promise
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params; // 👈 Await the params
+  const { id } = await params;
 
   return (
     <Suspense fallback={<UserDetailSkeleton />}>

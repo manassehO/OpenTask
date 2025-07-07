@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import classNames from 'classnames';
 import { FaPhone, FaEnvelope, FaUserCircle } from 'react-icons/fa';
+import { UserIcon } from 'public/svg/generalSvg';
 
 interface UserDetailPageClientProps {
   userId: string;
@@ -118,22 +119,38 @@ export default function UserDetailPageClient({
         <StatCard
           label="Total Balance"
           value={`$${user.balanceUSD}`}
-          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+          icon={
+            <div className="rounded bg-[#eff5fe] p-2 text-2xl text-blue-500">
+              <UserIcon />
+            </div>
+          }
         />
         <StatCard
           label="Tasks Completed"
           value={user.tasksCompleted.toString()}
-          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+          icon={
+            <div className="rounded bg-[#eff5fe] p-2 text-2xl text-blue-500">
+              <UserIcon />
+            </div>
+          }
         />
         <StatCard
           label="Tasks Created"
           value={user.tasksCreated.toString()}
-          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+          icon={
+            <div className="rounded bg-[#eff5fe] p-2 text-2xl text-blue-500">
+              <UserIcon />
+            </div>
+          }
         />
         <StatCard
           label="Active Tasks"
           value={user.activeTasks.toString()}
-          icon={<FaUserCircle className="text-2xl text-blue-500" />}
+          icon={
+            <div className="rounded bg-[#eff5fe] p-2 text-2xl text-blue-500">
+              <UserIcon />
+            </div>
+          }
         />
       </div>
 
@@ -178,7 +195,7 @@ export default function UserDetailPageClient({
             {filteredTasks.map((task) => (
               <div
                 key={task.id}
-                className="min-w-[240px] snap-start overflow-hidden rounded-lg bg-white sm:min-w-[280px] lg:min-w-[395px]"
+                className="min-w-[240px] cursor-default snap-start overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-200 ease-out hover:border-gray-300 hover:shadow-sm sm:min-w-[280px] lg:min-w-[395px]"
               >
                 <div className="relative h-36">
                   <Image
@@ -186,6 +203,7 @@ export default function UserDetailPageClient({
                     alt="Task illustration"
                     fill
                     className="object-cover"
+                    style={{ transition: 'opacity 200ms ease-out' }}
                   />
                 </div>
                 <div className="space-y-2 p-4">
@@ -195,11 +213,11 @@ export default function UserDetailPageClient({
                   <p className="line-clamp-2 text-xs text-gray-600">
                     {task.description}
                   </p>
-                  <div className="flex justify-between py-5 text-xs font-medium text-gray-500">
-                    <span className="font-semibold text-gray-700">
+                  <div className="flex items-center justify-between pb-1 pt-3">
+                    <span className="text-xs font-medium text-gray-700">
                       {task.rewardETH}
                     </span>
-                    <span className="text-xl font-semibold text-[#5492f7]">
+                    <span className="text-lg font-semibold text-blue-600">
                       {task.rewardUSD}
                     </span>
                   </div>
@@ -223,10 +241,16 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded bg-white p-4 text-center">
-      <span className="text-2xl">{icon}</span>
-      <p className="text-xs text-gray-600">{label}</p>
-      <p className="text-lg font-semibold text-gray-800">{value}</p>
+    <div className="flex cursor-pointer flex-col items-start gap-2 rounded-lg border border-gray-100 bg-white p-4 text-center transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-blue-100 hover:bg-blue-50 hover:shadow-md">
+      <span className="text-2xl transition-colors duration-300 group-hover:text-blue-600">
+        {icon}
+      </span>
+      <p className="text-xs text-gray-600 transition-colors duration-300 group-hover:text-blue-800">
+        {label}
+      </p>
+      <p className="text-lg font-semibold text-gray-800 transition-colors duration-300 group-hover:text-blue-600">
+        {value}
+      </p>
     </div>
   );
 }
