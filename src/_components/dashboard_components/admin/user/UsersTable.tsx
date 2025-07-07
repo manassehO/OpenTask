@@ -186,7 +186,7 @@ export default function UsersTable() {
   };
 
   return (
-    <div className="custom-scrollbar h-screen max-w-full space-y-6 rounded-md py-4 pl-4 sm:py-8 sm:pl-8 md:pb-10 md:pl-10 md:pt-4">
+    <div className="custom-scrollbar h-screen max-w-full space-y-6 rounded-md pl-4 sm:pl-8 md:pb-10 md:pl-10">
       {/* Search and Filter Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex space-x-4">
@@ -223,7 +223,7 @@ export default function UsersTable() {
           <input
             type="text"
             placeholder="Search"
-            className="w-full rounded bg-[#ffffff] py-2 pl-10 pr-3 transition-colors hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#6ca1f8]"
+            className="w-full rounded bg-[#ffffff] py-2 pl-10 pr-3 transition-colors hover:border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#6ca1f8]"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
