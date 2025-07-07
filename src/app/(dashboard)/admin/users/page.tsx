@@ -9,7 +9,7 @@ export default function UsersPage() {
     <UserListSkeleton />
   ) : (
     <div className="relative h-screen w-full">
-      <Header title="Users" subText="manage platform users" />
+      <Header title="Users" subText="" />
       <UsersTable />
     </div>
   );
