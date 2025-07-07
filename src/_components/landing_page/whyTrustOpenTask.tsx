@@ -1,6 +1,22 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { containerVariants, zoomInUpVariants } from '~/lib/animations';
+import { containerVariants } from '~/lib/animations';
+
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
+
+const zoomInUpVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
+
 export default function WhyTrustOpenTask() {
   return (
     <motion.section

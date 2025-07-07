@@ -3,9 +3,15 @@ import { type Config } from 'tailwindcss';
 
 const themes: Partial<Config['theme']> = {
   colors: {
+
     primary: { DEFAULT: '#3B82F6', 20: '#7CBAFD' },
     secondary: { DEFAULT: '#9333EA', 50: '#CDF0F6' },
     grey: { DEFAULT: '#414141', 50: '#D9D9D9' },
+
+//     primary: { DEFAULT: '#3B82F6', 50: '#D8E6FD80' },
+//     secondary: { DEFAULT: '#9333EA' }, 
+//     grey: { DEFAULT: '#414141' },
+
 
     warning: {
       50: '#FDECCE',
@@ -37,7 +43,13 @@ const themes: Partial<Config['theme']> = {
       900: '#161616',
     },
 
+
     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#F9FAFB' },
+
+//     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#D9D9D9' },
+
+    error: { DEFAULT: '#FF3B30' },
+
 
     green: {
       DEFAULT: '#34C759',
