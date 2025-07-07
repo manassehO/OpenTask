@@ -1,7 +1,22 @@
 'use client';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
 import Image from 'next/image';
-import { containerVariants, imageVariants } from '~/lib/animations';
+import { containerVariants } from '~/lib/animations';
+
+const imageVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
+
 function HeroPage() {
   return (
     <motion.section
@@ -40,6 +55,7 @@ function HeroPage() {
           Register
         </button>
       </div>
+
       <motion.div
         variants={imageVariants}
         className="mt-[80px] h-auto w-[80%] lg:mt-[150px]"

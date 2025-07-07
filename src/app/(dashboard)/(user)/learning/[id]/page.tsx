@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import LearningDetail from './LearningDetails';
+// import CourseVideo from '../CourseVideo';
 import { mockCourses, mockTutorials } from '../mockDatat';
 
 export default function LearningDetailPage() {
@@ -18,5 +19,15 @@ export default function LearningDetailPage() {
   const allItems = [...coursesWithType, ...tutorialsWithType];
   const course = allItems.find((item) => String(item.id) === String(id));
 
-  return <LearningDetail course={course} />;
+  return (
+    <>
+      <LearningDetail course={course} />
+      {/* <CourseVideo
+        course={{
+          image: '/images/course-thumb.png',
+          video: '/videos/sample-course.mp4',
+        }}
+      /> */}
+    </>
+  );
 }
