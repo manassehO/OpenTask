@@ -186,7 +186,7 @@ export default function UsersTable() {
   };
 
   return (
-    <div className="custom-scrollbar h-screen max-w-full space-y-6 rounded-md pl-4 sm:pl-8 md:pb-10 md:pl-10">
+    <div className="custom-scrollbar h-screen max-w-full space-y-6 rounded-md md:pb-10">
       {/* Search and Filter Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex space-x-4">
