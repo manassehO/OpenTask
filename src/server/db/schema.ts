@@ -1,7 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { sql } from "drizzle-orm";
+import { isNotNull, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -12,6 +12,7 @@ import {
   varchar,
   pgEnum,
   uuid,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -24,6 +25,13 @@ export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum("status", ["ACTIVE", "SUSPENDED", "BANNED"]);
 const walletTypeEnum = pgEnum("wallet_type", ["managed", "self_custody"]);
 const rolesEnum = pgEnum("roles", ["CREATOR", "COMPLETER", "ADMIN"]);
+const taskStatusEnum = pgEnum("task_status", [
+  "DRAFT",
+  "ACTIVE",
+  "COMPLETED",
+  "CANCELLED",
+  "DISPUTED",
+]);
 
 export const posts = createTable(
   "post",
@@ -44,7 +52,7 @@ export const posts = createTable(
 
 // Better-Auth required tables
 export const user = createTable("user", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey().notNull(),
   oauth_id: varchar("oauth_id", { length: 128 }),
   name: text("name"),
   email: text("email").notNull().unique(),
@@ -65,7 +73,7 @@ export const session = createTable("session", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
@@ -74,7 +82,7 @@ export const account = createTable("account", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: uuid("userId")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
@@ -101,7 +109,7 @@ export const wallets = createTable(
   "wallets",
   {
     walletId: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     starknetAddress: varchar("starknet_address", { length: 100 })
@@ -129,6 +137,30 @@ export const otps = createTable("otps", {
   email: varchar("email").notNull().unique(),
   code: varchar("code").notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+export const tasks = createTable("tasks", {
+  taskId: uuid("task_id").primaryKey().defaultRandom(),
+  creatorUserId: text("creator_user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  instructions: text("instructions").notNull(),
+  category: varchar("category").notNull(),
+  rewardAmount: numeric("reward_amount").notNull(),
+  rewardTokenAddress: varchar("reward_token_address", {
+    length: 100,
+  }).notNull(),
+  requiredCompletions: integer("required_completions").notNull(),
+  status: taskStatusEnum("status").default("DRAFT").notNull(),
+  fundingTxHash: varchar("funding_tx_hash", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

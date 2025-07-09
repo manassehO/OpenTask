@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751360092664,
-      "tag": "0000_optimal_swordsman",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751361308556,
-      "tag": "0001_uneven_big_bertha",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751361435248,
-      "tag": "0002_tired_lila_cheney",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1751361529416,
-      "tag": "0003_nice_thor",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1751364627687,
-      "tag": "0004_aberrant_silk_fever",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1751376191293,
-      "tag": "0005_opposite_reaper",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1751376950356,
-      "tag": "0006_wakeful_mister_sinister",
+      "when": 1752056745845,
+      "tag": "0000_jazzy_stone_men",
       "breakpoints": true
     }
   ]

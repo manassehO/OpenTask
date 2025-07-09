@@ -13,7 +13,7 @@ export const auth = betterAuth({
       role: {
         type: "string",
         required: true,
-        defaultValue: "user",
+        defaultValue: "CREATOR",
       },
     },
   },
@@ -38,4 +38,4 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session.session;
-export type User = typeof auth.$Infer.Session.user; 
+export type User = typeof auth.$Infer.Session.user;
