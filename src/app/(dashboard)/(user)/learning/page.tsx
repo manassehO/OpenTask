@@ -1,11 +1,183 @@
-import React from 'react'
+// src/app/(main)/learning/page.tsx
+'use client';
+import React, { useState } from 'react';
+import ContentCard from '~/_components/reusable_ui/Card';
 
-type Props = {}
+const mockCourses = [
+  {
+    id: 1,
+    title: 'Micro Tasks, Big Rewards: A Beginner’s Guide to Earning Online',
+    description:
+      'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
+    image: '/images/courseImg.png',
+    modules: '4 modules',
+    progress: 60,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+    duration: '10 mins watch',
+  },
+  {
+    id: 2,
+    title: 'Micro Tasks, Big Rewards: A Beginner’s Guide to Earning Online',
+    description:
+      'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
+    image: '/images/courseImg.png',
+    modules: '4 modules',
+    progress: 60,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+    duration: '10 mins watch',
+  },
+  {
+    id: 3,
+    title: 'Micro Tasks, Big Rewards: A Beginner’s Guide to Earning Online',
+    description:
+      'Learn how to start earning from online tasks without any experience, investment, or technical skills.',
+    image: '/images/courseImg.png',
+    modules: '4 modules',
+    progress: 60,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+    duration: '10 mins watch',
+  },
+];
 
-function page({}: Props) {
+const mockTutorials = [
+  {
+    id: 101,
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
+    image: '/images/cyptoImg.png',
+    modules: '4 modules',
+    duration: '10 mins watch',
+    progress: 80,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+  },
+  {
+    id: 102,
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
+    image: '/images/cyptoImg.png',
+    modules: '4 modules',
+    duration: '10 mins watch',
+    progress: 80,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+  },
+  {
+    id: 103,
+    title: 'how to set up a crypto wallet',
+    description: 'Learn how to set up a crypto wallet.',
+    image: '/images/cyptoImg.png',
+    modules: '4 modules',
+    duration: '10 mins watch',
+    progress: 80,
+    rewardInUsd: 100,
+    rewardInEth: 0.05,
+  },
+];
+
+const tabs = ['Course', 'Tutorial'];
+
+export default function LearningPage() {
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  const onTabChange = (tab: string): void => {
+    setActiveTab(tab);
+  };
+
+  // Function to handle the action when a user clicks on a course or tutorial
+  // This could be navigating to a detailed view, starting the course, etc.
+  // For now, it just logs the ID of the course or tutorial
+  // You can replace this with your actual logic, such as navigation or API calls
+
+  const handleViewTask = (id: string | number): void => {
+    console.log('continue learning:', id);
+    console.log('start course:', id);
+  };
+
   return (
-    <div>page</div>
-  )
-}
+    <div>
+      <h1 className="mb-4 font-bold capitalize md:text-[28px] md:text-xl">
+        learning center
+      </h1>
 
-export default page
+      <div className="mb-4 flex w-full overflow-x-auto bg-white p-2 md:max-w-[244px]">
+        {['Course', 'Tutorial'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => onTabChange(tab)}
+            className={`w-full rounded-[4px] px-8 py-3 text-sm font-semibold transition-colors ${
+              activeTab === tab ? 'bg-[#3B82F6] text-white' : 'text-black'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Your Courses */}
+      <div className="py-4 text-xl font-semibold capitalize">
+        {activeTab === 'Course' && <h1 className="">your courses</h1>}
+      </div>
+
+      {/* Main Card Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {(activeTab === 'Course' ? mockCourses : mockTutorials).map((item) => (
+          <ContentCard
+            key={item.id}
+            item={{
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              image: item.image,
+              ...(activeTab === 'Course' && { modules: item.modules }),
+              ...(activeTab === 'Course' && { progress: item.progress }),
+              ...(activeTab === 'Tutorial' && { duration: item.duration }),
+              rewardInUsd: item.rewardInUsd,
+              rewardInEth: String(item.rewardInEth),
+            }}
+            buttonLabel={
+              item.progress && item.progress > 0
+                ? 'Continue learning'
+                : 'Start Course'
+            }
+            onAction={() => handleViewTask(item.id)}
+          />
+        ))}
+      </div>
+
+      {/* Recommended Courses */}
+      {activeTab === 'Course' && (
+        <div className="py-10">
+          <div className="text-xl font-semibold capitalize">
+            <h1 className="">courses for you</h1>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {mockCourses.map((item) => (
+              <ContentCard
+                key={`recommend-${item.id}`}
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  description: item.description,
+                  image: item.image,
+                  modules: item.modules,
+                  rewardInUsd: item.rewardInUsd,
+                  rewardInEth: String(item.rewardInEth),
+                }}
+                buttonLabel={
+                  item.progress && item.progress > 0
+                    ? 'Start Course'
+                    : 'Continue learning'
+                }
+                onAction={() => handleViewTask(item.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

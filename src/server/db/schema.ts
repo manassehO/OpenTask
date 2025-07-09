@@ -1,7 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { isNotNull, sql } from "drizzle-orm";
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -34,19 +34,19 @@ const taskStatusEnum = pgEnum("task_status", [
 ]);
 
 export const posts = createTable(
-  "post",
+  'post',
   {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+    name: varchar('name', { length: 256 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
   },
   (example) => ({
-    nameIndex: index("name_idx").on(example.name),
+    nameIndex: index('name_idx').on(example.name),
   }),
 );
 
@@ -75,7 +75,7 @@ export const session = createTable("session", {
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => user.id, { onDelete: 'cascade' }),
 });
 
 export const account = createTable("account", {
@@ -84,63 +84,74 @@ export const account = createTable("account", {
   providerId: text("provider_id").notNull(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: timestamp("access_token_expires_at"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    .references(() => user.id, { onDelete: 'cascade' }),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  idToken: text('idToken'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const verification = createTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+export const verification = createTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const nonceVerification = createTable('nonce_verification', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  identifier: text('identifier')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  value: text('value').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
 export const wallets = createTable(
-  "wallets",
+  'wallets',
   {
     walletId: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    starknetAddress: varchar("starknet_address", { length: 100 })
+      .references(() => user.id, { onDelete: 'cascade' }),
+    starknetAddress: varchar('starknet_address', { length: 100 })
       .notNull()
       .unique(),
-    walletType: walletTypeEnum("wallet_type").notNull(), // managed, self_custody
-    isActive: integer("is_active").notNull().default(1),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    walletType: walletTypeEnum('wallet_type').notNull(), // managed, self_custody
+    isActive: integer('is_active').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
   },
   (table) => ({
-    userIdIndex: index("user_id_idx").on(table.userId),
-    starknetAddressIndex: index("starknet_address_idx").on(
+    userIdIndex: index('user_id_idx').on(table.userId),
+    starknetAddressIndex: index('starknet_address_idx').on(
       table.starknetAddress,
     ),
   }),
 );
 
-export const otps = createTable("otps", {
-  otpId: uuid("id").primaryKey().defaultRandom(),
-  email: varchar("email").notNull().unique(),
-  code: varchar("code").notNull(),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+export const otps = createTable('otps', {
+  otpId: text('id').primaryKey(),
+  email: varchar('email').notNull().unique(),
+  code: varchar('code').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
 });

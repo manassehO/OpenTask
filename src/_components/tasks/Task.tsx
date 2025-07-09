@@ -1,21 +1,21 @@
-import { useRouter } from "next/navigation";
-import { mockTasks } from "~/mocks/tasks";
-import TaskCard from "./TaskCard";
-import TaskFilterTabs, { type TaskFilterTab } from "./TaskFilterTabs";
-import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import { mockTasks } from '~/mocks/tasks';
+import TaskCard from './TaskCard';
+import TaskFilterTabs, { type TaskFilterTab } from './TaskFilterTabs';
+import { useState } from 'react';
 
 const tabLabels = [
-  { id: "defi", label: "De-Fi" },
-  { id: "userTesting1", label: "User Testing" },
-  { id: "userTesting2", label: "User Testing" },
-  { id: "userTesting3", label: "User Testing" },
-  { id: "userTesting4", label: "User Testing" },
-  { id: "userTesting5", label: "User Testing" },
-  { id: "userTesting6", label: "User Testing" },
+  { id: 'defi', label: 'De-Fi' },
+  { id: 'userTesting1', label: 'User Testing' },
+  { id: 'userTesting2', label: 'User Testing' },
+  { id: 'userTesting3', label: 'User Testing' },
+  { id: 'userTesting4', label: 'User Testing' },
+  { id: 'userTesting5', label: 'User Testing' },
+  { id: 'userTesting6', label: 'User Testing' },
 ];
 
 const AllTasks = () => {
-  const [activeTab, setActiveTab] = useState<string>("defi");
+  const [activeTab, setActiveTab] = useState<string>('defi');
 
   const router = useRouter();
   const onClick = (taskId: string) => {
@@ -39,7 +39,7 @@ const AllTasks = () => {
         tabs={tabs}
       />
 
-      {activeTab === "defi" && (
+      {activeTab === 'defi' && (
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {mockTasks.map((task) => (
             <TaskCard key={task.id} task={task} onAction={onClick} />

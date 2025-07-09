@@ -1,6 +1,6 @@
-import { mockTasks } from "~/mocks/tasks";
-import TaskCard from "./TaskCard";
-import { useRouter } from "next/navigation";
+import { mockTasks } from '~/mocks/tasks';
+import TaskCard from './TaskCard';
+import { useRouter } from 'next/navigation';
 
 export default function ActiveTask() {
   const router = useRouter();

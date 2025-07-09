@@ -1,136 +1,150 @@
-"use client";
+'use client';
 
-import { useAtom } from "jotai";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { sidebarAtom } from "~/hooks/sidebarAtom";
+import { useAtom } from 'jotai';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { sidebarAtom } from '~/hooks/sidebarAtom';
 
-function Sidebar({ role }: { role: "admin" | "creator" | "user" }) {
+function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useAtom(sidebarAtom);
 
   const handleLinkClick = () => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsOpen(false);
     }
   };
 
+  // admin side bar list
   const adminList = [
     {
-      title: "Dashboard",
-      icon: "/icons/sidebar_home.svg",
-      route: "/admin/home",
+      title: 'Dashboard',
+      icon: '/icons/sidebar_home.svg',
+      route: '/admin/home',
     },
     {
-      title: "Manage Users",
-      icon: "/icons/users.svg",
-      route: "/admin/users",
+      title: 'Manage Users',
+      icon: '/icons/users.svg',
+      route: '/admin/users',
     },
-    { title: "Tasks", icon: "/icons/darkTask.svg", route: "/admin/tasks" },
+    { title: 'Tasks', icon: '/icons/darkTask.svg', route: '/admin/tasks' },
     {
-      title: "Dispute",
-      icon: "/icons/dispute.svg",
-      route: "/admin/dispute",
-    },
-    {
-      title: "Settings",
-      icon: "/icons/sidebar_settings.svg",
-      route: "/admin/settings",
+      title: 'Dispute',
+      icon: '/icons/dispute.svg',
+      route: '/admin/dispute',
     },
     {
-      title: "Contents",
-      icon: "/icons/content.svg",
-      route: "/admin/contents",
+      title: 'Settings',
+      icon: '/icons/sidebar_settings.svg',
+      route: '/admin/settings',
+    },
+    {
+      title: 'Contents',
+      icon: '/icons/content.svg',
+      route: '/admin/contents',
     },
   ];
 
+  // creator side bar list
   const creatorList = [
     {
-      title: "Dashboard",
-      icon: "/icons/sidebar_home.svg",
-      route: "/creator/home",
+      title: 'Dashboard',
+      icon: '/icons/sidebar_home.svg',
+      route: '/creator/home',
     },
     {
-      title: "Tasks",
-      icon: "/icons/darkTask.svg",
-      route: "/creator/tasks",
+      title: 'Tasks',
+      icon: '/icons/darkTask.svg',
+      route: '/creator/task',
     },
     {
-      title: "Analytics",
-      icon: "/icons/analytics.svg",
-      route: "/creator/analytics",
+      title: 'Analytics',
+      icon: '/icons/analytics.svg',
+      route: '/creator/analytics',
     },
   ];
 
+  // user side bar list
   const userList = [
-    { title: "Home", icon: "/icons/sidebar_home.svg", route: "/home" },
-    { title: "Tasks", icon: "/icons/sidebar_task.svg", route: "/task" },
+    { title: 'Home', icon: '/icons/sidebar_home.svg', route: '/home' },
+    { title: 'Tasks', icon: '/icons/sidebar_task.svg', route: '/task' },
     {
-      title: "Earnings & Rewards",
-      icon: "/icons/sidebar_earning.svg",
-      route: "/earnings",
+      title: 'Earnings & Rewards',
+      icon: '/icons/sidebar_earning.svg',
+      route: '/earnings',
     },
     {
-      title: "Learning Center",
-      icon: "/icons/sidebar_learning.svg",
-      route: "/learning",
+      title: 'Learning Center',
+      icon: '/icons/sidebar_learning.svg',
+      route: '/learning',
     },
     {
-      title: "Settings",
-      icon: "/icons/sidebar_settings.svg",
-      route: "/settings",
+      title: 'Settings',
+      icon: '/icons/sidebar_settings.svg',
+      route: '/settings',
     },
   ];
 
   let sidebar_list;
-  if (role === "admin") sidebar_list = adminList;
-  else if (role === "creator") sidebar_list = creatorList;
+  if (role === 'admin') sidebar_list = adminList;
+  else if (role === 'creator') sidebar_list = creatorList;
   else sidebar_list = userList;
 
   return (
     <>
       {/* Sidebar */}
-      <div
-        className={`w-[75%] rounded-lg bg-white px-6 py-4 shadow-sm transition-all duration-300 ease-in-out md:w-[40%] lg:w-[300px]`}
+      <aside
+        className={`w-70 fixed left-0 top-0 z-40 h-full transform bg-white px-4 py-6 shadow-lg transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:w-full lg:translate-x-0 lg:rounded-lg lg:bg-white/40 lg:shadow-none`}
       >
-        {/* Sidebar content */}
-        {sidebar_list.map((list, i) => {
-          console.log(list)
-          const isActive = pathname === list.route;
+        {/* Close button (mobile only) */}
+        <div className="mb-4 flex items-center justify-between lg:hidden">
+          <h2 className="text-lg font-bold">Menu</h2>
+          <button
+            className="rounded-md p-2 hover:bg-gray-100"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Sidebar items */}
+        {sidebar_list.map((item, index) => {
+          const isActive = pathname === item.route;
 
           return (
-            <div key={i}>
-              <Link
-                href={list.route}
-                onClick={handleLinkClick}
-                className={`flex w-full gap-3 px-6 py-4 text-base font-semibold capitalize ${
-                  isActive
-                    ? "rounded-md bg-[#3B82F6] text-white"
-                    : "text-[#414141]"
-                }`}
-              >
-                <Image src={list.icon} alt="" height={20} width={20} />
-                {list.title}
-              </Link>
-            </div>
+            <Link
+              key={index}
+              href={item.route}
+              onClick={handleLinkClick}
+              className={`mb-2 flex items-center gap-3 rounded-md px-6 py-4 text-base font-semibold capitalize transition-colors ${
+                isActive
+                  ? 'bg-primary text-white'
+                  : 'text-[#414141] hover:bg-[#E5EFFF]'
+              }`}
+            >
+              <Image src={item.icon} alt={item.title} height={20} width={20} />
+              {item.title}
+            </Link>
           );
         })}
 
+        {/* Logout */}
         <Link
           href="/"
           onClick={handleLinkClick}
-          className="mt-20 flex w-full gap-3 bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30]"
+          className="mt-20 flex items-center gap-3 rounded-md bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30] hover:bg-[#FFE8E7]"
         >
-          <Image src="/icons/logout.svg" alt="" height={20} width={20} />
+          <Image src="/icons/logout.svg" alt="Log out" height={20} width={20} />
           Log out
         </Link>
-      </div>
+      </aside>
 
-      {/* Backdrop for mobile only */}
+      {/* Backdrop for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

@@ -1,18 +1,38 @@
-import Image from "next/image";
+'use client';
+import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
+import Image from 'next/image';
+import { containerVariants } from '~/lib/animations';
 
-
+const imageVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
 
 function HeroPage() {
   return (
-    <div className="lg:mt-[50px] mt-[20px] flex h-auto w-full flex-col items-center justify-center">
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      className="mt-[20px] flex h-auto w-full flex-col items-center justify-center lg:mt-[50px]"
+    >
       <span className="text-[24px] font-bold capitalize md:text-[32px] lg:text-[64px]">
-        Earn Real{" "}
+        Earn Real{' '}
         <span
           className="inline-block rounded-[4px] bg-[#3B82F6] p-1"
-          style={{ transform: "rotate(-1.7deg)" }}
+          style={{ transform: 'rotate(-1.7deg)' }}
         >
           <p
-            style={{ transform: "rotate(1.7deg)" }}
+            style={{ transform: 'rotate(1.7deg)' }}
             className="inline-block text-white"
           >
             Cryptocurrency
@@ -23,19 +43,23 @@ function HeroPage() {
         Without Risk or Investment
       </p>
 
-      <div className="mt-8 items-center text-center px-2 text-lg font-semibold lg:w-[830px] lg:text-xl">
+      <div className="mt-8 items-center px-2 text-center text-lg font-semibold lg:w-[830px] lg:text-xl">
         Complete simple tasks, earn digital rewards, and learn about crypto at
         your own pace - no wallet or technical knowledge required
       </div>
       <div className="items-cener mt-8 flex flex-row gap-6">
-        <button className="rounded-[4px] bg-[#FAFAFA] lg:px-[40px] py-[8px] px-[20px] lg:py-[16px] text-base font-semibold text-[#3B82F6]">
+        <button className="rounded-[4px] bg-[#FAFAFA] px-[20px] py-[8px] text-base font-semibold text-[#3B82F6] lg:px-[40px] lg:py-[16px]">
           Learn More
         </button>
-        <button className="rounded-[4px] bg-[#3B82F6] px-[20px] lg:px-[40px] py-[8px] lg:py-[16px] text-base font-semibold text-white">
+        <button className="rounded-[4px] bg-[#3B82F6] px-[20px] py-[8px] text-base font-semibold text-white lg:px-[40px] lg:py-[16px]">
           Register
         </button>
       </div>
-      <div className="lg:mt-[150px] mt-[80px] h-auto w-[80%]">
+
+      <motion.div
+        variants={imageVariants}
+        className="mt-[80px] h-auto w-[80%] lg:mt-[150px]"
+      >
         <Image
           width={100}
           height={100}
@@ -43,8 +67,8 @@ function HeroPage() {
           alt=""
           className="h-full w-full"
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.section>
   );
 }
 

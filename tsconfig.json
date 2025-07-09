@@ -28,7 +28,7 @@
     "paths": {
       "~/*": ["./src/*"],
       "@/*": ["./src/*"],
-      "@/components/*": ["./src/app/_components/*"],
+      "@/components/*": ["src/app/_components/*"],
       "@/types/*": ["./src/types/*"],
       "@/lib/*": ["./src/lib/*"]
     }
@@ -40,7 +40,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "contracts/alephium/**/*"
   ],
-  "exclude": ["node_modules", "contracts/**/*"]
+  "exclude": ["node_modules", "contracts"]
 }

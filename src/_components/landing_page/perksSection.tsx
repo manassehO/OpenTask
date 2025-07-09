@@ -1,10 +1,33 @@
-import Image from "next/image";
-import Section1 from "../../../public/section1.png";
-import Section2 from "../../../public/section2.png";
+'use client';
 
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { containerVariants } from '~/lib/animations';
+import Section1 from '../../../public/section1.png';
+import Section2 from '../../../public/section2.png';
+
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
 export default function PerksSection() {
   return (
-    <div className="mt-4 bg-[#FAFAFA] px-4 py-20 sm:px-6 lg:px-8">
+    <motion.section
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      className="mt-4 bg-[#FAFAFA] px-4 py-20 sm:px-6 lg:px-8"
+    >
       <div className="flex w-full flex-col items-center justify-center">
         <button className="my-3 h-[38px] w-[152px] rounded-[32px] bg-[#D8E6FD66] text-center text-[#3B82F6] lg:my-6">
           benefits
@@ -21,7 +44,10 @@ export default function PerksSection() {
       </div>
 
       {/* Section 1 */}
-      <div className="mx-auto mt-16 grid max-w-7xl items-center gap-12 md:grid-cols-2">
+      <motion.div
+        variants={itemVariants}
+        className="mx-auto mt-16 grid max-w-7xl items-center gap-12 md:grid-cols-2"
+      >
         <div className="relative h-64 w-full md:h-80 lg:h-96">
           <Image
             src={Section1}
@@ -53,10 +79,13 @@ export default function PerksSection() {
             </li>
           </ul>
         </div>
-      </div>
+      </motion.div>
 
       {/* Section 2 */}
-      <div className="mx-auto mt-24 grid max-w-7xl items-center gap-12 md:grid-cols-2">
+      <motion.div
+        variants={itemVariants}
+        className="mx-auto mt-24 grid max-w-7xl items-center gap-12 md:grid-cols-2"
+      >
         <div className="order-2 md:order-1 md:ml-[85px]">
           <h3 className="mb-4 text-2xl font-semibold text-gray-900">
             Familiar & Simple
@@ -89,11 +118,14 @@ export default function PerksSection() {
             className="object-contain"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Section 3 */}
-      <div className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2">
-        <div className="relative flex hidden h-64 w-full items-center justify-center bg-[#ffffff] md:block md:h-80 lg:h-96"></div>
+      <motion.div
+        variants={itemVariants}
+        className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2"
+      >
+        <div className="relative hidden h-64 w-full items-center justify-center bg-[#ffffff] md:block md:h-80 lg:h-96"></div>
         <div>
           <h3 className="mb-4 text-2xl font-semibold text-gray-900">
             Learn While You Earn
@@ -117,7 +149,7 @@ export default function PerksSection() {
             </li>
           </ul>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.section>
   );
 }

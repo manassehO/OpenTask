@@ -1,8 +1,29 @@
-import Image from "next/image";
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+
+import type { Variants } from 'framer-motion';
+import { easeOut } from 'framer-motion';
+
+const imageVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: easeOut, // ✅ Correct type
+    },
+  },
+};
 
 export default function WhereYouBelongCard() {
   return (
-    <div className="flex h-auto w-full items-center justify-center">
+    <motion.section
+      variants={imageVariants}
+      initial="hidden"
+      whileInView="visible"
+      className="flex h-auto w-full items-center justify-center"
+    >
       <div className="relative my-16 flex h-[340px] w-full flex-col items-center justify-between gap-4 bg-[#3B82F6] p-12 text-white lg:h-[485px] lg:max-w-7xl lg:flex-row lg:rounded-lg">
         <div>
           <button className="my-3 h-[38px] rounded-[32px] bg-transparent/50 px-4 text-center text-xs text-white md:text-sm lg:my-6 lg:text-base">
@@ -34,6 +55,6 @@ export default function WhereYouBelongCard() {
           width={0}
         />
       </div>
-    </div>
+    </motion.section>
   );
 }

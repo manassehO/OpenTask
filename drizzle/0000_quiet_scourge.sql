@@ -3,7 +3,6 @@ CREATE TYPE wallet_type AS ENUM ('managed', 'self_custody');
 CREATE TYPE roles AS ENUM ('CREATOR', 'COMPLETER', 'ADMIN');
 CREATE TYPE task_status AS ENUM ('DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED', 'DISPUTED');
 
-
 CREATE TABLE IF NOT EXISTS "opentask_account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,

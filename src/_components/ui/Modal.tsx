@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface ModalProps {
   open: boolean;
@@ -20,7 +20,7 @@ const Modal: React.FC<ModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`mx-4 flex w-full max-w-md flex-col items-center rounded-lg bg-white p-6 text-center ${className ?? ""}`}
+        className={`mx-4 flex w-full max-w-md flex-col items-center rounded-lg bg-white p-6 text-center ${className ?? ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
