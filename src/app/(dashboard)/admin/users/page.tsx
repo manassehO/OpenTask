@@ -1,9 +1,16 @@
-import React from 'react';
+import UserListSkeleton from '~/_components/dashboard_components/admin/user/UserListSkeleton';
+import Header from '~/_components/dashboard_components/admin/header';
+import UsersTable from '~/_components/dashboard_components/admin/user/UsersTable';
 
-type Props = object;
+export default function UsersPage() {
+  const isLoading = false; // replace with real loading state
 
-function page({}: Props) {
-  return <div>page</div>;
+  return isLoading ? (
+    <UserListSkeleton />
+  ) : (
+    <div className="relative h-screen w-full">
+      <Header title="Users" subText="" />
+      <UsersTable />
+    </div>
+  );
 }
-
-export default page;

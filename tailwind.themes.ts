@@ -5,6 +5,7 @@ const themes: Partial<Config['theme']> = {
   colors: {
     primary: { DEFAULT: '#3B82F6', 20: '#7CBAFD' },
     secondary: { DEFAULT: '#9333EA', 50: '#CDF0F6' },
+
     grey: {
       DEFAULT: '#414141',
       50: '#D9D9D9',
@@ -13,6 +14,7 @@ const themes: Partial<Config['theme']> = {
       300: '#9C9C9C',
       400: '#1212124D',
     },
+
 
     //     primary: { DEFAULT: '#3B82F6', 50: '#D8E6FD80' },
     //     secondary: { DEFAULT: '#9333EA' },
@@ -50,6 +52,7 @@ const themes: Partial<Config['theme']> = {
       800: '#202020',
       900: '#161616',
     },
+
     accent: {
       100: '#06B6D4',
       200: '#CB00A3',
@@ -57,9 +60,14 @@ const themes: Partial<Config['theme']> = {
       400: '#D40606',
     },
 
+
     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#F9FAFB' },
 
     //     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#D9D9D9' },
+
+
+    error: { DEFAULT: '#FF3B30' },
+
 
     green: {
       DEFAULT: '#34C759',
