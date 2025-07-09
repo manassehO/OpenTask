@@ -22,7 +22,9 @@ export default function RootLayout({
   // switch between user roles for testing purposes and development
   // const userRole = 'creator';
   // const userRole = 'admin';
-  const userRole = 'admin';
+
+  const userRole = 'user';
+
 
   return (
     <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
