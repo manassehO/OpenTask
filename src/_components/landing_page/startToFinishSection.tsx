@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Faq from '../ui/faq';
+import { motion } from 'framer-motion';
 
 function StartToFinishSection() {
   return (
@@ -27,13 +28,15 @@ function StartToFinishSection() {
             openTextColor="text-white"
             items={faqItems}
           />
-          <Image
-            src="/icons/heroStartToFinish.svg"
-            alt=""
-            className="h-fulll w-full"
-            height={100}
-            width={100}
-          />
+          <motion.div>
+            <Image
+              src="/icons/heroStartToFinish.svg"
+              alt=""
+              className="h-full w-full"
+              height={100}
+              width={100}
+            />
+          </motion.div>
         </div>
       </div>
     </div>
