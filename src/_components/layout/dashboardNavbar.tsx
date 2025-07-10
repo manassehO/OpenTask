@@ -25,7 +25,7 @@ export function DashboardNavbar() {
 
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 h-auto w-full bg-white shadow">
-      <div className="mx-auto flex items-center justify-between gap-4 px-3 py-4 lg:px-10">
+      <div className="mx-auto flex items-center justify-between gap-4 px-4 py-4 lg:px-10">
         <Link href="/" className="flex items-center">
           <Image
             width={32}

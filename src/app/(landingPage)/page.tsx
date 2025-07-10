@@ -1,3 +1,4 @@
+'use client';
 import FaqSection from '~/_components/landing_page/faqSection';
 import HeroPage from '~/_components/landing_page/hero';
 import PerksSection from '~/_components/landing_page/perksSection';

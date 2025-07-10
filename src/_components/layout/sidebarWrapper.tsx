@@ -13,7 +13,7 @@ export default function SidebarWrapper({
 }) {
   const [isSidebarOpen] = useAtom(sidebarAtom);
 
-  const sidebarWidth = isSidebarOpen ? 250 : 0;
+  const sidebarWidth = isSidebarOpen ? 280 : 0;
 
   return (
     <div className="relative h-screen w-full bg-[#FAFAFA] pt-[100px]">
