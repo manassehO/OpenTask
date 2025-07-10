@@ -45,6 +45,7 @@ export const posts = createTable(
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey(),
+  id: text('id').primaryKey(),
   oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
   email: text('email').notNull().unique(),
@@ -68,6 +69,7 @@ export const session = createTable('session', {
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   userId: text('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
 });
@@ -76,6 +78,7 @@ export const account = createTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
+  userId: text('userId')
   userId: text('userId')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -110,10 +113,22 @@ export const nonceVerification = createTable('nonce_verification', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const nonceVerification = createTable('nonce_verification', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  identifier: text('identifier')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  value: text('value').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const wallets = createTable(
   'wallets',
   {
     walletId: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
@@ -129,6 +144,7 @@ export const wallets = createTable(
       () => new Date(),
     ),
     hashedPrivateKey: text('hashed_private_key').notNull(),
+    hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
     userIdIndex: index('user_id_idx').on(table.userId),
@@ -139,6 +155,7 @@ export const wallets = createTable(
 );
 
 export const otps = createTable('otps', {
+  otpId: text('id').primaryKey(),
   otpId: text('id').primaryKey(),
   email: varchar('email').notNull().unique(),
   code: varchar('code').notNull(),
