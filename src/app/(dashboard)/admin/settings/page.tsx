@@ -4,6 +4,7 @@ import * as RadixSwitch from '@radix-ui/react-switch';
 import Image from 'next/image';
 import editIcon from '../../../../../public/icons/edit.png';
 import deleteIcon from '../../../../../public/icons/material-symbols_delete-outline.png';
+import { ReusableTable } from '@/_components/ui/table';
 
 type CounterProps = {
   value: number;
@@ -18,7 +19,7 @@ const Counter: React.FC<CounterProps> = ({
   min = 0,
   max = 100,
 }) => (
-  <div className="mt-4 flex h-[50px] w-[347px] items-center justify-between rounded border border-[#C0C0C0] bg-transparent px-4">
+  <div className="mt-4 flex h-[50px] w-[250px] items-center justify-between rounded border border-[#C0C0C0] bg-transparent px-4 md:w-[347px]">
     <span className="font-semibold text-[#202020]">{value}</span>
     <div className="ml-2 flex flex-col">
       <button
@@ -88,7 +89,7 @@ const Page = () => {
       label: 'Categories',
       content: (
         <div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row md:gap-0">
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold">Task Categories</h1>
               <p className="font-semibold text-[#7E7E7E]">
@@ -100,134 +101,60 @@ const Page = () => {
               <h2>+ Add Category</h2>
             </div>
           </div>
-          <div>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'separate',
-                borderSpacing: 0,
-                border: '2px solid #ABB9C9',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                marginTop: '25px',
-              }}
-            >
-              <thead>
-                <tr
-                  style={{
-                    background: '#D8E6FD',
-                    borderBottom: '2px solid #ABB9C9',
-                  }}
-                >
-                  <th
-                    style={{
-                      padding: '20px',
-                      border: 'none',
-                      textAlign: 'left',
-                    }}
-                  >
-                    Name
-                  </th>
-                  <th
-                    style={{
-                      padding: '20px',
-                      border: 'none',
-                      textAlign: 'left',
-                    }}
-                  >
-                    Description
-                  </th>
-                  <th
-                    style={{
-                      padding: '20px',
-                      border: 'none',
-                      textAlign: 'left',
-                    }}
-                  >
-                    Status
-                  </th>
-                  <th
-                    style={{
-                      padding: '20px',
-                      border: 'none',
-                      textAlign: 'left',
-                    }}
-                  >
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr key={i} className="text-[#202020]">
-                    <td
-                      style={{
-                        padding: '20px',
-                        border: 'none',
-                        borderBottom:
-                          i !== rows.length - 1 ? '2px solid #ABB9C9' : 'none',
-                      }}
+          <ReusableTable
+            columns={[
+              {
+                header: 'Name',
+                accessor: 'name',
+              },
+              {
+                header: 'Description',
+                accessor: 'description',
+              },
+              {
+                header: 'Status',
+                accessor: (row) => (
+                  <div className="flex items-center">
+                    <RadixSwitch.Root
+                      checked={row.status}
+                      onCheckedChange={() =>
+                        handleToggle(rows.findIndex((r) => r === row))
+                      }
+                      className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors data-[state=checked]:bg-blue-600"
                     >
-                      {row.name}
-                    </td>
-                    <td
-                      style={{
-                        padding: '20px',
-                        border: 'none',
-                        borderBottom:
-                          i !== rows.length - 1 ? '2px solid #ABB9C9' : 'none',
-                      }}
-                    >
-                      {row.description}
-                    </td>
-                    <td
-                      style={{
-                        padding: '20px',
-                        border: 'none',
-                        borderBottom:
-                          i !== rows.length - 1 ? '2px solid #ABB9C9' : 'none',
-                      }}
-                    >
-                      <RadixSwitch.Root
-                        checked={row.status}
-                        onCheckedChange={() => handleToggle(i)}
-                        className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors data-[state=checked]:bg-blue-600"
-                        id={`switch-${i}`}
-                      >
-                        <RadixSwitch.Thumb className="block h-5 w-5 rounded-full bg-white shadow-lg transition-transform data-[state=checked]:translate-x-5" />
-                      </RadixSwitch.Root>
-                      <span className="ml-3 text-sm font-medium">
-                        {row.status ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td
-                      style={{
-                        padding: '20px',
-                        border: 'none',
-                        borderBottom:
-                          i !== rows.length - 1 ? '2px solid #ABB9C9' : 'none',
-                      }}
-                    >
-                      <Image
-                        src={editIcon}
-                        width={20}
-                        height={20}
-                        alt="Edit"
-                        className="mr-6 inline-block h-5 w-5 cursor-pointer"
-                      />
-                      <Image
-                        src={deleteIcon}
-                        width={20}
-                        height={20}
-                        alt="Delete"
-                        className="inline-block h-5 w-5 cursor-pointer"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <RadixSwitch.Thumb className="block h-5 w-5 rounded-full bg-white shadow-lg transition-transform data-[state=checked]:translate-x-5" />
+                    </RadixSwitch.Root>
+                    <span className="ml-3 text-sm font-medium">
+                      {row.status ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                header: 'Action',
+                accessor: (row) => (
+                  <div className="flex gap-4">
+                    <Image
+                      src={editIcon}
+                      width={20}
+                      height={20}
+                      alt="Edit"
+                      className="cursor-pointer"
+                    />
+                    <Image
+                      src={deleteIcon}
+                      width={20}
+                      height={20}
+                      alt="Delete"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                ),
+              },
+            ]}
+            data={rows}
+            className="mt-6"
+          />
         </div>
       ),
     },
@@ -242,7 +169,7 @@ const Page = () => {
             </p>
           </div>
           <h2 className="text-xl font-bold">Task Settings</h2>
-          <div className="flex gap-10 font-bold text-[#161616]">
+          <div className="flex flex-col gap-10 font-bold text-[#161616] lg:flex-row">
             <div className="flex flex-col items-start">
               <h2>Auto-Close Tasks After (Days)</h2>
               <Counter
@@ -300,7 +227,7 @@ const Page = () => {
             </p>
           </div>
           <h2 className="text-xl font-bold">Task Rewards Limits</h2>
-          <div className="flex gap-10 font-bold text-[#161616]">
+          <div className="flex flex-col gap-10 font-bold text-[#161616] lg:flex-row">
             <div className="flex flex-col items-start">
               <h2>Require Email Verification</h2>
               <Counter
@@ -346,7 +273,7 @@ const Page = () => {
               Configure General Platform Settings
             </p>
           </div>
-          <div className="mt-8 flex h-[100vh] flex-col items-center justify-center rounded-md border-2 border-[#C0C0C0]">
+          <div className="mt-8 flex min-h-[500px] flex-col items-center justify-center rounded-md border-2 border-[#C0C0C0]">
             <p className="font-semibold text-[#7E7E7E]">
               Notification settings Would Appear Here
             </p>
@@ -359,12 +286,13 @@ const Page = () => {
   return (
     <main>
       <h1 className="my-6 text-3xl font-bold text-black">Settings</h1>
-      <div className="flex max-w-[560px] gap-6 rounded-md bg-white px-4 py-6 text-black">
+      {/* <div className="flex max-w-[560px] gap-2 md:gap-6 rounded-md bg-white px-2 py-2 md:px-4 md:py-6 text-black"> */}
+      <div className="scrollbar-hide flex w-full gap-3 overflow-x-auto rounded-md bg-white px-4 py-4 text-black">
         {tabs.map((tab, idx) => (
           <h2
             key={tab.label}
             onClick={() => setActiveTab(idx)}
-            className={`cursor-pointer rounded px-4 py-3 transition ${
+            className={`cursor-pointer whitespace-nowrap rounded px-4 py-2 text-sm transition ${
               activeTab === idx ? 'bg-blue-600 font-bold text-white' : ''
             }`}
           >
