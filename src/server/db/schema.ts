@@ -14,12 +14,6 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
 const walletTypeEnum = pgEnum('wallet_type', ['managed', 'self_custody']);
@@ -45,15 +39,14 @@ export const posts = createTable(
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey(),
-  id: text('id').primaryKey(),
   oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   displayName: varchar('display_name', { length: 150 }),
-  status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
+  status: statusEnum('status').default('ACTIVE').notNull(),
   image: text('image'),
-  role: rolesEnum('role').default('CREATOR').notNull(), // CREATOR, COMPLETER, ADMIN
+  role: rolesEnum('role').default('CREATOR').notNull(),
   walletAddress: varchar('wallet_address', { length: 100 }),
   hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -69,7 +62,6 @@ export const session = createTable('session', {
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   userId: text('user_id')
-  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
 });
@@ -78,7 +70,6 @@ export const account = createTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: text('userId')
   userId: text('userId')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -113,29 +104,17 @@ export const nonceVerification = createTable('nonce_verification', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const nonceVerification = createTable('nonce_verification', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  identifier: text('identifier')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  value: text('value').notNull().unique(),
-  expiresAt: timestamp('expires_at').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
 export const wallets = createTable(
   'wallets',
   {
     walletId: uuid('id').primaryKey().defaultRandom(),
-    userId: text('user_id')
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     starknetAddress: varchar('starknet_address', { length: 100 })
       .notNull()
       .unique(),
-    walletType: walletTypeEnum('wallet_type').notNull(), // managed, self_custody
+    walletType: walletTypeEnum('wallet_type').notNull(),
     isActive: integer('is_active').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -143,7 +122,6 @@ export const wallets = createTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
-    hashedPrivateKey: text('hashed_private_key').notNull(),
     hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
@@ -156,8 +134,7 @@ export const wallets = createTable(
 
 export const otps = createTable('otps', {
   otpId: text('id').primaryKey(),
-  otpId: text('id').primaryKey(),
-  email: varchar('email').notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
   code: varchar('code').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -187,6 +164,8 @@ export const task = createTable('task', {
   creatorId: text('creator_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date()),
 });
