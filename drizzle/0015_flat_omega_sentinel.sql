@@ -1,0 +1,1 @@
+ALTER TABLE "opentask_wallets" ALTER COLUMN "user_id" SET DATA TYPE text;

@@ -44,7 +44,7 @@ export const posts = createTable(
 
 // Better-Auth required tables
 export const user = createTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: text('id').primaryKey(),
   oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
   email: text('email').notNull().unique(),
@@ -65,7 +65,7 @@ export const session = createTable('session', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
 });
@@ -74,7 +74,7 @@ export const account = createTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: uuid('userId')
+  userId: text('userId')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
@@ -97,11 +97,22 @@ export const verification = createTable('verification', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+export const nonceVerification = createTable('nonce_verification', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  identifier: text('identifier')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  value: text('value').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const wallets = createTable(
   'wallets',
   {
     walletId: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id')
+    userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     starknetAddress: varchar('starknet_address', { length: 100 })
@@ -115,6 +126,7 @@ export const wallets = createTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
     userIdIndex: index('user_id_idx').on(table.userId),
@@ -125,7 +137,7 @@ export const wallets = createTable(
 );
 
 export const otps = createTable('otps', {
-  otpId: uuid('id').primaryKey().defaultRandom(),
+  otpId: text('id').primaryKey(),
   email: varchar('email').notNull().unique(),
   code: varchar('code').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -135,4 +147,15 @@ export const otps = createTable('otps', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+});
+
+export const onchainEvents = createTable('onchain_events', {
+  eventId: uuid('id').primaryKey().defaultRandom(),
+  walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
+  token: varchar('token', { length: 50 }),
+  eventType: varchar('event_type', { length: 50 }),
+  amount: varchar('amount', { length: 50 }),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });

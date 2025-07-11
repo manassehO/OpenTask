@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import FaqGuidelines from '~/_components/admin/content/faq-guidelines';
+import FaqGuidelines from '~/_components/admin/faq-guidelines';
 
 export default function AdminFaq() {
   return (
