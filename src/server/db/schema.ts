@@ -52,10 +52,7 @@ export const user = createTable('user', {
   displayName: varchar('display_name', { length: 150 }),
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
-  // password: text("password"),
   role: rolesEnum('role').default('CREATOR').notNull(), // CREATOR, COMPLETER, ADMIN
-  walletAddress: varchar('wallet_address', { length: 100 }),
-  hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -129,6 +126,7 @@ export const wallets = createTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
     userIdIndex: index('user_id_idx').on(table.userId),
@@ -149,4 +147,15 @@ export const otps = createTable('otps', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+});
+
+export const onchainEvents = createTable('onchain_events', {
+  eventId: uuid('id').primaryKey().defaultRandom(),
+  walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
+  token: varchar('token', { length: 50 }),
+  eventType: varchar('event_type', { length: 50 }),
+  amount: varchar('amount', { length: 50 }),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
