@@ -53,7 +53,7 @@ export const posts = createTable(
 // Better-Auth required tables
 export const user = createTable("user", {
   id: text("id").primaryKey().notNull(),
-  oauth_id: varchar("oauth_id", { length: 128 }),
+  oauthId: varchar("oauth_id", { length: 128 }),
   name: text("name"),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
@@ -134,6 +134,7 @@ export const wallets = createTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    hashedPrivateKey: text('hashed_private_key').notNull(),
   },
   (table) => ({
     userIdIndex: index('user_id_idx').on(table.userId),
@@ -178,4 +179,15 @@ export const tasks = createTable("tasks", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+});
+
+export const onchainEvents = createTable('onchain_events', {
+  eventId: uuid('id').primaryKey().defaultRandom(),
+  walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
+  token: varchar('token', { length: 50 }),
+  eventType: varchar('event_type', { length: 50 }),
+  amount: varchar('amount', { length: 50 }),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });

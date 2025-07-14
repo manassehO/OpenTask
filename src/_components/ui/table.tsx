@@ -18,14 +18,18 @@ export function ReusableTable<T extends object>({
   className = '',
 }: ReusableTableProps<T>) {
   return (
-    <div className={`overflow-x-auto rounded-lg bg-white ${className}`}>
+    <div
+      className={`overflow-x-auto rounded-[12px] border border-[#ABB9C9] ${className}`}
+      style={{ borderCollapse: 'separate', borderSpacing: 0 }}
+    >
       <table className="min-w-full divide-y divide-gray-200">
         <thead>
-          <tr>
+          <tr className="bg-[#D8E6FD]">
             {columns.map((col: Column<T>, idx: number) => (
               <th
                 key={idx}
-                className={`px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500 ${
+                //text-gray-500
+                className={`px-4 py-3 text-left text-sm font-semibold uppercase text-[#202020] ${
                   col?.className ?? ''
                 }`}
               >
