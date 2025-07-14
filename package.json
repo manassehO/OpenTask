@@ -18,8 +18,7 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky",
-    "framer-motion": "^12.15.0"
+    "prepare": "husky"
   },
   "dependencies": {
     "@chipi-pay/chipi-sdk": "^3.1.2",
@@ -59,7 +58,6 @@
     "recharts": "^3.0.2",
     "server-only": "^0.0.1",
     "sharp": "^0.34.2",
-    "starknet": "^7.6.2",
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.3.1",
     "yup": "^1.6.1",

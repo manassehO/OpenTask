@@ -12,7 +12,7 @@ export const walletRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const userId = ctx.session.userId;
+      const userId = ctx.session!.userId;
 
       const wallets = await db.query.wallets.findMany({
         where: (w, { eq, and }) => and(eq(w.userId, userId), eq(w.isActive, 1)),
