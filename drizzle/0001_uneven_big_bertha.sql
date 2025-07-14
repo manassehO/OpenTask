@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_account" ALTER COLUMN "userId" SET DATA TYPE uuid;

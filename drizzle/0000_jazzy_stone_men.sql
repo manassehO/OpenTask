@@ -1,27 +1,23 @@
-CREATE TYPE "status" AS ENUM ('ACTIVE', 'SUSPENDED', 'BANNED');
-CREATE TYPE "wallet_type" AS ENUM ('managed', 'self_custody');
-CREATE TYPE "roles" AS ENUM ('CREATOR', 'COMPLETER', 'ADMIN');
-
 CREATE TABLE IF NOT EXISTS "opentask_account" (
 	"id" text PRIMARY KEY NOT NULL,
-	"accountId" text NOT NULL,
-	"providerId" text NOT NULL,
-	"userId" text NOT NULL,
-	"accessToken" text,
-	"refreshToken" text,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
 	"idToken" text,
-	"accessTokenExpiresAt" timestamp,
-	"refreshTokenExpiresAt" timestamp,
+	"access_token_expires_at" timestamp,
+	"refresh_token_expires_at" timestamp,
 	"scope" text,
 	"password" text,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opentask_otps" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar NOT NULL,
-	"code" varchar(6) NOT NULL,
+	"code" varchar NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp with time zone,
@@ -37,28 +33,44 @@ CREATE TABLE IF NOT EXISTS "opentask_post" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opentask_session" (
 	"id" text PRIMARY KEY NOT NULL,
-	"expiresAt" timestamp NOT NULL,
+	"expires_at" timestamp NOT NULL,
 	"token" text NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
-	"ipAddress" text,
-	"userAgent" text,
-	"userId" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"ip_address" text,
+	"user_agent" text,
+	"user_id" text NOT NULL,
 	CONSTRAINT "opentask_session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "opentask_tasks" (
+	"task_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"creator_user_id" text NOT NULL,
+	"title" varchar NOT NULL,
+	"description" text NOT NULL,
+	"instructions" text NOT NULL,
+	"category" varchar NOT NULL,
+	"reward_amount" numeric NOT NULL,
+	"reward_token_address" varchar(100) NOT NULL,
+	"required_completions" integer NOT NULL,
+	"status" "task_status" DEFAULT 'DRAFT' NOT NULL,
+	"funding_tx_hash" varchar(255) NOT NULL,
+	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"updated_at" timestamp with time zone
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opentask_user" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"oauth_id" varchar(128),
-	"name" text NOT NULL,
+	"name" text,
 	"email" text NOT NULL,
-	"emailVerified" boolean DEFAULT false NOT NULL,
+	"email_verified" boolean DEFAULT false NOT NULL,
 	"display_name" varchar(150),
 	"status" "status" DEFAULT 'ACTIVE' NOT NULL,
 	"image" text,
-	"role" text DEFAULT 'user' NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	"role" "roles" DEFAULT 'CREATOR' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "opentask_user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -66,14 +78,14 @@ CREATE TABLE IF NOT EXISTS "opentask_verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
-	"expiresAt" timestamp NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"updatedAt" timestamp DEFAULT now() NOT NULL
+	"expires_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "opentask_wallets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"starknet_address" varchar(100) NOT NULL,
 	"wallet_type" "wallet_type" NOT NULL,
 	"is_active" integer DEFAULT 1 NOT NULL,
@@ -83,19 +95,25 @@ CREATE TABLE IF NOT EXISTS "opentask_wallets" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "opentask_account" ADD CONSTRAINT "opentask_account_userId_opentask_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "opentask_account" ADD CONSTRAINT "opentask_account_user_id_opentask_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "opentask_session" ADD CONSTRAINT "opentask_session_userId_opentask_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "opentask_session" ADD CONSTRAINT "opentask_session_user_id_opentask_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "opentask_wallets" ADD CONSTRAINT "opentask_wallets_user_id_opentask_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."opentask_user"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "opentask_tasks" ADD CONSTRAINT "opentask_tasks_creator_user_id_opentask_user_id_fk" FOREIGN KEY ("creator_user_id") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "opentask_wallets" ADD CONSTRAINT "opentask_wallets_user_id_opentask_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."opentask_user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
