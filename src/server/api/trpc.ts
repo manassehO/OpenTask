@@ -158,7 +158,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'You mustn be logged in to access this resource',
+      message: 'You must be logged in to access this resource',
     });
   }
 
@@ -180,7 +180,7 @@ const hasRole = (roles: string[]) =>
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'You musti be logged in to access this resource',
+        message: 'You must be logged in to access this resource',
       });
     }
 

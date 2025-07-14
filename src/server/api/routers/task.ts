@@ -5,7 +5,46 @@ import { task, user, wallets} from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+
 import { taskClaims } from '~/server/db/schema';
+import { eq } from 'drizzle-orm';
+
+// Allowed status values
+const allowedStatus = [
+  'DRAFT',
+  'ACTIVE',
+  'COMPLETED',
+  'CANCELLED',
+  'DISPUTED',
+] as const;
+
+const createTaskSchema = z.object({
+  creatorUserId: z.string().min(1, 'creatorUserId is required'),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  instructions: z.string().min(1, 'Instructions are required'),
+  category: z.string().min(1, 'Category is required'),
+  rewardAmount: z
+    .string()
+    .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
+      message:
+        'Invalid reward amount: must be a positive number with up to 18 decimals',
+    }),
+  rewardTokenAddress: z
+    .string()
+    .refine((val) => /^0x[a-fA-F0-9]{40}$/.test(val), {
+      message: 'Invalid rewardTokenAddress format',
+    }),
+  requiredCompletions: z
+    .number()
+    .int()
+    .min(1, 'requiredCompletions must be at least 1'),
+  status: z.enum(allowedStatus),
+  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+    message: 'Invalid fundingTxHash format',
+  }),
+});
+
 
 export const taskRouter = createTRPCRouter({
   getTaskById: protectedProcedure
@@ -13,29 +52,34 @@ export const taskRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const result = await db
         .select({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          createdAt: task.createdAt,
-          updatedAt: task.updatedAt,
-          creatorId: task.creatorId,
+          id: tasks.taskId,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          createdAt: tasks.createdAt,
+          updatedAt: tasks.updatedAt,
+          creatorId: tasks.creatorUserId,
           creatorDisplayName: user.displayName,
         })
-        .from(task)
-        .where(eq(task.id, input.taskId))
-        .leftJoin(user, eq(task.creatorId, user.id));
+        .from(tasks)
+        .where(eq(tasks.taskId, input.taskId))
+        .leftJoin(user, eq(tasks.creatorUserId, user.id));
 
       if (!result.length) {
-        throw new Error("Task not found");
+        throw new Error('Task not found');
       }
 
       return result[0];
     }),
 
 
+
     initiateFunding: protectedProcedure
     .input(z.object({ taskId: z.string() }))
+
+  createTask: protectedProcedure
+    .input(createTaskSchema)
+
     .mutation(async ({ ctx, input }) => {
       const { taskId } = input;
       const userId = ctx.session!.userId;
