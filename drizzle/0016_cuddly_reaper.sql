@@ -1,0 +1,1 @@
+ALTER TABLE "opentask_wallets" ADD COLUMN "hashed_private_key" text NOT NULL;

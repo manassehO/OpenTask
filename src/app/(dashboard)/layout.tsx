@@ -25,7 +25,6 @@ export default function RootLayout({
 
   const userRole = 'user';
 
-
   return (
     <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>

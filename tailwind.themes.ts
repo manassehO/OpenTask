@@ -15,7 +15,6 @@ const themes: Partial<Config['theme']> = {
       400: '#1212124D',
     },
 
-
     //     primary: { DEFAULT: '#3B82F6', 50: '#D8E6FD80' },
     //     secondary: { DEFAULT: '#9333EA' },
     //     grey: { DEFAULT: '#414141' },
@@ -60,14 +59,11 @@ const themes: Partial<Config['theme']> = {
       400: '#D40606',
     },
 
-
     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#F9FAFB' },
 
     //     main: { DEFAULT: '#FAFAFA', 50: '#D8E6FD', 100: '#D9D9D9' },
 
-
     error: { DEFAULT: '#FF3B30' },
-
 
     green: {
       DEFAULT: '#34C759',

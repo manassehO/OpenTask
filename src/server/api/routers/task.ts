@@ -1,56 +1,41 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure, t } from '~/server/api/trpc';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { tasks, user } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, sql, count } from 'drizzle-orm';
 import { db } from '~/server/db';
-
-// Allowed status values
-const allowedStatus = [
-  'DRAFT',
-  'ACTIVE',
-  'COMPLETED',
-  'CANCELLED',
-  'DISPUTED',
-] as const;
-
-const createTaskSchema = z.object({
-  creatorUserId: z.string().min(1, 'creatorUserId is required'),
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  instructions: z.string().min(1, 'Instructions are required'),
-  category: z.string().min(1, 'Category is required'),
-  rewardAmount: z
-    .string()
-    .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
-      message:
-        'Invalid reward amount: must be a positive number with up to 18 decimals',
-    }),
-  rewardTokenAddress: z
-    .string()
-    .refine((val) => /^0x[a-fA-F0-9]{40}$/.test(val), {
-      message: 'Invalid rewardTokenAddress format',
-    }),
-  requiredCompletions: z
-    .number()
-    .int()
-    .min(1, 'requiredCompletions must be at least 1'),
-  status: z.enum(allowedStatus),
-  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-    message: 'Invalid fundingTxHash format',
-  }),
-});
-
-const findTaskSchema = z.object({
-  category: z.string().optional(),
-  min_reward: z.coerce.number().min(0).optional(), // minimum zero ensures that no negative minimum reward is provided
-  sort_by: z.enum(['created_at', 'reward']).default('created_at'),
-  order: z.enum(['asc', 'desc']).default('desc'),
-  limit: z.number().min(1).default(10),
-  page: z.number().min(1).default(1),
-});
+import {
+  getTaskByIdSchema,
+  createTaskSchema,
+  findTaskSchema,
+} from '../schemas/task';
 
 export const taskRouter = createTRPCRouter({
+  getTaskById: protectedProcedure
+    .input(getTaskByIdSchema)
+    .query(async ({ input }) => {
+      const result = await db
+        .select({
+          id: tasks.taskId,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          createdAt: tasks.createdAt,
+          updatedAt: tasks.updatedAt,
+          creatorId: tasks.creatorUserId,
+          creatorDisplayName: user.displayName,
+        })
+        .from(tasks)
+        .where(eq(tasks.taskId, input.taskId))
+        .leftJoin(user, eq(tasks.creatorUserId, user.id));
+
+      if (!result.length) {
+        throw new Error('Task not found');
+      }
+
+      return result[0];
+    }),
+
   createTask: protectedProcedure
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
@@ -145,41 +130,43 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      let orderByClause;
-
-      if (sort_by === 'created_at') {
-        orderByClause =
-          order === 'asc' ? asc(tasks.createdAt) : desc(tasks.createdAt);
-      } else {
-        orderByClause =
-          order === 'asc' ? asc(tasks.rewardAmount) : desc(tasks.rewardAmount);
-      }
+      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const orderByClause =
+        order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
       // Pagination implementation
       const safeLimit = Math.max(1, Math.min(limit, 30)); // max of 30 per page
       const safePage = Math.max(1, page);
       const offset = (safePage - 1) * safeLimit;
 
-      // Query for paginated tasks
-      const tasksResult = await ctx.db.query.tasks.findMany({
-        where: and(...whereClauses),
-        orderBy: [orderByClause],
-        limit: safeLimit,
-        offset,
-      });
+      try {
+        const [tasksResult, countResult] = await Promise.all([
+          ctx.db.query.tasks.findMany({
+            where: and(...whereClauses),
+            orderBy: [orderByClause],
+            limit: safeLimit,
+            offset,
+          }),
+          ctx.db
+            .select({ count: count() })
+            .from(tasks)
+            .where(and(...whereClauses)),
+        ]);
 
-      // Query for total count of tasks in database excluding pagination
-      const countResult = await ctx.db
-        .select({ count: count() })
-        .from(tasks)
-        .where(and(...whereClauses));
+        const totalCount = Number(countResult[0]?.count ?? 0);
 
-      const totalCount = Number(countResult[0]?.count ?? 0);
+        return {
+          success: true,
+          tasks: tasksResult,
+          totalCount,
+        };
+      } catch (error) {
+        console.error('Failed to fetch tasks or count:', error);
 
-      return {
-        success: true,
-        tasks: tasksResult,
-        totalCount,
-      };
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tasks',
+        });
+      }
     }),
 });

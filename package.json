@@ -18,13 +18,13 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky",
-    "framer-motion": "^12.15.0"
+    "prepare": "husky"
   },
   "dependencies": {
     "@chipi-pay/chipi-sdk": "^3.1.2",
     "@headlessui/react": "^2.2.4",
     "@hookform/resolvers": "^5.0.1",
+    "@radix-ui/react-switch": "^1.2.5",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "^5.50.0",
     "@trpc/client": "^11.0.0-rc.446",
@@ -58,7 +58,6 @@
     "recharts": "^3.0.2",
     "server-only": "^0.0.1",
     "sharp": "^0.34.2",
-    "starknet": "^7.6.2",
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.3.1",
     "yup": "^1.6.1",
