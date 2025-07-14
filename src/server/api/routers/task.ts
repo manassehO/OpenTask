@@ -1,3 +1,5 @@
+import { getTaskByIdSchema } from '../schemas/task';
+import { db } from '~/server/db';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { tasks, user } from '~/server/db/schema';
@@ -43,6 +45,31 @@ const createTaskSchema = z.object({
 });
 
 export const taskRouter = createTRPCRouter({
+    getTaskById: protectedProcedure
+    .input(getTaskByIdSchema)
+    .query(async ({ input }) => {
+      const result = await db
+        .select({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+          creatorId: task.creatorId,
+          creatorDisplayName: user.displayName,
+        })
+        .from(task)
+        .where(eq(task.id, input.taskId))
+        .leftJoin(user, eq(task.creatorId, user.id));
+
+      if (!result.length) {
+        throw new Error("Task not found");
+      }
+
+      return result[0];
+    }),
+  
   createTask: protectedProcedure
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {

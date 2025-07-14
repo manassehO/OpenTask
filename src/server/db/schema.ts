@@ -15,12 +15,6 @@ import {
   numeric,
 } from "drizzle-orm/pg-core";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum("status", ["ACTIVE", "SUSPENDED", "BANNED"]);
 const walletTypeEnum = pgEnum("wallet_type", ["managed", "self_custody"]);
@@ -61,6 +55,8 @@ export const user = createTable("user", {
   status: statusEnum("status").default("ACTIVE").notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text("image"),
   role: rolesEnum("role").default("CREATOR").notNull(), // CREATOR, COMPLETER, ADMIN
+  walletAddress: varchar('wallet_address', { length: 100 }),
+  hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -126,7 +122,7 @@ export const wallets = createTable(
     starknetAddress: varchar('starknet_address', { length: 100 })
       .notNull()
       .unique(),
-    walletType: walletTypeEnum('wallet_type').notNull(), // managed, self_custody
+    walletType: walletTypeEnum('wallet_type').notNull(),
     isActive: integer('is_active').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -146,7 +142,7 @@ export const wallets = createTable(
 
 export const otps = createTable('otps', {
   otpId: text('id').primaryKey(),
-  email: varchar('email').notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
   code: varchar('code').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -190,4 +186,18 @@ export const onchainEvents = createTable('onchain_events', {
   timestamp: timestamp('timestamp', { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
+});
+
+export const task = createTable('task', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: varchar('title', { length: 255 }),
+  description: text('description'),
+  status: varchar('status', { length: 50 }),
+  creatorId: text('creator_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date()),
 });

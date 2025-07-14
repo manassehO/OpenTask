@@ -4,6 +4,8 @@ import { authRouter } from '~/server/api/routers/auth/auth';
 import { profileRouter } from '~/server/api/routers/profile';
 import { taskRouter } from './routers/task';
 import { walletRouter } from "./routers/wallet";
+import { taskRouter } from "./routers/task";
+
 
 /*
  * This is the primary router for your server.
@@ -14,8 +16,8 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   auth: authRouter,
   profile: profileRouter,
+  wallet: walletRouter, 
   task: taskRouter,
-  wallet: walletRouter,
 });
 
 // export type definition of API
