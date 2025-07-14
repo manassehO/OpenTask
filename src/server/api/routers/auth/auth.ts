@@ -1,7 +1,6 @@
 import {
   createTRPCRouter,
   publicProcedure,
-  protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
 

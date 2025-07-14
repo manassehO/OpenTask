@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_otps" ALTER COLUMN "code" SET DATA TYPE varchar;
