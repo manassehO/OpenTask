@@ -4,6 +4,8 @@ import { db } from '~/server/db';
 import { task, user, wallets} from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
+import { taskClaims } from '~/server/db/schema';
 
 export const taskRouter = createTRPCRouter({
   getTaskById: protectedProcedure
@@ -107,6 +109,67 @@ export const taskRouter = createTRPCRouter({
 }
 
     }),
+
+
+    claimTask: protectedProcedure
+  .input(z.object({ taskId: z.string() }))
+  .mutation(async ({ input, ctx }) => {
+    const { taskId } = input;
+    const userId = ctx.user.id;
+
+    if (ctx.user.role !== "completer") {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Only completers can claim tasks" });
+    }
+
+    const [taskData] = await db
+      .select({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    rewardAmount: task.rewardAmount,
+    creatorId: task.creatorId,
+    maxCompletions: task.maxCompletions,
+    platformFee: task.platformFee,
+    approvedCompletions: task.approvedCompletions,
+    inProgressCompletions: task.inProgressCompletions,
+  })
+      .from(task)
+      .where(eq(task.id, taskId));
+
+    if (!taskData) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
+    }
+
+    if (taskData.status !== "ACTIVE") {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not active" });
+    }
+
+    const slotsAvailable =
+      (taskData.maxCompletions ?? 0) -
+      (taskData.approvedCompletions ?? 0) -
+      (taskData.inProgressCompletions ?? 0);
+
+    if (slotsAvailable <= 0) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "No available slots" });
+    }
+
+    await db.transaction(async (tx) => {
+      
+      await tx.insert(taskClaims).values({
+        taskId,
+        userId,
+        status: "IN_PROGRESS",
+        createdAt: new Date(),
+      });
+
+      await tx
+        .update(task)
+        .set({ inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1 })
+        .where(eq(task.id, taskId));
+    });
+
+    return { success: true, message: "Task claimed successfully" };
+  }),
+
 });
-
-
