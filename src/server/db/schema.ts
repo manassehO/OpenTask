@@ -53,7 +53,7 @@ export const posts = createTable(
 // Better-Auth required tables
 export const user = createTable("user", {
   id: text("id").primaryKey().notNull(),
-  oauth_id: varchar("oauth_id", { length: 128 }),
+  oauthId: varchar("oauth_id", { length: 128 }),
   name: text("name"),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
@@ -179,6 +179,7 @@ export const tasks = createTable("tasks", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+});
 
 export const onchainEvents = createTable('onchain_events', {
   eventId: uuid('id').primaryKey().defaultRandom(),
