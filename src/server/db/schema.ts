@@ -12,6 +12,7 @@ import {
   varchar,
   pgEnum,
   uuid,
+  numeric,
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
@@ -168,4 +169,8 @@ export const task = createTable('task', {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date()),
+  rewardAmount: numeric("reward_amount", { precision: 20, scale: 0 }).notNull(),
+  maxCompletions: integer("max_completions").notNull(),
+  platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
+
 });
