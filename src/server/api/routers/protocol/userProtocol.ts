@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from '~/server/db';
 import { user } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
 
 export const userProtocol = t.router({
   updateWalletInfo: protectedProcedure
@@ -14,6 +15,12 @@ export const userProtocol = t.router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.session?.userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to access this resource',
+        });
+      }
       await db
         .update(user)
         .set({

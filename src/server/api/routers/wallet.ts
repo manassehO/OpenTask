@@ -67,8 +67,8 @@ export const walletRouter = createTRPCRouter({
             })
             .returning();
         }
-      } catch (err) {
-        if (err.code === '23505') {
+      } catch (err: unknown) {
+        if ((err as { code: string }).code === '23505') {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Wallet address already exists',
