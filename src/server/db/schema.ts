@@ -27,23 +27,6 @@ const taskStatusEnum = pgEnum('task_status', [
   'DISPUTED',
 ]);
 
-export const posts = createTable(
-  'post',
-  {
-    id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar('name', { length: 256 }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
-      () => new Date(),
-    ),
-  },
-  (example) => ({
-    nameIndex: index('name_idx').on(example.name),
-  }),
-);
-
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey().notNull(),
@@ -54,7 +37,9 @@ export const user = createTable('user', {
   displayName: varchar('display_name', { length: 150 }),
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
-  role: rolesEnum('role').default('CREATOR').notNull(), // CREATOR, COMPLETER, ADMIN
+  role: rolesEnum('role').default('COMPLETER').notNull(), // CREATOR, COMPLETER, ADMIN
+  walletAddress: varchar('wallet_address', { length: 100 }),
+  hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
