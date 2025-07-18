@@ -83,7 +83,64 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
+ if (foundUser.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only users with the CREATOR role can create tasks.',
+        });
+      }
 
+      if (foundUser.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'User account is not active.',
+        });
+      }
+
+      // Check for duplicate
+      const duplicate = await ctx.db.query.tasks.findFirst({
+        where: (t, { and, eq }) =>
+          and(
+            eq(t.title, input.title),
+            eq(t.fundingTxHash, input.fundingTxHash),
+          ),
+      });
+
+      if (duplicate) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'Duplicate task submission',
+        });
+      }
+
+      // Insert task
+
+      // TODO: Create task in frontend using Chipi SDK or equivalent once integration is ready
+      const [createdTask] = await ctx.db
+        .insert(tasks)
+        .values({
+          creatorUserId: input.creatorUserId,
+          title: input.title,
+          description: input.description,
+          instructions: input.instructions,
+          category: input.category,
+          rewardAmount: input.rewardAmount,
+          rewardTokenAddress: input.rewardTokenAddress,
+          requiredCompletions: input.requiredCompletions,
+          status: input.status,
+          fundingTxHash: input.fundingTxHash,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+
+      })
+     .returning();
+
+
+                  return {
+        success: true,
+        task: createdTask,
+      };
+  }),
 
     initiateFunding: protectedProcedure
     .input(z.object({ taskId: z.string() }))
