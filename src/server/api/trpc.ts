@@ -12,6 +12,16 @@ import { ZodError } from 'zod';
 
 import { db } from '~/server/db';
 import { auth, type Session, type User } from '~/lib/auth';
+import {
+  deployAAWallet,
+  approve,
+  fundTask,
+  transfer,
+  verifyMessage,
+  flagDispute,
+  resolveDispute,
+  fundTaskWithManagedWallet,
+} from '../../services/starknetSvc';
 
 /**
  * 1. CONTEXT
@@ -60,6 +70,16 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     session,
     user,
     ...opts,
+    starknetSvc: {
+      deployAAWallet,
+      approve,
+      fundTask,
+      transfer,
+      verifyMessage,
+      flagDispute,
+      resolveDispute,
+      fundTaskWithManagedWallet,
+    },
   };
 };
 

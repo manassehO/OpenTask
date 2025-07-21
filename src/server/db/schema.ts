@@ -29,15 +29,21 @@ const taskStatusEnum = pgEnum('task_status', [
 
 // Better-Auth required tables
 export const user = createTable('user', {
-  id: text('id').primaryKey().notNull(),
-  oauthId: varchar('oauth_id', { length: 128 }),
+  id: text('id').primaryKey(),
+  oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   displayName: varchar('display_name', { length: 150 }),
+
+  status: statusEnum('status').default('ACTIVE').notNull(),
+  image: text('image'),
+  role: rolesEnum('role').default('CREATOR').notNull(),
+
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
   role: rolesEnum('role').default('COMPLETER').notNull(), // CREATOR, COMPLETER, ADMIN
+
   walletAddress: varchar('wallet_address', { length: 100 }),
   hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -158,6 +164,12 @@ export const tasks = createTable('tasks', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
+  approvedCompletions: integer('approved_completions').notNull().default(0),
+  inProgressCompletions: integer('in_progress_completions')
+    .notNull()
+    .default(0),
+  maxCompletions: integer('max_completions').notNull(),
 });
 
 export const onchainEvents = createTable('onchain_events', {
@@ -171,17 +183,20 @@ export const onchainEvents = createTable('onchain_events', {
     .notNull(),
 });
 
-export const task = createTable('task', {
+export const taskClaims = createTable('task_claims', {
   id: uuid('id').primaryKey().defaultRandom(),
-  title: varchar('title', { length: 255 }),
-  description: text('description'),
-  status: varchar('status', { length: 50 }),
-  creatorId: text('creator_id')
+  taskId: uuid('task_id')
+    .notNull()
+    .references(() => tasks.taskId, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+  status: text('status').notNull().default('in_progress'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),

@@ -1,16 +1,21 @@
+import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
+import { db } from '~/server/db';
+import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { tasks, user } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq, and, ilike, gte, asc, desc, sql, count } from 'drizzle-orm';
+import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import { db } from '~/server/db';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  getTaskByIdSchema,
 } from '../schemas/task';
 
 export const taskRouter = createTRPCRouter({
+  /**
+   * Get a single task by its ID
+   */
   getTaskById: protectedProcedure
     .input(getTaskByIdSchema)
     .query(async ({ input }) => {
@@ -30,71 +35,32 @@ export const taskRouter = createTRPCRouter({
         .leftJoin(user, eq(tasks.creatorUserId, user.id));
 
       if (!result.length) {
-        throw new Error('Task not found');
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
       return result[0];
     }),
 
+  /**
+   * Create a new task
+   */
   createTask: protectedProcedure
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const foundUser = await ctx.db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, input.creatorUserId),
-      });
-      if (!foundUser) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Invalid creatorUserId',
-        });
-      }
+      const userId = ctx.user.id;
 
-      if (foundUser.role !== 'CREATOR') {
+      if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Only users with the CREATOR role can create tasks.',
         });
       }
 
-      if (foundUser.status !== 'ACTIVE') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'User account is not active.',
-        });
-      }
-
-      // Check for duplicate
-      const duplicate = await ctx.db.query.tasks.findFirst({
-        where: (t, { and, eq }) =>
-          and(
-            eq(t.title, input.title),
-            eq(t.fundingTxHash, input.fundingTxHash),
-          ),
-      });
-
-      if (duplicate) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'Duplicate task submission',
-        });
-      }
-
-      // Insert task
-
-      // TODO: Create task in frontend using Chipi SDK or equivalent once integration is ready
-      const [createdTask] = await ctx.db
+      const [createdTask] = await db
         .insert(tasks)
         .values({
-          creatorUserId: input.creatorUserId,
-          title: input.title,
-          description: input.description,
-          instructions: input.instructions,
-          category: input.category,
-          rewardAmount: input.rewardAmount,
-          rewardTokenAddress: input.rewardTokenAddress,
-          requiredCompletions: input.requiredCompletions,
-          status: input.status,
-          fundingTxHash: input.fundingTxHash,
+          ...input,
+          creatorUserId: userId, // Ensure task is created by the logged-in user
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -116,8 +82,6 @@ export const taskRouter = createTRPCRouter({
         created_at: 'createdAt',
         reward: 'rewardAmount',
       } as const;
-      const sortField = sortFieldMap[sort_by] || 'createdAt';
-      const sortOrder = order === 'asc' ? 'asc' : 'desc';
 
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
@@ -168,5 +132,151 @@ export const taskRouter = createTRPCRouter({
           message: 'Failed to fetch tasks',
         });
       }
+    }),
+
+  /**
+   * Initiate the funding process for a task
+   */
+  initiateFunding: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { taskId } = input;
+      const userId = ctx.user.id;
+
+      const [taskData] = await db
+        .select({
+          id: tasks.taskId,
+          creatorId: tasks.creatorUserId,
+          status: tasks.status,
+          rewardAmount: tasks.rewardAmount,
+          maxCompletions: tasks.requiredCompletions,
+          platformFee: tasks.platformFee,
+        })
+        .from(tasks)
+        .where(eq(tasks.taskId, taskId));
+
+      if (!taskData)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      if (taskData.creatorId !== userId)
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Unauthorized' });
+      if (taskData.status !== 'DRAFT')
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Task is not in DRAFT status',
+        });
+
+      const reward = BigInt(taskData.rewardAmount);
+      const completions = BigInt(taskData.maxCompletions);
+      const fee = BigInt(taskData.platformFee ?? 0);
+      const totalFunding = reward * completions + fee;
+
+      const [userWallet] = await db
+        .select({
+          address: wallets.starknetAddress,
+          type: wallets.walletType,
+        })
+        .from(wallets)
+        .where(eq(wallets.userId, userId));
+
+      if (!userWallet)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Wallet not found' });
+
+      if (userWallet.type === 'self_custody') {
+        return {
+          type: 'SELF_CUSTODY',
+          approveCall: {
+            contractAddress: process.env.ERC20_CONTRACT!,
+            entrypoint: 'approve',
+            calldata: [process.env.ESCROW_CONTRACT!, totalFunding.toString()],
+          },
+          fundTaskCall: {
+            contractAddress: process.env.ESCROW_CONTRACT!,
+            entrypoint: 'fund_task',
+            calldata: [taskId, totalFunding.toString()],
+          },
+        };
+      } else if (userWallet.type === 'managed') {
+        const result = await ctx.starknetSvc.fundTaskWithManagedWallet({
+          taskId,
+          totalFunding,
+          walletAddress: userWallet.address,
+        });
+
+        return { type: 'MANAGED', status: result.status };
+      } else {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Unknown wallet type',
+        });
+      }
+    }),
+
+  /**
+   * Claim a spot to complete an active task
+   */
+  claimTask: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { taskId } = input;
+      const userId = ctx.user.id;
+
+      if (ctx.user.role !== 'COMPLETER') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only completers can claim tasks',
+        });
+      }
+
+      const [taskData] = await db
+        .select({
+          id: tasks.taskId,
+          status: tasks.status,
+          maxCompletions: tasks.requiredCompletions,
+          approvedCompletions: tasks.approvedCompletions,
+          inProgressCompletions: tasks.inProgressCompletions,
+        })
+        .from(tasks)
+        .where(eq(tasks.id, taskId));
+
+      if (!taskData) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      if (taskData.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Task is not active',
+        });
+      }
+
+      const slotsAvailable =
+        (taskData.maxCompletions ?? 0) -
+        (taskData.approvedCompletions ?? 0) -
+        (taskData.inProgressCompletions ?? 0);
+
+      if (slotsAvailable <= 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No available slots',
+        });
+      }
+
+      await db.transaction(async (tx) => {
+        await tx.insert(taskClaims).values({
+          taskId,
+          userId,
+          status: 'IN_PROGRESS',
+          createdAt: new Date(),
+        });
+
+        await tx
+          .update(tasks)
+          .set({
+            inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
+          })
+          .where(eq(tasks.id, taskId));
+      });
+
+      return { success: true, message: 'Task claimed successfully' };
     }),
 });
