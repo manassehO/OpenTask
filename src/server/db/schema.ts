@@ -26,6 +26,12 @@ const taskStatusEnum = pgEnum('task_status', [
   'CANCELLED',
   'DISPUTED',
 ]);
+const submissionStatusEnum = pgEnum('submission_status', [
+  'PENDING_REVIEW',
+  'APPROVED',
+  'REJECTED',
+  'DISPUTED',
+]);
 
 // Better-Auth required tables
 export const user = createTable('user', {
@@ -35,11 +41,6 @@ export const user = createTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   displayName: varchar('display_name', { length: 150 }),
-
-  status: statusEnum('status').default('ACTIVE').notNull(),
-  image: text('image'),
-  role: rolesEnum('role').default('CREATOR').notNull(),
-
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
   role: rolesEnum('role').default('COMPLETER').notNull(), // CREATOR, COMPLETER, ADMIN
@@ -143,7 +144,7 @@ export const otps = createTable('otps', {
 });
 
 export const tasks = createTable('tasks', {
-  taskId: uuid('task_id').primaryKey().defaultRandom(),
+  id: uuid('task_id').primaryKey().defaultRandom(),
   creatorUserId: text('creator_user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -155,6 +156,10 @@ export const tasks = createTable('tasks', {
   rewardTokenAddress: varchar('reward_token_address', {
     length: 100,
   }).notNull(),
+  platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
+  //maxCompletions: integer("max_completions").notNull(),
+  approvedCompletions: integer('approved_completions').notNull().default(0),
+  inProgressCompletions: integer('in_progress_completions').notNull().default(0),
   requiredCompletions: integer('required_completions').notNull(),
   status: taskStatusEnum('status').default('DRAFT').notNull(),
   fundingTxHash: varchar('funding_tx_hash', { length: 255 }).notNull(),
@@ -164,11 +169,7 @@ export const tasks = createTable('tasks', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
-  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
-  approvedCompletions: integer('approved_completions').notNull().default(0),
-  inProgressCompletions: integer('in_progress_completions')
-    .notNull()
-    .default(0),
+
   maxCompletions: integer('max_completions').notNull(),
 });
 
@@ -187,17 +188,28 @@ export const taskClaims = createTable('task_claims', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id')
     .notNull()
-    .references(() => tasks.taskId, { onDelete: 'cascade' }),
+    .references(() => tasks.id, { onDelete: 'cascade' }),
+
   userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('in_progress'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .$onUpdate(() => new Date()),
 
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
 });
+
+export const submissions = createTable('submissions', {
+ submissionId: uuid("submission_id").primaryKey().defaultRandom(),
+taskId: uuid("task_id").references(() => tasks.id),
+completerUserId: uuid("completer_user_id").references(() => user.id),
+ status: submissionStatusEnum('status').notNull(),
+dataRef: text("data_ref"),
+rejectionReason: text("rejection_reason").notNull(),
+approvalTxHash: varchar("approval_tx_hash", { length: 255 }),
+reviewedAt: timestamp("reviewed_at"),
+submittedAt: timestamp("submitted_at").notNull(),
+});
+

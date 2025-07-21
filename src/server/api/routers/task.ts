@@ -4,12 +4,10 @@ import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
-import { db } from '~/server/db';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
-  getTaskByIdSchema,
 } from '../schemas/task';
 
 export const taskRouter = createTRPCRouter({
@@ -21,7 +19,7 @@ export const taskRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const result = await db
         .select({
-          id: tasks.taskId,
+          id: tasks.id,
           title: tasks.title,
           description: tasks.description,
           status: tasks.status,
@@ -31,7 +29,7 @@ export const taskRouter = createTRPCRouter({
           creatorDisplayName: user.displayName,
         })
         .from(tasks)
-        .where(eq(tasks.taskId, input.taskId))
+        .where(eq(tasks.id, input.taskId))
         .leftJoin(user, eq(tasks.creatorUserId, user.id));
 
       if (!result.length) {
@@ -145,7 +143,7 @@ export const taskRouter = createTRPCRouter({
 
       const [taskData] = await db
         .select({
-          id: tasks.taskId,
+          id: tasks.id,
           creatorId: tasks.creatorUserId,
           status: tasks.status,
           rewardAmount: tasks.rewardAmount,
@@ -153,7 +151,7 @@ export const taskRouter = createTRPCRouter({
           platformFee: tasks.platformFee,
         })
         .from(tasks)
-        .where(eq(tasks.taskId, taskId));
+        .where(eq(tasks.id, taskId));
 
       if (!taskData)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
@@ -229,7 +227,7 @@ export const taskRouter = createTRPCRouter({
 
       const [taskData] = await db
         .select({
-          id: tasks.taskId,
+          id: tasks.id,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
