@@ -1,11 +1,14 @@
 import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
-import { getTaskByIdSchema } from '../schemas/task';
 import { db } from '~/server/db';
 import { task, user, wallets, tasks} from '@/server/db/schema';
-import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-
+import { eq, and, ilike, gte, asc, desc, sql, count } from 'drizzle-orm';
+import {
+  getTaskByIdSchema,
+  //createTaskSchema,
+  findTaskSchema,
+} from '../schemas/task';
 
 // Allowed status values
 const allowedStatus = [
@@ -216,6 +219,70 @@ export const taskRouter = createTRPCRouter({
   throw new Error("Unknown wallet type");
 }
 
+    }),
+
+  findTasks: protectedProcedure
+    .input(findTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { category, min_reward, sort_by, order, limit, page } = input;
+
+      // Only allow sorting by whitelisted fields
+      const sortFieldMap = {
+        created_at: 'createdAt',
+        reward: 'rewardAmount',
+      } as const;
+      const sortField = sortFieldMap[sort_by] || 'createdAt';
+      const sortOrder = order === 'asc' ? 'asc' : 'desc';
+
+      // Build where clause for drizzle
+      const whereClauses = [eq(tasks.status, 'ACTIVE')];
+
+      if (category && category.trim() !== '') {
+        whereClauses.push(ilike(tasks.category, category));
+      }
+
+      if (typeof min_reward === 'number' && !isNaN(min_reward)) {
+        whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
+      }
+
+      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const orderByClause =
+        order === 'asc' ? asc(sortColumn) : desc(sortColumn);
+
+      // Pagination implementation
+      const safeLimit = Math.max(1, Math.min(limit, 30)); // max of 30 per page
+      const safePage = Math.max(1, page);
+      const offset = (safePage - 1) * safeLimit;
+
+      try {
+        const [tasksResult, countResult] = await Promise.all([
+          ctx.db.query.tasks.findMany({
+            where: and(...whereClauses),
+            orderBy: [orderByClause],
+            limit: safeLimit,
+            offset,
+          }),
+          ctx.db
+            .select({ count: count() })
+            .from(tasks)
+            .where(and(...whereClauses)),
+        ]);
+
+        const totalCount = Number(countResult[0]?.count ?? 0);
+
+        return {
+          success: true,
+          tasks: tasksResult,
+          totalCount,
+        };
+      } catch (error) {
+        console.error('Failed to fetch tasks or count:', error);
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tasks',
+        });
+      }
     }),
 });
 
