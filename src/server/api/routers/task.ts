@@ -1,14 +1,50 @@
+import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
+import { db } from '~/server/db';
+import { task, user, wallets, tasks} from '@/server/db/schema';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { tasks, user } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, sql, count } from 'drizzle-orm';
-import { db } from '~/server/db';
 import {
   getTaskByIdSchema,
-  createTaskSchema,
+  //createTaskSchema,
   findTaskSchema,
 } from '../schemas/task';
+
+// Allowed status values
+const allowedStatus = [
+  'DRAFT',
+  'ACTIVE',
+  'COMPLETED',
+  'CANCELLED',
+  'DISPUTED',
+] as const;
+
+const createTaskSchema = z.object({
+  creatorUserId: z.string().min(1, 'creatorUserId is required'),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  instructions: z.string().min(1, 'Instructions are required'),
+  category: z.string().min(1, 'Category is required'),
+  rewardAmount: z
+    .string()
+    .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
+      message:
+        'Invalid reward amount: must be a positive number with up to 18 decimals',
+    }),
+  rewardTokenAddress: z
+    .string()
+    .refine((val) => /^0x[a-fA-F0-9]{40}$/.test(val), {
+      message: 'Invalid rewardTokenAddress format',
+    }),
+  requiredCompletions: z
+    .number()
+    .int()
+    .min(1, 'requiredCompletions must be at least 1'),
+  status: z.enum(allowedStatus),
+  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+    message: 'Invalid fundingTxHash format',
+  }),
+});
 
 export const taskRouter = createTRPCRouter({
   getTaskById: protectedProcedure
@@ -36,6 +72,7 @@ export const taskRouter = createTRPCRouter({
       return result[0];
     }),
 
+
   createTask: protectedProcedure
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
@@ -49,7 +86,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      if (foundUser.role !== 'CREATOR') {
+ if (foundUser.role !== 'CREATOR') {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Only users with the CREATOR role can create tasks.',
@@ -97,13 +134,91 @@ export const taskRouter = createTRPCRouter({
           fundingTxHash: input.fundingTxHash,
           createdAt: new Date(),
           updatedAt: new Date(),
-        })
-        .returning();
 
-      return {
+      })
+     .returning();
+
+
+                  return {
         success: true,
         task: createdTask,
       };
+  }),
+
+    initiateFunding: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { taskId } = input;
+      const userId = ctx.session!.userId;
+
+      const result = await db
+         .select({
+           id: task.id,
+           creatorId: task.creatorId,
+           status: task.status,
+           rewardAmount: task.rewardAmount,
+           maxCompletions: task.maxCompletions,
+           platformFee: task.platformFee,
+        })
+        .from(task)
+        .where(eq(task.id, taskId));
+
+      const taskData = result[0];
+
+      if (!taskData) throw new Error("Task not found");
+      if (taskData.creatorId !== userId) throw new Error("Unauthorized");
+      if (taskData.status !== "DRAFT") throw new Error("Task is not in DRAFT status");
+
+      const reward = BigInt(taskData.rewardAmount);
+      const completions = BigInt(taskData.maxCompletions);
+      const fee = BigInt(taskData.platformFee ?? 0);
+
+      const totalFunding = reward * completions + fee;
+      const walletResult = await db
+        .select({
+           address: wallets.starknetAddress,
+           type: wallets.walletType,
+       })
+        .from(wallets)
+        .where(eq(wallets.userId, userId));
+
+      const userWallet = walletResult[0];
+          if (!userWallet) throw new Error("Wallet not found");
+          if (userWallet.type  === "self_custody") {
+      return {
+         type: "SELF_CUSTODY",
+       approveCall: {
+          contractAddress: process.env.ERC20_CONTRACT!,
+          entrypoint: "approve",
+          calldata: [
+            process.env.ESCROW_CONTRACT!,
+            totalFunding.toString(),
+               ],
+           },
+       fundTaskCall: {
+          contractAddress: process.env.ESCROW_CONTRACT!,
+          entrypoint: "fund_task",
+          calldata: [
+             taskId,
+             totalFunding.toString(),
+               ],
+           },
+  };
+       } else if (userWallet.type === "managed") {
+        const result = await ctx.starknetSvc.fundTaskWithManagedWallet({
+    taskId,
+    totalFunding,
+    walletAddress: userWallet.address,
+  });
+
+  return {
+    type: "MANAGED",
+    status: result.status,
+  };
+} else {
+  throw new Error("Unknown wallet type");
+}
+
     }),
 
   findTasks: protectedProcedure
@@ -170,3 +285,5 @@ export const taskRouter = createTRPCRouter({
       }
     }),
 });
+
+
