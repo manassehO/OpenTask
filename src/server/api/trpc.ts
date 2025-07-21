@@ -71,15 +71,15 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     user,
     ...opts,
     starknetSvc: {
-    deployAAWallet,
-    approve,
-    fundTask,
-    transfer,
-    verifyMessage,
-    flagDispute,
-    resolveDispute,
-    fundTaskWithManagedWallet,
-  },
+      deployAAWallet,
+      approve,
+      fundTask,
+      transfer,
+      verifyMessage,
+      flagDispute,
+      resolveDispute,
+      fundTaskWithManagedWallet,
+    },
   };
 };
 

@@ -35,7 +35,6 @@ const submissionStatusEnum = pgEnum('submission_status', [
 
 // Better-Auth required tables
 export const user = createTable('user', {
-
   id: text('id').primaryKey(),
   oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
@@ -170,6 +169,8 @@ export const tasks = createTable('tasks', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+
+  maxCompletions: integer('max_completions').notNull(),
 });
 
 export const onchainEvents = createTable('onchain_events', {
@@ -183,17 +184,18 @@ export const onchainEvents = createTable('onchain_events', {
     .notNull(),
 });
 
-
 export const taskClaims = createTable('task_claims', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id')
     .notNull()
     .references(() => tasks.id, { onDelete: 'cascade' }),
+
   userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('in_progress'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),

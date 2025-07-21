@@ -46,6 +46,7 @@
     "jotai": "^2.12.3",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.503.0",
+    "minio": "^8.0.5",
     "next": "^15.0.1",
     "nodemailer": "^7.0.4",
     "otp-generator": "^4.0.1",

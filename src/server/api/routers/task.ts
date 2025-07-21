@@ -6,45 +6,9 @@ import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import {
   getTaskByIdSchema,
+  createTaskSchema,
   findTaskSchema,
 } from '../schemas/task';
-
-// Allowed status values
-const allowedStatus = [
-  'DRAFT',
-  'ACTIVE',
-  'COMPLETED',
-  'CANCELLED',
-  'DISPUTED',
-] as const;
-
-// Schema for creating a new task
-const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  instructions: z.string().min(1, 'Instructions are required'),
-  category: z.string().min(1, 'Category is required'),
-  rewardAmount: z
-    .string()
-    .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
-      message:
-        'Invalid reward amount: must be a positive number with up to 18 decimals',
-    }),
-  rewardTokenAddress: z
-    .string()
-    .refine((val) => /^0x[a-fA-F0-9]{40}$/.test(val), {
-      message: 'Invalid rewardTokenAddress format',
-    }),
-  requiredCompletions: z
-    .number()
-    .int()
-    .min(1, 'requiredCompletions must be at least 1'),
-  status: z.enum(allowedStatus),
-  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-    message: 'Invalid fundingTxHash format',
-  }),
-});
-
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -73,65 +37,6 @@ export const taskRouter = createTRPCRouter({
       }
 
       return result[0];
-    }),
-
-  /**
-   * Find and filter tasks based on criteria
-   */
-  findTasks: protectedProcedure
-    .input(findTaskSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { category, min_reward, sort_by, order, limit, page } = input;
-
-      const sortFieldMap = {
-        created_at: tasks.createdAt,
-        reward: tasks.rewardAmount,
-      };
-      const sortField = sortFieldMap[sort_by] ?? tasks.createdAt;
-      const sortOrder = order === 'asc' ? asc(sortField) : desc(sortField);
-
-      const whereClauses = [eq(tasks.status, 'ACTIVE')];
-
-      if (category && category.trim() !== '') {
-        whereClauses.push(ilike(tasks.category, category));
-      }
-
-      if (typeof min_reward === 'number' && !isNaN(min_reward)) {
-        whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
-      }
-
-      const safeLimit = Math.max(1, Math.min(limit, 30));
-      const safePage = Math.max(1, page);
-      const offset = (safePage - 1) * safeLimit;
-
-      try {
-        const [tasksResult, countResult] = await Promise.all([
-          ctx.db.query.tasks.findMany({
-            where: and(...whereClauses),
-            orderBy: [sortOrder],
-            limit: safeLimit,
-            offset,
-          }),
-          ctx.db
-            .select({ count: count() })
-            .from(tasks)
-            .where(and(...whereClauses)),
-        ]);
-
-        const totalCount = Number(countResult[0]?.count ?? 0);
-
-        return {
-          success: true,
-          tasks: tasksResult,
-          totalCount,
-        };
-      } catch (error) {
-        console.error('Failed to fetch tasks or count:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch tasks',
-        });
-      }
     }),
 
   /**
@@ -165,6 +70,68 @@ export const taskRouter = createTRPCRouter({
       };
     }),
 
+  findTasks: protectedProcedure
+    .input(findTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { category, min_reward, sort_by, order, limit, page } = input;
+
+      // Only allow sorting by whitelisted fields
+      const sortFieldMap = {
+        created_at: 'createdAt',
+        reward: 'rewardAmount',
+      } as const;
+
+      // Build where clause for drizzle
+      const whereClauses = [eq(tasks.status, 'ACTIVE')];
+
+      if (category && category.trim() !== '') {
+        whereClauses.push(ilike(tasks.category, category));
+      }
+
+      if (typeof min_reward === 'number' && !isNaN(min_reward)) {
+        whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
+      }
+
+      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const orderByClause =
+        order === 'asc' ? asc(sortColumn) : desc(sortColumn);
+
+      // Pagination implementation
+      const safeLimit = Math.max(1, Math.min(limit, 30)); // max of 30 per page
+      const safePage = Math.max(1, page);
+      const offset = (safePage - 1) * safeLimit;
+
+      try {
+        const [tasksResult, countResult] = await Promise.all([
+          ctx.db.query.tasks.findMany({
+            where: and(...whereClauses),
+            orderBy: [orderByClause],
+            limit: safeLimit,
+            offset,
+          }),
+          ctx.db
+            .select({ count: count() })
+            .from(tasks)
+            .where(and(...whereClauses)),
+        ]);
+
+        const totalCount = Number(countResult[0]?.count ?? 0);
+
+        return {
+          success: true,
+          tasks: tasksResult,
+          totalCount,
+        };
+      } catch (error) {
+        console.error('Failed to fetch tasks or count:', error);
+
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tasks',
+        });
+      }
+    }),
+
   /**
    * Initiate the funding process for a task
    */
@@ -186,9 +153,15 @@ export const taskRouter = createTRPCRouter({
         .from(tasks)
         .where(eq(tasks.id, taskId));
 
-      if (!taskData) throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
-      if (taskData.creatorId !== userId) throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
-      if (taskData.status !== "DRAFT") throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not in DRAFT status" });
+      if (!taskData)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      if (taskData.creatorId !== userId)
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Unauthorized' });
+      if (taskData.status !== 'DRAFT')
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Task is not in DRAFT status',
+        });
 
       const reward = BigInt(taskData.rewardAmount);
       const completions = BigInt(taskData.maxCompletions);
@@ -203,32 +176,36 @@ export const taskRouter = createTRPCRouter({
         .from(wallets)
         .where(eq(wallets.userId, userId));
 
-      if (!userWallet) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not found" });
+      if (!userWallet)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Wallet not found' });
 
-      if (userWallet.type === "self_custody") {
+      if (userWallet.type === 'self_custody') {
         return {
-          type: "SELF_CUSTODY",
+          type: 'SELF_CUSTODY',
           approveCall: {
             contractAddress: process.env.ERC20_CONTRACT!,
-            entrypoint: "approve",
+            entrypoint: 'approve',
             calldata: [process.env.ESCROW_CONTRACT!, totalFunding.toString()],
           },
           fundTaskCall: {
             contractAddress: process.env.ESCROW_CONTRACT!,
-            entrypoint: "fund_task",
+            entrypoint: 'fund_task',
             calldata: [taskId, totalFunding.toString()],
           },
         };
-      } else if (userWallet.type === "managed") {
+      } else if (userWallet.type === 'managed') {
         const result = await ctx.starknetSvc.fundTaskWithManagedWallet({
           taskId,
           totalFunding,
           walletAddress: userWallet.address,
         });
 
-        return { type: "MANAGED", status: result.status };
+        return { type: 'MANAGED', status: result.status };
       } else {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unknown wallet type" });
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Unknown wallet type',
+        });
       }
     }),
 
@@ -241,8 +218,11 @@ export const taskRouter = createTRPCRouter({
       const { taskId } = input;
       const userId = ctx.user.id;
 
-      if (ctx.user.role !== "COMPLETER") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Only completers can claim tasks" });
+      if (ctx.user.role !== 'COMPLETER') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only completers can claim tasks',
+        });
       }
 
       const [taskData] = await db
@@ -257,11 +237,14 @@ export const taskRouter = createTRPCRouter({
         .where(eq(tasks.id, taskId));
 
       if (!taskData) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
-      if (taskData.status !== "ACTIVE") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not active" });
+      if (taskData.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Task is not active',
+        });
       }
 
       const slotsAvailable =
@@ -270,23 +253,28 @@ export const taskRouter = createTRPCRouter({
         (taskData.inProgressCompletions ?? 0);
 
       if (slotsAvailable <= 0) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "No available slots" });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No available slots',
+        });
       }
 
       await db.transaction(async (tx) => {
         await tx.insert(taskClaims).values({
           taskId,
           userId,
-          status: "IN_PROGRESS",
+          status: 'IN_PROGRESS',
           createdAt: new Date(),
         });
 
         await tx
           .update(tasks)
-          .set({ inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1 })
+          .set({
+            inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
+          })
           .where(eq(tasks.id, taskId));
       });
 
-      return { success: true, message: "Task claimed successfully" };
+      return { success: true, message: 'Task claimed successfully' };
     }),
 });
