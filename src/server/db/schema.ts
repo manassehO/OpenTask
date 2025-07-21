@@ -182,7 +182,11 @@ export const task = createTable('task', {
   createdAt: timestamp('created_at', { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
-    () => new Date(),
-  ),
+
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date()),
+  rewardAmount: numeric("reward_amount", { precision: 20, scale: 0 }).notNull(),
+  maxCompletions: integer("max_completions").notNull(),
+  platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
+
+
 });
