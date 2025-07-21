@@ -55,7 +55,7 @@ export const taskRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const result = await db
         .select({
-          id: tasks.taskId,
+          id: tasks.id,
           title: tasks.title,
           description: tasks.description,
           status: tasks.status,
@@ -65,7 +65,7 @@ export const taskRouter = createTRPCRouter({
           creatorDisplayName: user.displayName,
         })
         .from(tasks)
-        .where(eq(tasks.taskId, input.taskId))
+        .where(eq(tasks.id, input.taskId))
         .leftJoin(user, eq(tasks.creatorUserId, user.id));
 
       if (!result.length) {
@@ -140,9 +140,9 @@ export const taskRouter = createTRPCRouter({
   createTask: protectedProcedure
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
+      const userId = ctx.user.id;
 
-      if (ctx.session.user.role !== 'CREATOR') {
+      if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Only users with the CREATOR role can create tasks.',
@@ -172,7 +172,7 @@ export const taskRouter = createTRPCRouter({
     .input(z.object({ taskId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { taskId } = input;
-      const userId = ctx.session.user.id;
+      const userId = ctx.user.id;
 
       const [taskData] = await db
         .select({
@@ -239,9 +239,9 @@ export const taskRouter = createTRPCRouter({
     .input(z.object({ taskId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const { taskId } = input;
-      const userId = ctx.session.user.id;
+      const userId = ctx.user.id;
 
-      if (ctx.session.user.role !== "COMPLETER") {
+      if (ctx.user.role !== "COMPLETER") {
         throw new TRPCError({ code: "FORBIDDEN", message: "Only completers can claim tasks" });
       }
 
