@@ -29,7 +29,6 @@ const taskStatusEnum = pgEnum('task_status', [
 
 // Better-Auth required tables
 export const user = createTable('user', {
-
   id: text('id').primaryKey(),
   oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
@@ -165,6 +164,12 @@ export const tasks = createTable('tasks', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
+  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
+  approvedCompletions: integer('approved_completions').notNull().default(0),
+  inProgressCompletions: integer('in_progress_completions')
+    .notNull()
+    .default(0),
+  maxCompletions: integer('max_completions').notNull(),
 });
 
 export const onchainEvents = createTable('onchain_events', {
@@ -178,37 +183,19 @@ export const onchainEvents = createTable('onchain_events', {
     .notNull(),
 });
 
-export const task = createTable('task', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  title: varchar('title', { length: 255 }),
-  description: text('description'),
-  status: varchar('status', { length: 50 }),
-  creatorId: text('creator_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-
-  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(() => new Date()),
-  rewardAmount: numeric("reward_amount", { precision: 20, scale: 0 }).notNull(),
-  maxCompletions: integer("max_completions").notNull(),
-  platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
-  approvedCompletions: integer('approved_completions').notNull().default(0),
-  inProgressCompletions: integer('in_progress_completions').notNull().default(0),
-});
-
 export const taskClaims = createTable('task_claims', {
   id: uuid('id').primaryKey().defaultRandom(),
   taskId: uuid('task_id')
     .notNull()
-    .references(() => task.id, { onDelete: 'cascade' }),
+    .references(() => tasks.taskId, { onDelete: 'cascade' }),
   userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('in_progress'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
