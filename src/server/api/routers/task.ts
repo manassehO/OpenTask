@@ -1,15 +1,13 @@
-import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
-import { db } from '~/server/db';
-import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
-import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { tasks, user, wallets, taskClaims } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import { db } from '~/server/db';
+import { z } from 'zod';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
-  getTaskByIdSchema,
 } from '../schemas/task';
 
 export const taskRouter = createTRPCRouter({

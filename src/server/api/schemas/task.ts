@@ -48,3 +48,10 @@ export const findTaskSchema = z.object({
   limit: z.number().min(1).default(10),
   page: z.number().min(1).default(1),
 });
+
+export const submitTaskSchema = z.object({
+  taskId: z.string().uuid(),
+  file: z.string().regex(/^data:.*;base64,/, 'Invalid base64 format'),
+  filename: z.string().min(1).max(255),
+  mimetype: z.string().min(3).max(255),
+});
