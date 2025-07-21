@@ -29,15 +29,22 @@ const taskStatusEnum = pgEnum('task_status', [
 
 // Better-Auth required tables
 export const user = createTable('user', {
-  id: text('id').primaryKey().notNull(),
-  oauthId: varchar('oauth_id', { length: 128 }),
+
+  id: text('id').primaryKey(),
+  oauth_id: varchar('oauth_id', { length: 128 }),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   displayName: varchar('display_name', { length: 150 }),
+
+  status: statusEnum('status').default('ACTIVE').notNull(),
+  image: text('image'),
+  role: rolesEnum('role').default('CREATOR').notNull(),
+
   status: statusEnum('status').default('ACTIVE').notNull(), // ACTIVE, SUSPENDED, BANNED
   image: text('image'),
   role: rolesEnum('role').default('COMPLETER').notNull(), // CREATOR, COMPLETER, ADMIN
+
   walletAddress: varchar('wallet_address', { length: 100 }),
   hashPrivateKey: varchar('hash_private_key', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -187,6 +194,23 @@ export const task = createTable('task', {
   rewardAmount: numeric("reward_amount", { precision: 20, scale: 0 }).notNull(),
   maxCompletions: integer("max_completions").notNull(),
   platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
+  approvedCompletions: integer('approved_completions').notNull().default(0),
+  inProgressCompletions: integer('in_progress_completions').notNull().default(0),
+});
 
+export const taskClaims = createTable('task_claims', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id')
+    .notNull()
+    .references(() => task.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('in_progress'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().$onUpdate(() => new Date()),
 
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
 });
