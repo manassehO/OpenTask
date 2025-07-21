@@ -1,8 +1,8 @@
-import readline from "readline";
-import { ec, hash } from "starknet";
+import readline from 'readline';
+import { ec, hash } from 'starknet';
 
 const privateKey =
-  "0x04becb72c701a19366d0055d7428beb5c918d7e941c4ab281172ed0abf55ee0a";
+  '0x04becb72c701a19366d0055d7428beb5c918d7e941c4ab281172ed0abf55ee0a';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -10,11 +10,11 @@ const rl = readline.createInterface({
 });
 
 rl.question(
-  "Enter comma-separated numbers for the message array: ",
+  'Enter comma-separated numbers for the message array: ',
   (input) => {
     // Parse the input into an array of BigNumberish
     const message = input
-      .split(",")
+      .split(',')
       .map((x) => x.trim())
       .map((x) => (isNaN(Number(x)) ? x : Number(x)));
 
@@ -25,9 +25,9 @@ rl.question(
     const signature = ec.starkCurve.sign(msgHash, privateKey);
 
     // Output the signature and the message hash
-    console.log("Message array:", message);
-    console.log("Message hash:", msgHash);
-    console.log("Signature (r, s):", [
+    console.log('Message array:', message);
+    console.log('Message hash:', msgHash);
+    console.log('Signature (r, s):', [
       signature.r.toString(16),
       signature.s.toString(16),
     ]);

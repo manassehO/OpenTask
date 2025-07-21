@@ -1,6 +1,6 @@
 {
-  "id": "30fcdf6e-8107-4c7c-bcbb-d51340c8e897",
-  "prevId": "90a969bd-3073-4a62-904f-4c8b92cd0308",
+  "id": "f1d9ee01-f328-4dee-b2e9-3a8c10624c99",
+  "prevId": "8fa607ee-a54f-4f6d-a3da-0f1c20b0d453",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -10,10 +10,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "account_id": {
           "name": "account_id",
@@ -27,9 +26,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -92,11 +91,11 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "opentask_account_userId_opentask_user_id_fk": {
-          "name": "opentask_account_userId_opentask_user_id_fk",
+        "opentask_account_user_id_opentask_user_id_fk": {
+          "name": "opentask_account_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_account",
           "tableTo": "opentask_user",
-          "columnsFrom": ["userId"],
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -105,15 +104,16 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.opentask_verification": {
-      "name": "opentask_verification",
+    "public.opentask_nonce_verification": {
+      "name": "opentask_nonce_verification",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "identifier": {
           "name": "identifier",
@@ -149,6 +149,70 @@
         }
       },
       "indexes": {},
+      "foreignKeys": {
+        "opentask_nonce_verification_identifier_opentask_user_id_fk": {
+          "name": "opentask_nonce_verification_identifier_opentask_user_id_fk",
+          "tableFrom": "opentask_nonce_verification",
+          "tableTo": "opentask_user",
+          "columnsFrom": ["identifier"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "opentask_nonce_verification_value_unique": {
+          "name": "opentask_nonce_verification_value_unique",
+          "nullsNotDistinct": false,
+          "columns": ["value"]
+        }
+      }
+    },
+    "public.opentask_onchain_events": {
+      "name": "opentask_onchain_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "wallet_address": {
+          "name": "wallet_address",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -159,14 +223,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "email": {
           "name": "email",
-          "type": "varchar",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -275,10 +338,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "expires_at": {
           "name": "expires_at",
@@ -320,7 +382,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -346,8 +408,8 @@
         }
       }
     },
-    "public.opentask_user": {
-      "name": "opentask_user",
+    "public.opentask_task": {
+      "name": "opentask_task",
       "schema": "",
       "columns": {
         "id": {
@@ -356,6 +418,171 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "opentask_task_creator_id_opentask_user_id_fk": {
+          "name": "opentask_task_creator_id_opentask_user_id_fk",
+          "tableFrom": "opentask_task",
+          "tableTo": "opentask_user",
+          "columnsFrom": ["creator_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.opentask_tasks": {
+      "name": "opentask_tasks",
+      "schema": "",
+      "columns": {
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "creator_user_id": {
+          "name": "creator_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instructions": {
+          "name": "instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reward_amount": {
+          "name": "reward_amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reward_token_address": {
+          "name": "reward_token_address",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "required_completions": {
+          "name": "required_completions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "task_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'DRAFT'"
+        },
+        "funding_tx_hash": {
+          "name": "funding_tx_hash",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "opentask_tasks_creator_user_id_opentask_user_id_fk": {
+          "name": "opentask_tasks_creator_user_id_opentask_user_id_fk",
+          "tableFrom": "opentask_tasks",
+          "tableTo": "opentask_user",
+          "columnsFrom": ["creator_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.opentask_user": {
+      "name": "opentask_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
         },
         "oauth_id": {
           "name": "oauth_id",
@@ -436,6 +663,54 @@
         }
       }
     },
+    "public.opentask_verification": {
+      "name": "opentask_verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "public.opentask_wallets": {
       "name": "opentask_wallets",
       "schema": "",
@@ -449,7 +724,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -485,6 +760,12 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "hashed_private_key": {
+          "name": "hashed_private_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {

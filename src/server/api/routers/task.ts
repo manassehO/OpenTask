@@ -1,13 +1,13 @@
 import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
-import { getTaskByIdSchema } from '../schemas/task';
 import { db } from '~/server/db';
-import { task, user, wallets} from '@/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-
-import { taskClaims } from '~/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
+import {
+  getTaskByIdSchema,
+  findTaskSchema,
+} from '../schemas/task';
 
 // Allowed status values
 const allowedStatus = [
@@ -18,8 +18,8 @@ const allowedStatus = [
   'DISPUTED',
 ] as const;
 
+// Schema for creating a new task
 const createTaskSchema = z.object({
-  creatorUserId: z.string().min(1, 'creatorUserId is required'),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
@@ -47,6 +47,9 @@ const createTaskSchema = z.object({
 
 
 export const taskRouter = createTRPCRouter({
+  /**
+   * Get a single task by its ID
+   */
   getTaskById: protectedProcedure
     .input(getTaskByIdSchema)
     .query(async ({ input }) => {
@@ -66,154 +69,224 @@ export const taskRouter = createTRPCRouter({
         .leftJoin(user, eq(tasks.creatorUserId, user.id));
 
       if (!result.length) {
-        throw new Error('Task not found');
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
       return result[0];
     }),
 
+  /**
+   * Find and filter tasks based on criteria
+   */
+  findTasks: protectedProcedure
+    .input(findTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { category, min_reward, sort_by, order, limit, page } = input;
 
+      const sortFieldMap = {
+        created_at: tasks.createdAt,
+        reward: tasks.rewardAmount,
+      };
+      const sortField = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const sortOrder = order === 'asc' ? asc(sortField) : desc(sortField);
 
-    initiateFunding: protectedProcedure
-    .input(z.object({ taskId: z.string() }))
+      const whereClauses = [eq(tasks.status, 'ACTIVE')];
 
+      if (category && category.trim() !== '') {
+        whereClauses.push(ilike(tasks.category, category));
+      }
+
+      if (typeof min_reward === 'number' && !isNaN(min_reward)) {
+        whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
+      }
+
+      const safeLimit = Math.max(1, Math.min(limit, 30));
+      const safePage = Math.max(1, page);
+      const offset = (safePage - 1) * safeLimit;
+
+      try {
+        const [tasksResult, countResult] = await Promise.all([
+          ctx.db.query.tasks.findMany({
+            where: and(...whereClauses),
+            orderBy: [sortOrder],
+            limit: safeLimit,
+            offset,
+          }),
+          ctx.db
+            .select({ count: count() })
+            .from(tasks)
+            .where(and(...whereClauses)),
+        ]);
+
+        const totalCount = Number(countResult[0]?.count ?? 0);
+
+        return {
+          success: true,
+          tasks: tasksResult,
+          totalCount,
+        };
+      } catch (error) {
+        console.error('Failed to fetch tasks or count:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tasks',
+        });
+      }
+    }),
+
+  /**
+   * Create a new task
+   */
   createTask: protectedProcedure
     .input(createTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
 
+      if (ctx.session.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only users with the CREATOR role can create tasks.',
+        });
+      }
+
+      const [createdTask] = await db
+        .insert(tasks)
+        .values({
+          ...input,
+          creatorUserId: userId, // Ensure task is created by the logged-in user
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      return {
+        success: true,
+        task: createdTask,
+      };
+    }),
+
+  /**
+   * Initiate the funding process for a task
+   */
+  initiateFunding: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { taskId } = input;
-      const userId = ctx.session!.userId;
+      const userId = ctx.session.user.id;
 
-      const result = await db
-         .select({
-           id: task.id,
-           creatorId: task.creatorId,
-           status: task.status,
-           rewardAmount: task.rewardAmount,
-           maxCompletions: task.maxCompletions,
-           platformFee: task.platformFee,
+      const [taskData] = await db
+        .select({
+          id: tasks.id,
+          creatorId: tasks.creatorUserId,
+          status: tasks.status,
+          rewardAmount: tasks.rewardAmount,
+          maxCompletions: tasks.requiredCompletions,
+          platformFee: tasks.platformFee,
         })
-        .from(task)
-        .where(eq(task.id, taskId));
+        .from(tasks)
+        .where(eq(tasks.id, taskId));
 
-      const taskData = result[0];
-
-      if (!taskData) throw new Error("Task not found");
-      if (taskData.creatorId !== userId) throw new Error("Unauthorized");
-      if (taskData.status !== "DRAFT") throw new Error("Task is not in DRAFT status");
+      if (!taskData) throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
+      if (taskData.creatorId !== userId) throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
+      if (taskData.status !== "DRAFT") throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not in DRAFT status" });
 
       const reward = BigInt(taskData.rewardAmount);
       const completions = BigInt(taskData.maxCompletions);
       const fee = BigInt(taskData.platformFee ?? 0);
-
       const totalFunding = reward * completions + fee;
-      const walletResult = await db
+
+      const [userWallet] = await db
         .select({
-           address: wallets.starknetAddress,
-           type: wallets.walletType,
-       })
+          address: wallets.starknetAddress,
+          type: wallets.walletType,
+        })
         .from(wallets)
         .where(eq(wallets.userId, userId));
 
-      const userWallet = walletResult[0];
-          if (!userWallet) throw new Error("Wallet not found");
-          if (userWallet.type  === "self_custody") {
-      return {
-         type: "SELF_CUSTODY",
-       approveCall: {
-          contractAddress: process.env.ERC20_CONTRACT!,
-          entrypoint: "approve",
-          calldata: [
-            process.env.ESCROW_CONTRACT!,
-            totalFunding.toString(),
-               ],
-           },
-       fundTaskCall: {
-          contractAddress: process.env.ESCROW_CONTRACT!,
-          entrypoint: "fund_task",
-          calldata: [
-             taskId,
-             totalFunding.toString(),
-               ],
-           },
-  };
-       } else if (userWallet.type === "managed") {
+      if (!userWallet) throw new TRPCError({ code: "NOT_FOUND", message: "Wallet not found" });
+
+      if (userWallet.type === "self_custody") {
+        return {
+          type: "SELF_CUSTODY",
+          approveCall: {
+            contractAddress: process.env.ERC20_CONTRACT!,
+            entrypoint: "approve",
+            calldata: [process.env.ESCROW_CONTRACT!, totalFunding.toString()],
+          },
+          fundTaskCall: {
+            contractAddress: process.env.ESCROW_CONTRACT!,
+            entrypoint: "fund_task",
+            calldata: [taskId, totalFunding.toString()],
+          },
+        };
+      } else if (userWallet.type === "managed") {
         const result = await ctx.starknetSvc.fundTaskWithManagedWallet({
-    taskId,
-    totalFunding,
-    walletAddress: userWallet.address,
-  });
+          taskId,
+          totalFunding,
+          walletAddress: userWallet.address,
+        });
 
-  return {
-    type: "MANAGED",
-    status: result.status,
-  };
-} else {
-  throw new Error("Unknown wallet type");
-}
-
+        return { type: "MANAGED", status: result.status };
+      } else {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unknown wallet type" });
+      }
     }),
 
+  /**
+   * Claim a spot to complete an active task
+   */
+  claimTask: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { taskId } = input;
+      const userId = ctx.session.user.id;
 
-    claimTask: protectedProcedure
-  .input(z.object({ taskId: z.string() }))
-  .mutation(async ({ input, ctx }) => {
-    const { taskId } = input;
-    const userId = ctx.user.id;
+      if (ctx.session.user.role !== "COMPLETER") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only completers can claim tasks" });
+      }
 
-    if (ctx.user.role !== "completer") {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Only completers can claim tasks" });
-    }
+      const [taskData] = await db
+        .select({
+          id: tasks.id,
+          status: tasks.status,
+          maxCompletions: tasks.requiredCompletions,
+          approvedCompletions: tasks.approvedCompletions,
+          inProgressCompletions: tasks.inProgressCompletions,
+        })
+        .from(tasks)
+        .where(eq(tasks.id, taskId));
 
-    const [taskData] = await db
-      .select({
-    id: task.id,
-    title: task.title,
-    description: task.description,
-    status: task.status,
-    rewardAmount: task.rewardAmount,
-    creatorId: task.creatorId,
-    maxCompletions: task.maxCompletions,
-    platformFee: task.platformFee,
-    approvedCompletions: task.approvedCompletions,
-    inProgressCompletions: task.inProgressCompletions,
-  })
-      .from(task)
-      .where(eq(task.id, taskId));
+      if (!taskData) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
+      }
 
-    if (!taskData) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
-    }
+      if (taskData.status !== "ACTIVE") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not active" });
+      }
 
-    if (taskData.status !== "ACTIVE") {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not active" });
-    }
+      const slotsAvailable =
+        (taskData.maxCompletions ?? 0) -
+        (taskData.approvedCompletions ?? 0) -
+        (taskData.inProgressCompletions ?? 0);
 
-    const slotsAvailable =
-      (taskData.maxCompletions ?? 0) -
-      (taskData.approvedCompletions ?? 0) -
-      (taskData.inProgressCompletions ?? 0);
+      if (slotsAvailable <= 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No available slots" });
+      }
 
-    if (slotsAvailable <= 0) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "No available slots" });
-    }
+      await db.transaction(async (tx) => {
+        await tx.insert(taskClaims).values({
+          taskId,
+          userId,
+          status: "IN_PROGRESS",
+          createdAt: new Date(),
+        });
 
-    await db.transaction(async (tx) => {
-      
-      await tx.insert(taskClaims).values({
-        taskId,
-        userId,
-        status: "IN_PROGRESS",
-        createdAt: new Date(),
+        await tx
+          .update(tasks)
+          .set({ inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1 })
+          .where(eq(tasks.id, taskId));
       });
 
-      await tx
-        .update(task)
-        .set({ inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1 })
-        .where(eq(task.id, taskId));
-    });
-
-    return { success: true, message: "Task claimed successfully" };
-  }),
-
+      return { success: true, message: "Task claimed successfully" };
+    }),
 });

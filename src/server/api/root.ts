@@ -1,8 +1,9 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import { authRouter } from '~/server/api/routers/auth/auth';
 import { profileRouter } from '~/server/api/routers/profile';
+import { walletRouter } from './routers/wallet';
 import { taskRouter } from './routers/task';
-import { walletRouter } from "./routers/wallet";
+
 
 
 /*

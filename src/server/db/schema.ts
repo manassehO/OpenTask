@@ -196,7 +196,6 @@ export const task = createTable('task', {
   platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
   approvedCompletions: integer('approved_completions').notNull().default(0),
   inProgressCompletions: integer('in_progress_completions').notNull().default(0),
-
 });
 
 export const taskClaims = createTable('task_claims', {
@@ -214,5 +213,4 @@ export const taskClaims = createTable('task_claims', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
-
 });
