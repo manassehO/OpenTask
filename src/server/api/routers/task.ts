@@ -1,6 +1,16 @@
-import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
+import {
+  protectedProcedure,
+  createTRPCRouter,
+  completerProcedure,
+} from '~/server/api/trpc';
 import { db } from '~/server/db';
-import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
+import {
+  tasks,
+  user,
+  wallets,
+  taskClaims,
+  submissions,
+} from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
@@ -9,6 +19,7 @@ import {
   createTaskSchema,
   findTaskSchema,
 } from '../schemas/task';
+import { submitTaskSchema } from '../schemas/submission';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -276,5 +287,125 @@ export const taskRouter = createTRPCRouter({
       });
 
       return { success: true, message: 'Task claimed successfully' };
+    }),
+
+  submitTask: completerProcedure
+    .input(submitTaskSchema)
+    .mutation(async ({ input, ctx }) => {
+      const {
+        taskId,
+        submissionType,
+        textContent,
+        submissionUrl,
+        fileMetadata,
+        additionalNotes,
+      } = input;
+      const userId = ctx.user.id;
+
+      // Verify task exists and is active
+      const [taskData] = await db
+        .select({
+          id: tasks.id,
+          status: tasks.status,
+          title: tasks.title,
+        })
+        .from(tasks)
+        .where(eq(tasks.id, taskId));
+
+      if (!taskData) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      if (taskData.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot submit to an inactive task',
+        });
+      }
+
+      // Verify user has an active claim for this task
+      const [claimData] = await db
+        .select()
+        .from(taskClaims)
+        .where(
+          and(
+            eq(taskClaims.taskId, taskId),
+            eq(taskClaims.userId, userId),
+            eq(taskClaims.status, 'IN_PROGRESS'),
+          ),
+        );
+
+      if (!claimData) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message:
+            'No active claim found for this task. You must claim the task before submitting.',
+        });
+      }
+
+      // Check if user already has a submission for this task
+      const [existingSubmission] = await db
+        .select()
+        .from(submissions)
+        .where(
+          and(
+            eq(submissions.taskId, taskId),
+            eq(submissions.completerUserId, userId),
+          ),
+        );
+
+      if (existingSubmission) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You have already submitted work for this task',
+        });
+      }
+
+      // Prepare submission data reference
+      const submissionData = {
+        type: submissionType,
+        textContent: textContent ?? null,
+        submissionUrl: submissionUrl ?? null,
+        fileMetadata: fileMetadata ?? null,
+        additionalNotes: additionalNotes ?? null,
+        submittedAt: new Date().toISOString(),
+      };
+
+      const dataRef = JSON.stringify(submissionData);
+
+      // Create submission record
+      const newSubmission = await db.transaction(async (tx) => {
+        // Insert submission
+        const [submission] = await tx
+          .insert(submissions)
+          .values({
+            taskId,
+            completerUserId: userId,
+            status: 'PENDING_REVIEW',
+            dataRef,
+            rejectionReason: '', // Empty string for new submissions
+            submittedAt: new Date(),
+          })
+          .returning({ submissionId: submissions.submissionId });
+
+        // Update task claim status to completed
+        await tx
+          .update(taskClaims)
+          .set({
+            status: 'COMPLETED',
+            updatedAt: new Date(),
+          })
+          .where(
+            and(eq(taskClaims.taskId, taskId), eq(taskClaims.userId, userId)),
+          );
+
+        return submission;
+      });
+
+      return {
+        success: true,
+        submissionId: newSubmission?.submissionId,
+        message: 'Task submitted successfully and is pending review',
+      };
     }),
 });
