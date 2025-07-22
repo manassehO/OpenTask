@@ -27,6 +27,7 @@ export async function ensureBucketExists() {
   
   // Return a path-style URL
   return `${process.env.MINIO_ENDPOINT}/${BUCKET}/${objectName}`;
+<<<<<<< Updated upstream
 } */
 
 export async function uploadBase64FileToMinio(

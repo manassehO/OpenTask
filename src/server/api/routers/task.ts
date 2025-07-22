@@ -1,5 +1,11 @@
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { tasks, user, wallets, taskClaims } from '~/server/db/schema';
+import {
+  tasks,
+  user,
+  wallets,
+  taskClaims,
+  submissions,
+} from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import { db } from '~/server/db';
@@ -8,7 +14,9 @@ import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  submitTaskSchema,
 } from '../schemas/task';
+import { uploadBase64FileToMinio } from '~/services/minio';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -80,6 +88,8 @@ export const taskRouter = createTRPCRouter({
         created_at: 'createdAt',
         reward: 'rewardAmount',
       } as const;
+      /* const sortField = sortFieldMap[sort_by] || 'createdAt';
+      const sortOrder = order === 'asc' ? 'asc' : 'desc'; */
 
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
@@ -235,7 +245,7 @@ export const taskRouter = createTRPCRouter({
           inProgressCompletions: tasks.inProgressCompletions,
         })
         .from(tasks)
-        .where(eq(tasks.id, taskId));
+        .where(eq(tasks.taskId, taskId));
 
       const taskData = result[0];
       if (!taskData) {
@@ -274,9 +284,86 @@ export const taskRouter = createTRPCRouter({
           .set({
             inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
           })
-          .where(eq(tasks.id, taskId));
+          .where(eq(tasks.taskId, taskId));
       });
 
       return { success: true, message: 'Task claimed successfully' };
+    }),
+
+  submitTask: protectedProcedure
+    .input(submitTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, file, filename, mimetype } = input;
+
+      // Validate the task claim
+      const taskClaim = await ctx.db.query.taskClaims.findFirst({
+        where: (taskClaims, { and, eq }) =>
+          and(
+            eq(taskClaims.userId, ctx.user.id),
+            eq(taskClaims.taskId, taskId),
+          ),
+      });
+
+      if (!taskClaim) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have a claim on this task.',
+        });
+      }
+
+      //  Prevent duplicate submissions
+      const existingSubmission = await ctx.db.query.submissions.findFirst({
+        where: (submissions, { eq, and }) =>
+          and(
+            eq(submissions.taskId, taskId),
+            eq(submissions.completerUserId, ctx.user.id),
+          ),
+      });
+
+      if (existingSubmission) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'You have already submitted a response for this task.',
+        });
+      }
+
+      // Upload to MinIO
+      const objectKey = `submissions/${Date.now()}-${filename}`;
+      let fileUrl: string;
+
+      try {
+        fileUrl = await uploadBase64FileToMinio(file, objectKey, mimetype);
+      } catch (error) {
+        console.error('File upload failed:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'File upload failed. Please try again later.',
+        });
+      }
+
+      // Insert submission record in DB
+      let submittedTask;
+      try {
+        const inserted = await ctx.db
+          .insert(submissions)
+          .values({
+            task_id: taskId,
+            completer_user_id: ctx.user.id,
+            status: 'PENDING_REVIEW',
+            submission_data_ref: fileUrl,
+            submitted_at: new Date(),
+          })
+          .returning();
+
+        submittedTask = inserted[0];
+      } catch (error) {
+        console.error('Failed to save submission:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Submission could not be saved.',
+        });
+      }
+
+      return { submittedTask };
     }),
 });
