@@ -245,7 +245,7 @@ export const taskRouter = createTRPCRouter({
           inProgressCompletions: tasks.inProgressCompletions,
         })
         .from(tasks)
-        .where(eq(tasks.taskId, taskId));
+        .where(eq(tasks.id, taskId));
 
       const taskData = result[0];
       if (!taskData) {
@@ -284,7 +284,7 @@ export const taskRouter = createTRPCRouter({
           .set({
             inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
           })
-          .where(eq(tasks.taskId, taskId));
+          .where(eq(tasks.id, taskId));
       });
 
       return { success: true, message: 'Task claimed successfully' };
@@ -351,7 +351,8 @@ export const taskRouter = createTRPCRouter({
             completer_user_id: ctx.user.id,
             status: 'PENDING_REVIEW',
             submission_data_ref: fileUrl,
-            submitted_at: new Date(),
+            submittedAt: new Date(),
+            rejectionReason: '',
           })
           .returning();
 

@@ -10,7 +10,7 @@ const minioClient = new Client({
   secretKey: process.env.MINIO_SECRET_KEY!,
 });
 
-const BUCKET = process.env.MINIO_BUCKET;
+const BUCKET = process.env.MINIO_BUCKET ?? 'opentask-dev';
 
 export async function ensureBucketExists() {
   const exists = await minioClient.bucketExists(BUCKET);
@@ -20,31 +20,18 @@ export async function ensureBucketExists() {
   }
 }
 
-/* export async function uploadFileToMinio(file: Buffer, filename: string, mimetype: string): Promise<string> {
-  await ensureBucketExists();
-  const objectName = `${Date.now()}-${filename}`;
-  await minioClient.putObject(BUCKET, objectName, file, { 'Content-Type': mimetype });
-  
-  // Return a path-style URL
-  return `${process.env.MINIO_ENDPOINT}/${BUCKET}/${objectName}`;
-<<<<<<< Updated upstream
-} */
-
 export async function uploadBase64FileToMinio(
   base64: string,
   objectName: string,
   mimetype: string,
 ) {
   await ensureBucketExists();
-  const buffer = Buffer.from(base64, 'base64');
+  const cleanBase64 = base64.replace(/^data:.*;base64,/, '');
+  console.log(cleanBase64);
+  const buffer = Buffer.from(cleanBase64, 'base64');
   const meta = { 'Content-Type': mimetype };
 
-  await minioClient.putObject(
-    process.env.MINIO_BUCKET!,
-    objectName,
-    buffer,
-    meta,
-  );
+  await minioClient.putObject(BUCKET, objectName, buffer, meta);
 
   return `${process.env.MINIO_ENDPOINT}/${BUCKET}/${objectName}`;
 }

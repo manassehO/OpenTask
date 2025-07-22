@@ -14,7 +14,6 @@ export const getTaskByIdSchema = z.object({
 });
 
 export const createTaskSchema = z.object({
-  creatorUserId: z.string().min(1, 'creatorUserId is required'),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
@@ -34,6 +33,7 @@ export const createTaskSchema = z.object({
     .number()
     .int()
     .min(1, 'requiredCompletions must be at least 1'),
+  maxCompletions: z.number().int().min(1, 'maxCompletions must be at least 1'),
   status: z.enum(allowedStatus),
   fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
     message: 'Invalid fundingTxHash format',
@@ -51,7 +51,7 @@ export const findTaskSchema = z.object({
 
 export const submitTaskSchema = z.object({
   taskId: z.string().uuid(),
-  file: z.string().regex(/^data:.*;base64,/, 'Invalid base64 format'),
+  file: z.string(),
   filename: z.string().min(1).max(255),
   mimetype: z.string().min(3).max(255),
 });

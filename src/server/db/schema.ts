@@ -203,7 +203,7 @@ export const taskClaims = createTable('task_claims', {
 export const submissions = createTable('submissions', {
   submissionId: uuid('submission_id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').references(() => tasks.id),
-  completerUserId: uuid('completer_user_id').references(() => user.id),
+  completerUserId: text('completer_user_id').references(() => user.id),
   status: submissionStatusEnum('status').notNull(),
   dataRef: text('data_ref'),
   rejectionReason: text('rejection_reason').notNull(),
