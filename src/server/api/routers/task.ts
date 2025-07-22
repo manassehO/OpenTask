@@ -14,16 +14,12 @@ import {
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
-import { db } from '~/server/db';
-import { z } from 'zod';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
-  submitTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
-import { uploadBase64FileToMinio } from '~/services/minio';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -92,8 +88,8 @@ export const taskRouter = createTRPCRouter({
 
       // Only allow sorting by whitelisted fields
       const sortFieldMap = {
-        created_at: 'createdAt',
-        reward: 'rewardAmount',
+        created_at: tasks.createdAt,
+        reward: tasks.rewardAmount,
       } as const;
       /* const sortField = sortFieldMap[sort_by] || 'createdAt';
       const sortOrder = order === 'asc' ? 'asc' : 'desc'; */
