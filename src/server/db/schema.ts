@@ -1,7 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -156,10 +156,12 @@ export const tasks = createTable('tasks', {
   rewardTokenAddress: varchar('reward_token_address', {
     length: 100,
   }).notNull(),
-  platformFee: numeric("platform_fee", { precision: 20, scale: 0 }),
+  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
   //maxCompletions: integer("max_completions").notNull(),
   approvedCompletions: integer('approved_completions').notNull().default(0),
-  inProgressCompletions: integer('in_progress_completions').notNull().default(0),
+  inProgressCompletions: integer('in_progress_completions')
+    .notNull()
+    .default(0),
   requiredCompletions: integer('required_completions').notNull(),
   status: taskStatusEnum('status').default('DRAFT').notNull(),
   fundingTxHash: varchar('funding_tx_hash', { length: 255 }).notNull(),
@@ -202,14 +204,20 @@ export const taskClaims = createTable('task_claims', {
 });
 
 export const submissions = createTable('submissions', {
- submissionId: uuid("submission_id").primaryKey().defaultRandom(),
-taskId: uuid("task_id").references(() => tasks.id),
-completerUserId: uuid("completer_user_id").references(() => user.id),
- status: submissionStatusEnum('status').notNull(),
-dataRef: text("data_ref"),
-rejectionReason: text("rejection_reason").notNull(),
-approvalTxHash: varchar("approval_tx_hash", { length: 255 }),
-reviewedAt: timestamp("reviewed_at"),
-submittedAt: timestamp("submitted_at").notNull(),
+  submissionId: uuid('submission_id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id').references(() => tasks.id),
+  completerUserId: uuid('completer_user_id').references(() => user.id),
+  status: submissionStatusEnum('status').notNull(),
+  dataRef: text('data_ref'),
+  rejectionReason: text('rejection_reason'),
+  approvalTxHash: varchar('approval_tx_hash', { length: 255 }),
+  reviewedAt: timestamp('reviewed_at'),
+  submittedAt: timestamp('submitted_at').notNull(),
 });
 
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+}));

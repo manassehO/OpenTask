@@ -1,6 +1,12 @@
 import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
 import { db } from '~/server/db';
-import { tasks, user, wallets, taskClaims } from '@/server/db/schema';
+import {
+  tasks,
+  user,
+  wallets,
+  taskClaims,
+  submissions,
+} from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
@@ -8,6 +14,7 @@ import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  rejectSubmissionSchema,
 } from '../schemas/task';
 
 export const taskRouter = createTRPCRouter({
@@ -61,6 +68,7 @@ export const taskRouter = createTRPCRouter({
           creatorUserId: userId, // Ensure task is created by the logged-in user
           createdAt: new Date(),
           updatedAt: new Date(),
+          maxCompletions: input.maxCompletions,
         })
         .returning();
 
@@ -77,8 +85,8 @@ export const taskRouter = createTRPCRouter({
 
       // Only allow sorting by whitelisted fields
       const sortFieldMap = {
-        created_at: 'createdAt',
-        reward: 'rewardAmount',
+        created_at: tasks.createdAt,
+        reward: tasks.rewardAmount,
       } as const;
 
       // Build where clause for drizzle
@@ -276,5 +284,64 @@ export const taskRouter = createTRPCRouter({
       });
 
       return { success: true, message: 'Task claimed successfully' };
+    }),
+
+  rejectSubmission: protectedProcedure
+    .input(rejectSubmissionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can reject submissions',
+        });
+      }
+
+      const submission = await db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: {
+          task: {
+            columns: {
+              id: true,
+              creatorUserId: true,
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      if (submission.task?.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not the creator of this task',
+        });
+      }
+
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      await db
+        .update(submissions)
+        .set({
+          status: 'REJECTED',
+          reviewedAt: new Date(),
+          rejectionReason: input.reason,
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      // TODO: Notify the completer that their submission was rejected
+
+      return { success: true };
     }),
 });
