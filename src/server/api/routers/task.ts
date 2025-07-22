@@ -347,10 +347,10 @@ export const taskRouter = createTRPCRouter({
         const inserted = await ctx.db
           .insert(submissions)
           .values({
-            task_id: taskId,
-            completer_user_id: ctx.user.id,
+            taskId: taskId,
+            completerUserId: ctx.user.id,
             status: 'PENDING_REVIEW',
-            data_ref: fileUrl,
+            dataRef: fileUrl,
             submittedAt: new Date(),
             rejectionReason: '',
           })
