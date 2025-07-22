@@ -1,5 +1,5 @@
 {
-  "id": "8fa607ee-a54f-4f6d-a3da-0f1c20b0d453",
+  "id": "46dd6c47-4dc3-4449-aab6-5d306aa2b212",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -270,68 +270,6 @@
         }
       }
     },
-    "public.opentask_post": {
-      "name": "opentask_post",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "identity": {
-            "type": "byDefault",
-            "name": "opentask_post_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "2147483647",
-            "cache": "1",
-            "cycle": false
-          }
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "name_idx": {
-          "name": "name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
     "public.opentask_session": {
       "name": "opentask_session",
       "schema": "",
@@ -408,8 +346,93 @@
         }
       }
     },
-    "public.opentask_task": {
-      "name": "opentask_task",
+    "public.opentask_submissions": {
+      "name": "opentask_submissions",
+      "schema": "",
+      "columns": {
+        "submission_id": {
+          "name": "submission_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completer_user_id": {
+          "name": "completer_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "submission_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_ref": {
+          "name": "data_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rejection_reason": {
+          "name": "rejection_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "approval_tx_hash": {
+          "name": "approval_tx_hash",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "opentask_submissions_task_id_opentask_tasks_task_id_fk": {
+          "name": "opentask_submissions_task_id_opentask_tasks_task_id_fk",
+          "tableFrom": "opentask_submissions",
+          "tableTo": "opentask_tasks",
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["task_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "opentask_submissions_completer_user_id_opentask_user_id_fk": {
+          "name": "opentask_submissions_completer_user_id_opentask_user_id_fk",
+          "tableFrom": "opentask_submissions",
+          "tableTo": "opentask_user",
+          "columnsFrom": ["completer_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.opentask_task_claims": {
+      "name": "opentask_task_claims",
       "schema": "",
       "columns": {
         "id": {
@@ -419,51 +442,56 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "title": {
-          "name": "title",
-          "type": "varchar(255)",
+        "task_id": {
+          "name": "task_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "creator_id": {
-          "name": "creator_id",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'in_progress'"
         },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "notNull": false,
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "opentask_task_creator_id_opentask_user_id_fk": {
-          "name": "opentask_task_creator_id_opentask_user_id_fk",
-          "tableFrom": "opentask_task",
+        "opentask_task_claims_task_id_opentask_tasks_task_id_fk": {
+          "name": "opentask_task_claims_task_id_opentask_tasks_task_id_fk",
+          "tableFrom": "opentask_task_claims",
+          "tableTo": "opentask_tasks",
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["task_id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "opentask_task_claims_user_id_opentask_user_id_fk": {
+          "name": "opentask_task_claims_user_id_opentask_user_id_fk",
+          "tableFrom": "opentask_task_claims",
           "tableTo": "opentask_user",
-          "columnsFrom": ["creator_id"],
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -525,6 +553,26 @@
           "primaryKey": false,
           "notNull": true
         },
+        "platform_fee": {
+          "name": "platform_fee",
+          "type": "numeric(20, 0)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_completions": {
+          "name": "approved_completions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "in_progress_completions": {
+          "name": "in_progress_completions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "required_completions": {
           "name": "required_completions",
           "type": "integer",
@@ -557,6 +605,12 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "max_completions": {
+          "name": "max_completions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -635,7 +689,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'CREATOR'"
+          "default": "'COMPLETER'"
         },
         "wallet_address": {
           "name": "wallet_address",

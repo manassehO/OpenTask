@@ -171,7 +171,6 @@ export const tasks = createTable('tasks', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
     () => new Date(),
   ),
-
   maxCompletions: integer('max_completions').notNull(),
 });
 
@@ -191,17 +190,17 @@ export const taskClaims = createTable('task_claims', {
   taskId: uuid('task_id')
     .notNull()
     .references(() => tasks.id, { onDelete: 'cascade' }),
-
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   status: text('status').notNull().default('in_progress'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-
-  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
-    () => new Date(),
-  ),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
+
+
 
 export const submissions = createTable('submissions', {
   submissionId: uuid('submission_id').primaryKey().defaultRandom(),

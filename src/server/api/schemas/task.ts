@@ -14,7 +14,6 @@ export const getTaskByIdSchema = z.object({
 });
 
 export const createTaskSchema = z.object({
-  creatorUserId: z.string().min(1, 'creatorUserId is required'),
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
@@ -56,3 +55,11 @@ export const rejectSubmissionSchema = z.object({
   submissionId: z.string().uuid(), // or z.number() depending on your schema
   reason: z.string().min(10).max(500),
 });
+
+export const submitTaskSchema = z.object({
+  taskId: z.string().uuid(),
+  file: z.string(),
+  filename: z.string().min(1).max(255),
+  mimetype: z.string().min(3).max(255),
+});
+
