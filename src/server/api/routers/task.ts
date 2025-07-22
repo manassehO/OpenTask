@@ -369,8 +369,6 @@ export const taskRouter = createTRPCRouter({
       return { submittedTask };
     }),
 
-  // taskRouter.ts
-
   getSubmissions: protectedProcedure
     .input(getSubmissionsSchema)
     .mutation(async ({ ctx, input }) => {
