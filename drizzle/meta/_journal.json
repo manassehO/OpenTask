@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1752499766602,
-      "tag": "0000_absent_iron_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1752501398138,
-      "tag": "0001_famous_xavin",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1753100531755,
-      "tag": "0002_blushing_warbound",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1753114183315,
-      "tag": "0003_slimy_kid_colt",
+      "when": 1753174704361,
+      "tag": "0000_tired_wendigo",
       "breakpoints": true
     },
     {

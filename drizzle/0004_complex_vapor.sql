@@ -1,0 +1,3 @@
+ALTER TABLE "opentask_task_claims" ALTER COLUMN "user_id" SET DATA TYPE text;--> statement-breakpoint
+ALTER TABLE "opentask_task_claims" ALTER COLUMN "updated_at" SET DEFAULT now();--> statement-breakpoint
+ALTER TABLE "opentask_tasks" ADD COLUMN "max_completions" integer NOT NULL;

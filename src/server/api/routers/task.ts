@@ -14,12 +14,16 @@ import {
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
+import { db } from '~/server/db';
+import { z } from 'zod';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  submitTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+import { uploadBase64FileToMinio } from '~/services/minio';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -91,6 +95,8 @@ export const taskRouter = createTRPCRouter({
         created_at: 'createdAt',
         reward: 'rewardAmount',
       } as const;
+      /* const sortField = sortFieldMap[sort_by] || 'createdAt';
+      const sortOrder = order === 'asc' ? 'asc' : 'desc'; */
 
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
@@ -152,7 +158,7 @@ export const taskRouter = createTRPCRouter({
       const { taskId } = input;
       const userId = ctx.user.id;
 
-      const [taskData] = await db
+      const result = await db
         .select({
           id: tasks.id,
           creatorId: tasks.creatorUserId,
@@ -164,6 +170,7 @@ export const taskRouter = createTRPCRouter({
         .from(tasks)
         .where(eq(tasks.id, taskId));
 
+      const taskData = result[0];
       if (!taskData)
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       if (taskData.creatorId !== userId)
@@ -236,7 +243,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      const [taskData] = await db
+      const result = await db
         .select({
           id: tasks.id,
           status: tasks.status,
@@ -247,6 +254,7 @@ export const taskRouter = createTRPCRouter({
         .from(tasks)
         .where(eq(tasks.id, taskId));
 
+      const taskData = result[0];
       if (!taskData) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
