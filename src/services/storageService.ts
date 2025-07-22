@@ -30,9 +30,6 @@ class StorageService {
     this.defaultBucket = process.env.S3_BUCKET_NAME || 'opentask-submissions';
   }
 
-  /**
-   * Initialize the storage service by ensuring the bucket exists
-   */
   async initialize(): Promise<void> {
     try {
       const bucketExists = await this.client.bucketExists(this.defaultBucket);
@@ -47,7 +44,7 @@ class StorageService {
   }
 
   /**
-   * Upload a file to storage
+   * Uploading file to storage
    */
   async uploadFile(options: UploadOptions): Promise<UploadResult> {
     const {
@@ -57,7 +54,6 @@ class StorageService {
       bucketName = this.defaultBucket,
     } = options;
 
-    // Generate a unique key to avoid collisions
     const fileExtension = fileName.split('.').pop();
     const uniqueKey = `submissions/${randomUUID()}.${fileExtension}`;
 
@@ -73,12 +69,11 @@ class StorageService {
         },
       );
 
-      // Generate the URL for the uploaded file
       const url = await this.client.presignedGetObject(
         bucketName,
         uniqueKey,
         24 * 60 * 60,
-      ); // 24 hour expiry
+      );
 
       return {
         url,
@@ -91,9 +86,7 @@ class StorageService {
     }
   }
 
-  /**
-   * Get a presigned URL for file access
-   */
+
   async getFileUrl(
     key: string,
     bucketName?: string,
@@ -111,9 +104,6 @@ class StorageService {
     }
   }
 
-  /**
-   * Delete a file from storage
-   */
   async deleteFile(key: string, bucketName?: string): Promise<void> {
     try {
       await this.client.removeObject(bucketName || this.defaultBucket, key);
@@ -123,14 +113,11 @@ class StorageService {
     }
   }
 
-  /**
-   * Validate file before upload (size, type restrictions)
-   */
   validateFile(
     file: File,
     maxSizeBytes = 10 * 1024 * 1024,
   ): { isValid: boolean; error?: string } {
-    // Check file size (default 10MB)
+
     if (file.size > maxSizeBytes) {
       return {
         isValid: false,
@@ -138,7 +125,7 @@ class StorageService {
       };
     }
 
-    // Check file type - only allow common submission file types
+
     const allowedTypes = [
       'application/pdf',
       'application/msword',
@@ -163,5 +150,5 @@ class StorageService {
   }
 }
 
-// Export a singleton instance
+
 export const storageService = new StorageService();
