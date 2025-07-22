@@ -350,7 +350,7 @@ export const taskRouter = createTRPCRouter({
             task_id: taskId,
             completer_user_id: ctx.user.id,
             status: 'PENDING_REVIEW',
-            submission_data_ref: fileUrl,
+            data_ref: fileUrl,
             submittedAt: new Date(),
             rejectionReason: '',
           })
