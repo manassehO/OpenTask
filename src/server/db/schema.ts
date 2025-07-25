@@ -13,6 +13,7 @@ import {
   pgEnum,
   uuid,
   numeric,
+  bigint
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
@@ -211,3 +212,12 @@ export const submissions = createTable('submissions', {
   reviewedAt: timestamp('reviewed_at'),
   submittedAt: timestamp('submitted_at').notNull(),
 });
+
+export const userBalances = createTable('user_balances', {
+  userAddress: varchar('user_address', { length: 100 }).primaryKey(),
+  balance: bigint('balance', { mode: "bigint" }).notNull(),
+  token: varchar('token', { length: 100 }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+})
