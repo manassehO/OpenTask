@@ -92,8 +92,6 @@ export const taskRouter = createTRPCRouter({
         created_at: tasks.createdAt,
         reward: tasks.rewardAmount,
       } as const;
-      /* const sortField = sortFieldMap[sort_by] || 'createdAt';
-      const sortOrder = order === 'asc' ? 'asc' : 'desc'; */
 
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
@@ -106,7 +104,8 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const sortColumn =
+        sort_by === 'reward' ? tasks.rewardAmount : tasks.createdAt;
       const orderByClause =
         order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
