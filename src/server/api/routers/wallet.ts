@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { wallets } from '~/server/db/schema';
+import { wallets, userBalances } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { db } from '@/server/db';
+import { starknetSvc } from '~/services/starknetSvc';
 
 const STARKNET_ADDRESS_REGEX = /^0x[0-9a-fA-F]{64}$/;
 
@@ -116,5 +118,112 @@ export const walletRouter = createTRPCRouter({
       });
 
       return events;
+    }),
+
+  initiateCryptoWithdrawal: protectedProcedure
+    .input(
+      z.object({
+        tokenAddress: z.string(),
+        amount: z.string(),
+        destinationAddress: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { tokenAddress, amount, destinationAddress } = input;
+      const userAddress = ctx.user.id;
+      const userRole = ctx.user.role;
+
+      if (userRole !== 'Completer') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only users with the Completer role can withdraw.',
+        });
+      }
+
+      const balance = await db.query.userBalances.findFirst({
+        where: and(
+          eq(userBalances.userAddress, userAddress),
+          eq(userBalances.token, tokenAddress),
+        ),
+      });
+
+      if (!balance) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'No balance record found.',
+        });
+      }
+
+      const currentBalance = BigInt(balance.balance);
+      const requestedAmount = BigInt(amount);
+
+      if (requestedAmount > currentBalance) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Insufficient balance.',
+        });
+      }
+
+      const wallet = await db.query.wallets.findFirst({
+        where: eq(wallets.userId, userAddress),
+      });
+
+      if (!wallet) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User wallet not found.',
+        });
+      }
+
+      if (wallet.walletType === 'self_custody') {
+        if (!destinationAddress) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message:
+              'Destination address is required for self-custody withdrawals.',
+          });
+        }
+
+        return {
+          kind: 'SELF_CUSTODY' as const,
+          unsignedTx: {
+            to: tokenAddress,
+            data: {
+              function: 'transfer',
+              args: [destinationAddress, amount],
+            },
+          },
+        };
+      }
+
+      if (wallet.walletType === 'managed') {
+        if (!destinationAddress) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message:
+              'Destination address is required for managed wallet withdrawals.',
+          });
+        }
+
+        const txHash = await starknetSvc.transferERC20({
+          fromUser: userAddress,
+          to: destinationAddress,
+          amount,
+          tokenAddress,
+        });
+
+        return {
+          type: 'managed' as const,
+          data: {
+            txHash,
+            status: 'initiated',
+          },
+        };
+      }
+
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Unsupported wallet type.',
+      });
     }),
 });
