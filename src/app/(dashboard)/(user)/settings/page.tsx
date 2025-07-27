@@ -280,7 +280,7 @@ export default function SettingPage() {
             {tasks.map((task) => (
               <div key={task.id} className="space-y-4 capitalize">
                 <div className="flex items-center space-x-4 rounded py-4 hover:scale-[1.02] hover:bg-main md:px-4 md:py-6">
-                  <div className="flex items-center justify-center rounded bg-primary-50 p-2 md:h-14 md:w-14">
+                  <div className="bg-primary-50 flex items-center justify-center rounded p-2 md:h-14 md:w-14">
                     <Image
                       width={30}
                       height={30}

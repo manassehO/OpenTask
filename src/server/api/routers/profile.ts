@@ -26,6 +26,7 @@ const updateProfileSelfSchema = z
 
 const updateProfileAdminSchema = z
   .object({
+    userId: z.string(),
     name: z.string().min(1).optional(),
     displayName: z.string().min(1).max(150).optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED', 'BANNED']).optional(),
@@ -145,10 +146,9 @@ export const profileRouter = createTRPCRouter({
       //   where: (u, { eq }) => eq(u.id, userId as string),
       // });
 
-      const foundUser: InferModel<typeof user> | undefined =
-        await ctx.db.query.user.findFirst({
-          where: (u, { eq }) => eq(u.id, userId as string),
-        });
+      const foundUser = await ctx.db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, userId),
+      });
 
       if (!foundUser) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
@@ -166,7 +166,7 @@ export const profileRouter = createTRPCRouter({
       const result: User[] = await ctx.db
         .update(user)
         .set(dataToUpdate)
-        .where(eq(user.id, userId as string))
+        .where(eq(user.id, userId))
         .returning();
 
       if (result.length === 0) {
@@ -177,7 +177,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      const updatedUser = result[0] as typeof user;
+      const updatedUser = result[0]!;
 
       return {
         success: true,

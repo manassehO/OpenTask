@@ -17,7 +17,7 @@ export const auth = betterAuth({
       role: {
         type: 'string',
         required: true,
-        defaultValue: 'CREATOR',
+        defaultValue: "CREATOR",
       },
     },
   },
@@ -43,7 +43,7 @@ export const auth = betterAuth({
     emailOTP({
       otpLength: 6,
       expiresIn: 600, // 10 days
-      async sendVerificationOTP({ email, otp, type }) {
+      async sendVerificationOTP({ email, otp }) {
         await sendOtp(email, otp);
       },
     }),
