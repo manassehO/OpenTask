@@ -55,3 +55,12 @@ export const submitTaskSchema = z.object({
   filename: z.string().min(1).max(255),
   mimetype: z.string().min(3).max(255),
 });
+
+export const getSubmissionsSchema = z.object({
+  taskId: z.string().uuid(),
+  status: z
+    .enum(['PENDING_REVIEW', 'APPROVED', 'REJECTED', 'DISPUTED'])
+    .optional(),
+  limit: z.number().int().min(1).max(50).default(10),
+  page: z.number().int().min(1).default(1),
+});
