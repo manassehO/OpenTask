@@ -1,5 +1,11 @@
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { tasks, user, wallets, taskClaims } from '~/server/db/schema';
+import {
+  tasks,
+  user,
+  wallets,
+  taskClaims,
+  submissions,
+} from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import { db } from '~/server/db';
@@ -8,7 +14,9 @@ import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  submitTaskSchema,
 } from '../schemas/task';
+import { uploadBase64FileToMinio } from '~/services/minio';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -76,11 +84,11 @@ export const taskRouter = createTRPCRouter({
       const { category, min_reward, sort_by, order, limit, page } = input;
 
       // Only allow sorting by whitelisted fields
-      const sortFieldMap = {
-        created_at: 'createdAt',
-        reward: 'rewardAmount',
+      /* const sortFieldMap = {
+        created_at: tasks.createdAt,
+        reward: tasks.rewardAmount,
       } as const;
-
+ */
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
 
@@ -92,7 +100,8 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const sortColumn =
+        sort_by === 'reward' ? tasks.rewardAmount : tasks.createdAt;
       const orderByClause =
         order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
@@ -278,5 +287,86 @@ export const taskRouter = createTRPCRouter({
       });
 
       return { success: true, message: 'Task claimed successfully' };
+    }),
+
+  /**
+   * Submit task completed by users
+   */
+  submitTask: protectedProcedure
+    .input(submitTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, file, filename, mimetype } = input;
+
+      // Validate the task claim
+      const taskClaim = await ctx.db.query.taskClaims.findFirst({
+        where: (taskClaims, { and, eq }) =>
+          and(
+            eq(taskClaims.userId, ctx.user.id),
+            eq(taskClaims.taskId, taskId),
+          ),
+      });
+
+      if (!taskClaim) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have a claim on this task.',
+        });
+      }
+
+      //  Prevent duplicate submissions
+      const existingSubmission = await ctx.db.query.submissions.findFirst({
+        where: (submissions, { eq, and }) =>
+          and(
+            eq(submissions.taskId, taskId),
+            eq(submissions.completerUserId, ctx.user.id),
+          ),
+      });
+
+      if (existingSubmission) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'You have already submitted a response for this task.',
+        });
+      }
+
+      // Upload to MinIO
+      const objectKey = `submissions/${Date.now()}-${filename}`;
+      let fileUrl: string;
+
+      try {
+        fileUrl = await uploadBase64FileToMinio(file, objectKey, mimetype);
+      } catch (error) {
+        console.error('File upload failed:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'File upload failed. Please try again later.',
+        });
+      }
+
+      // Insert submission record in DB
+      let submittedTask;
+      try {
+        const inserted = await ctx.db
+          .insert(submissions)
+          .values({
+            taskId: taskId,
+            completerUserId: ctx.user.id,
+            status: 'PENDING_REVIEW',
+            dataRef: fileUrl,
+            submittedAt: new Date(),
+            rejectionReason: '',
+          })
+          .returning();
+
+        submittedTask = inserted[0];
+      } catch (error) {
+        console.error('Failed to save submission:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Submission could not be saved.',
+        });
+      }
+
+      return { submittedTask };
     }),
 });

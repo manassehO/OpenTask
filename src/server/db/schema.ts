@@ -14,6 +14,7 @@ import {
   uuid,
   numeric,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
@@ -211,3 +212,10 @@ export const submissions = createTable('submissions', {
   reviewedAt: timestamp('reviewed_at'),
   submittedAt: timestamp('submitted_at').notNull(),
 });
+
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+}));
