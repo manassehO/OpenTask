@@ -1,7 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { sql } from 'drizzle-orm';
+import { sql, relations } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -13,6 +13,7 @@ import {
   pgEnum,
   uuid,
   numeric,
+  bigint
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -206,11 +207,20 @@ export const submissions = createTable('submissions', {
   completerUserId: uuid('completer_user_id').references(() => user.id),
   status: submissionStatusEnum('status').notNull(),
   dataRef: text('data_ref'),
-  rejectionReason: text('rejection_reason').notNull(),
+  rejectionReason: text('rejection_reason'),
   approvalTxHash: varchar('approval_tx_hash', { length: 255 }),
   reviewedAt: timestamp('reviewed_at'),
   submittedAt: timestamp('submitted_at').notNull(),
 });
+
+export const userBalances = createTable('user_balances', {
+  userAddress: varchar('user_address', { length: 100 }).primaryKey(),
+  balance: bigint('balance', { mode: "bigint" }).notNull(),
+  token: varchar('token', { length: 100 }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+})
 
 export const submissionsRelations = relations(submissions, ({ one }) => ({
   task: one(tasks, {

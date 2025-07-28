@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1753174704361,
-      "tag": "0000_tired_wendigo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1753708169954,
-      "tag": "0001_chunky_kate_bishop",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1753708393168,
-      "tag": "0002_tense_phil_sheldon",
+      "when": 1753738469392,
+      "tag": "0000_brainy_maximus",
       "breakpoints": true
     }
   ]
