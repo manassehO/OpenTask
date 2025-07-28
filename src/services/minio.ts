@@ -30,7 +30,7 @@ export async function uploadBase64FileToMinio(
   const buffer = Buffer.from(cleanBase64, 'base64');
   const meta = { 'Content-Type': mimetype };
 
-  await minioClient.putObject(BUCKET, objectName, buffer, meta);
+  await minioClient.putObject(BUCKET, objectName, buffer, buffer.length, meta);
 
   return `${process.env.MINIO_ENDPOINT}/${BUCKET}/${objectName}`;
 }
