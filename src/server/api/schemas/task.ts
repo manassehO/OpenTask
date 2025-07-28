@@ -18,6 +18,7 @@ export const createTaskSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
   category: z.string().min(1, 'Category is required'),
+  maxCompletions: z.number().min(1),
   rewardAmount: z
     .string()
     .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
@@ -33,10 +34,10 @@ export const createTaskSchema = z.object({
     .number()
     .int()
     .min(1, 'requiredCompletions must be at least 1'),
-  maxCompletions: z.number().int().min(1, 'maxCompletions must be at least 1'),
   status: z.enum(allowedStatus),
   fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
     message: 'Invalid fundingTxHash format',
+    
   }),
 });
 
@@ -47,6 +48,12 @@ export const findTaskSchema = z.object({
   order: z.enum(['asc', 'desc']).default('desc'),
   limit: z.number().min(1).default(10),
   page: z.number().min(1).default(1),
+});
+
+
+export const rejectSubmissionSchema = z.object({
+  submissionId: z.string().uuid(), // or z.number() depending on your schema
+  reason: z.string().min(10).max(500),
 });
 
 export const submitTaskSchema = z.object({
