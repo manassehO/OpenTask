@@ -1,20 +1,24 @@
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+
+import { protectedProcedure, createTRPCRouter } from '~/server/api/trpc';
+import { db } from '~/server/db';
 import {
   tasks,
   user,
   wallets,
   taskClaims,
   submissions,
-} from '~/server/db/schema';
+} from '@/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
-import { db } from '~/server/db';
 import { z } from 'zod';
+
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
+  rejectSubmissionSchema,
   submitTaskSchema,
+  getSubmissionsSchema,
 } from '../schemas/task';
 import { uploadBase64FileToMinio } from '~/services/minio';
 
@@ -69,6 +73,7 @@ export const taskRouter = createTRPCRouter({
           creatorUserId: userId, // Ensure task is created by the logged-in user
           createdAt: new Date(),
           updatedAt: new Date(),
+          maxCompletions: input.maxCompletions,
         })
         .returning();
 
@@ -85,11 +90,9 @@ export const taskRouter = createTRPCRouter({
 
       // Only allow sorting by whitelisted fields
       const sortFieldMap = {
-        created_at: 'createdAt',
-        reward: 'rewardAmount',
+        created_at: tasks.createdAt,
+        reward: tasks.rewardAmount,
       } as const;
-      /* const sortField = sortFieldMap[sort_by] || 'createdAt';
-      const sortOrder = order === 'asc' ? 'asc' : 'desc'; */
 
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
@@ -102,7 +105,8 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const sortColumn =
+        sort_by === 'reward' ? tasks.rewardAmount : tasks.createdAt;
       const orderByClause =
         order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
@@ -290,6 +294,67 @@ export const taskRouter = createTRPCRouter({
       return { success: true, message: 'Task claimed successfully' };
     }),
 
+
+  rejectSubmission: protectedProcedure
+    .input(rejectSubmissionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can reject submissions',
+        });
+      }
+
+      const submission = await db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: {
+          task: {
+            columns: {
+              id: true,
+              creatorUserId: true,
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      if (submission.task?.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not the creator of this task',
+        });
+      }
+
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      await db
+        .update(submissions)
+        .set({
+          status: 'REJECTED',
+          reviewedAt: new Date(),
+          rejectionReason: input.reason,
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      // TODO: Notify the completer that their submission was rejected
+
+      return { success: true };
+           }),
+
+
   submitTask: protectedProcedure
     .input(submitTaskSchema)
     .mutation(async ({ ctx, input }) => {
@@ -366,5 +431,91 @@ export const taskRouter = createTRPCRouter({
       }
 
       return { submittedTask };
+
+    }),
+  
+  getSubmissions: protectedProcedure
+    .input(getSubmissionsSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, status, limit, page } = input;
+      const userId = ctx.user.id;
+
+      // Ensure user is a CREATOR
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can view task submissions.',
+        });
+      }
+
+      // Check task exists and belongs to user
+      const task = await ctx.db.query.tasks.findFirst({
+        where: (tasks, { eq }) => eq(tasks.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found.',
+        });
+      }
+
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not own this task.',
+        });
+      }
+
+      // Build filters
+      const whereConditions = [eq(submissions.taskId, taskId)];
+
+      if (status) {
+        whereConditions.push(eq(submissions.status, status));
+      }
+
+      const offset = (page - 1) * limit;
+
+      try {
+        const [results, totalCountResult] = await Promise.all([
+          ctx.db
+            .select({
+              submissionId: submissions.submissionId,
+              status: submissions.status,
+              submittedAt: submissions.submittedAt,
+              rejectionReason: submissions.rejectionReason,
+              dataRef: submissions.dataRef,
+              completerId: user.id,
+              completerDisplayName: user.displayName,
+            })
+            .from(submissions)
+            .where(and(...whereConditions))
+            .leftJoin(user, eq(user.id, submissions.completerUserId))
+            .orderBy(desc(submissions.submittedAt))
+            .limit(limit)
+            .offset(offset),
+
+          ctx.db
+            .select({ count: count() })
+            .from(submissions)
+            .where(and(...whereConditions)),
+        ]);
+
+        const totalCount = Number(totalCountResult[0]?.count ?? 0);
+
+        return {
+          success: true,
+          submissions: results,
+          totalCount,
+          page,
+          pageSize: limit,
+        };
+      } catch (error) {
+        console.error('Failed to fetch submissions:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Could not fetch submissions.',
+        });
+      }
     }),
 });

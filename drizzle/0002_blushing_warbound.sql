@@ -1,9 +1,11 @@
+
 CREATE TYPE submission_status AS ENUM(
 	'PENDING_REVIEW',
 	'APPROVED',
 	'REJECTED',
   	'DISPUTED'
 );
+
 
 CREATE TABLE IF NOT EXISTS "opentask_submissions" (
 	"submission_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
