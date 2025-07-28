@@ -14,8 +14,25 @@ export const fundTask = () => {
   console.log('Stub: Funding task');
 };
 
-export const transfer = () => {
-  console.log('Stub: Transferring tokens');
+export const transferERC20 = async ({
+  fromUser,
+  to,
+  amount,
+  tokenAddress,
+}: {
+  fromUser: string;
+  to: string;
+  amount: string;
+  tokenAddress: string;
+}) => {
+  console.log("[StarknetSvc] Transferring ERC20 tokens");
+  console.log("From user:", fromUser);
+  console.log("To:", to);
+  console.log("Amount:", amount);
+  console.log("Token:", tokenAddress);
+
+  // Simulate tx hash for now
+  return "0xfake_tx_hash";
 };
 
 export const verifyMessage = () => {
@@ -48,4 +65,15 @@ export const fundTaskWithManagedWallet = async ({
   // Later, this will interact with Chipi or your own Starknet contract wrapper
 
   return { status: 'success' };
+};
+
+export const starknetSvc = {
+  approve,
+  fundTask,
+  transferERC20,
+  deployAAWallet,
+  fundTaskWithManagedWallet,
+  verifyMessage,
+  flagDispute,
+  resolveDispute,
 };
