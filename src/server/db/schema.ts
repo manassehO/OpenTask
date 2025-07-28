@@ -158,7 +158,6 @@ export const tasks = createTable('tasks', {
     length: 100,
   }).notNull(),
   platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
-  //maxCompletions: integer("max_completions").notNull(),
   approvedCompletions: integer('approved_completions').notNull().default(0),
   inProgressCompletions: integer('in_progress_completions')
     .notNull()

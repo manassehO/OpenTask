@@ -369,4 +369,66 @@ export const taskRouter = createTRPCRouter({
 
       return { submittedTask };
     }),
+
+  approveSubmission: protectedProcedure
+    .input(
+      z.object({
+        submissionId: z.string(),
+        txHash: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Fetch submission and task
+      const submission = await ctx.db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      // Verify task ownership
+      if (submission.task.creatorUserId !== userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
+      }
+
+      // Verify submission status
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      // Fetch completer's active wallet
+      const wallet = await ctx.db.query.wallets.findFirst({
+        where: (w, { eq, and }) =>
+          and(eq(w.userId, submission.completerUserId), eq(w.isActive, 1)),
+      });
+
+      if (!wallet) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Completer has no active wallet',
+        });
+      }
+
+      // Update DB with txHash
+      await db
+        .update(submissions)
+        .set({
+          approvalTxHash: input.txHash,
+          status: 'APPROVED',
+          reviewedAt: new Date(),
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      return { success: true };
+    }),
 });
