@@ -18,6 +18,7 @@ import {
   findTaskSchema,
   rejectSubmissionSchema,
   submitTaskSchema,
+  getSubmissionsSchema,
 } from '../schemas/task';
 import { uploadBase64FileToMinio } from '~/services/minio';
 
@@ -431,5 +432,90 @@ export const taskRouter = createTRPCRouter({
 
       return { submittedTask };
 
+    }),
+  
+  getSubmissions: protectedProcedure
+    .input(getSubmissionsSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, status, limit, page } = input;
+      const userId = ctx.user.id;
+
+      // Ensure user is a CREATOR
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can view task submissions.',
+        });
+      }
+
+      // Check task exists and belongs to user
+      const task = await ctx.db.query.tasks.findFirst({
+        where: (tasks, { eq }) => eq(tasks.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found.',
+        });
+      }
+
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not own this task.',
+        });
+      }
+
+      // Build filters
+      const whereConditions = [eq(submissions.taskId, taskId)];
+
+      if (status) {
+        whereConditions.push(eq(submissions.status, status));
+      }
+
+      const offset = (page - 1) * limit;
+
+      try {
+        const [results, totalCountResult] = await Promise.all([
+          ctx.db
+            .select({
+              submissionId: submissions.submissionId,
+              status: submissions.status,
+              submittedAt: submissions.submittedAt,
+              rejectionReason: submissions.rejectionReason,
+              dataRef: submissions.dataRef,
+              completerId: user.id,
+              completerDisplayName: user.displayName,
+            })
+            .from(submissions)
+            .where(and(...whereConditions))
+            .leftJoin(user, eq(user.id, submissions.completerUserId))
+            .orderBy(desc(submissions.submittedAt))
+            .limit(limit)
+            .offset(offset),
+
+          ctx.db
+            .select({ count: count() })
+            .from(submissions)
+            .where(and(...whereConditions)),
+        ]);
+
+        const totalCount = Number(totalCountResult[0]?.count ?? 0);
+
+        return {
+          success: true,
+          submissions: results,
+          totalCount,
+          page,
+          pageSize: limit,
+        };
+      } catch (error) {
+        console.error('Failed to fetch submissions:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Could not fetch submissions.',
+        });
+      }
     }),
 });
