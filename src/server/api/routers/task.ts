@@ -5,6 +5,7 @@ import {
   wallets,
   taskClaims,
   submissions,
+  disputes,
 } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
@@ -430,5 +431,61 @@ export const taskRouter = createTRPCRouter({
         .where(eq(submissions.submissionId, input.submissionId));
 
       return { success: true };
+    }),
+
+  initiateDispute: protectedProcedure
+    .input(z.object({
+      submissionId: z.string().uuid(),
+      claim: z.string().min(10),
+      txHash: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      // Fetch the submission
+
+      const submission = await ctx.db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      // Ensure user owns the submission
+      if (submission.completerUserId !== userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You do not own this submission',
+        });
+      }
+
+      // Ensure submission is REJECTED
+      if (submission.status !== 'REJECTED') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You can only DISPUTE REJECTED Submissions',
+        });
+      }
+
+      // Create a dispute record
+      const [dispute] = await ctx.db.insert(disputes).values({
+        submissionId: input.submissionId,
+        completerClaim: input.claim,
+        status: 'OPEN',
+        flagTxHash: input.txHash,
+      }).returning({ disputeId: disputes.disputeId });
+
+      // Update the submission status to DISPUTED
+      await ctx.db.update(submissions)
+        .set({ status: 'DISPUTED' })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      return {
+        success: true,
+        disputeId: dispute.disputeId,
+      };
     }),
 });
