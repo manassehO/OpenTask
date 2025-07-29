@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
 import {
   tasks,
   user,
@@ -369,4 +369,70 @@ export const taskRouter = createTRPCRouter({
 
       return { submittedTask };
     }),
+
+  getDisputes: adminProcedure
+    .input(z.object({
+      status: z.enum(['OPEN', 'RESOLVED_APPROVE', 'RESOLVED_REJECT']).optional(),
+      limit: z.number().min(1).max(100).default(10),
+      offset: z.number().min(0).default(0),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { status, limit, offset } = input;
+
+      if (ctx.user.role !== 'ADMIN') {
+        throw new TRPCError({ code: 'FORBIDDEN', message:  'Only Admins can access this resource' });
+      }
+    
+      // Base query
+      const whereConditions = status
+        ? (d, { eq }) => eq(d.status, status)
+        : undefined;
+  
+      // Fetch disputes with joins
+      const disputes = await ctx.db.query.disputes.findMany({
+        where: whereConditions,
+        limit,
+        offset,
+        with: {
+          submission: {
+            with: {
+              task: {
+                columns: {
+                  id: true,
+                  title: true,
+                },
+                with: {
+                  creator: {
+                    columns: {
+                      id: true,
+                      username: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+              completer: {
+                columns: {
+                  id: true,
+                  username: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: (d, { desc }) => [desc(d.createdAt)],
+      });
+  
+      // Total count for pagination
+      const total = await ctx.db.select({ count: sql<number>`count(*)` })
+        .from(disputesTable)
+        .where(whereConditions)
+        .then(rows => rows[0].count);
+  
+      return {
+        disputes,
+        total,
+      };
+    })
 });

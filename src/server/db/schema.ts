@@ -219,3 +219,21 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
     references: [tasks.id],
   }),
 }));
+
+export const submissionRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+  completer: one(user, {
+    fields: [submissions.completerUserId],
+    references: [user.id],
+  }),
+}));
+
+export const taskRelations = relations(tasks, ({ one }) => ({
+  creator: one(user, {
+    fields: [tasks.creatorUserId],
+    references: [user.id],
+  }),
+}));
