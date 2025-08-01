@@ -15,6 +15,7 @@ import {
   numeric,
   bigint
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
@@ -158,7 +159,6 @@ export const tasks = createTable('tasks', {
     length: 100,
   }).notNull(),
   platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
-  //maxCompletions: integer("max_completions").notNull(),
   approvedCompletions: integer('approved_completions').notNull().default(0),
   inProgressCompletions: integer('in_progress_completions')
     .notNull()
@@ -201,8 +201,6 @@ export const taskClaims = createTable('task_claims', {
     .$onUpdate(() => new Date()),
 });
 
-
-
 export const submissions = createTable('submissions', {
   submissionId: uuid('submission_id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').references(() => tasks.id),
@@ -230,4 +228,3 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
     references: [tasks.id],
   }),
 }));
-
