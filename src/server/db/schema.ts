@@ -222,6 +222,17 @@ export const submissions = createTable('submissions', {
   submittedAt: timestamp('submitted_at').notNull(),
 });
 
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+  completer: one(user, {
+    fields: [submissions.completerUserId],
+    references: [user.id],
+  }),
+}));
+
 export const disputes = createTable('disputes', {
   disputeId: uuid('dispute_id').primaryKey().defaultRandom(),
   submissionId: uuid('submission_id')
@@ -269,9 +280,11 @@ export const userBalances = createTable('user_balances', {
     .$onUpdate(() => new Date()),
 })
 
-export const submissionsRelations = relations(submissions, ({ one }) => ({
-  task: one(tasks, {
-    fields: [submissions.taskId],
-    references: [tasks.id],
+
+export const taskRelations = relations(tasks, ({ one }) => ({
+  creator: one(user, {
+    fields: [tasks.creatorUserId],
+    references: [user.id],
   }),
 }));
+
