@@ -1,5 +1,5 @@
 {
-  "id": "b5be5c8f-f560-4d5b-ada5-ebfda64edc4c",
+  "id": "ead3b66c-a280-4006-b8f7-0bd548c0e1c1",p
   "prevId": "e05c22c6-cf60-4581-b304-d5b9d1b7b76e",
   "version": "7",
   "dialect": "postgresql",
@@ -595,7 +595,7 @@
           "name": "rejection_reason",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "approval_tx_hash": {
           "name": "approval_tx_hash",
@@ -667,7 +667,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },

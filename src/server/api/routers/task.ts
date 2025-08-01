@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, protectedProcedure, adminProcedure, completerProcedure } from '~/server/api/trpc';
 import { db } from '~/server/db';
 import {
   tasks,
@@ -6,19 +6,19 @@ import {
   wallets,
   taskClaims,
   submissions,
-  disputes,
-} from '~/server/db/schema';
+  disputes
+} from '@/server/db/schema';
+import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
 import { db } from '~/server/db';
-import { z } from 'zod';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
   submitTaskSchema,
 } from '../schemas/task';
-import { uploadBase64FileToMinio } from '~/services/minio';
+import { submitTaskSchema } from '../schemas/submission';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -102,8 +102,7 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      const sortColumn =
-        sort_by === 'reward' ? tasks.rewardAmount : tasks.createdAt;
+      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
       const orderByClause =
         order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
@@ -292,7 +291,12 @@ export const taskRouter = createTRPCRouter({
     }),
 
   rejectSubmission: protectedProcedure
-    .input(rejectSubmissionSchema)
+    .input(
+      z.object({
+        submissionId: z.string().uuid(),
+        reason: z.string().min(10).max(500),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
@@ -348,88 +352,130 @@ export const taskRouter = createTRPCRouter({
       // TODO: Notify the completer that their submission was rejected
 
       return { success: true };
-           }),
+  }),
 
   /**
    * Submit task completed by users
    */
   submitTask: protectedProcedure
     .input(submitTaskSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { taskId, file, filename, mimetype } = input;
+    .mutation(async ({ input, ctx }) => {
+      const {
+        taskId,
+        submissionType,
+        textContent,
+        submissionUrl,
+        fileMetadata,
+        additionalNotes,
+      } = input;
+      const userId = ctx.user.id;
 
-      // Validate the task claim
-      const taskClaim = await ctx.db.query.taskClaims.findFirst({
-        where: (taskClaims, { and, eq }) =>
-          and(
-            eq(taskClaims.userId, ctx.user.id),
-            eq(taskClaims.taskId, taskId),
-          ),
-      });
+      // Verify task exists and is active
+      const [taskData] = await db
+        .select({
+          id: tasks.id,
+          status: tasks.status,
+          title: tasks.title,
+        })
+        .from(tasks)
+        .where(eq(tasks.id, taskId));
 
-      if (!taskClaim) {
+      if (!taskData) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      if (taskData.status !== 'ACTIVE') {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have a claim on this task.',
+          code: 'BAD_REQUEST',
+          message: 'Cannot submit to an inactive task',
         });
       }
 
-      //  Prevent duplicate submissions
-      const existingSubmission = await ctx.db.query.submissions.findFirst({
-        where: (submissions, { eq, and }) =>
+      // Verify user has an active claim for this task
+      const [claimData] = await db
+        .select()
+        .from(taskClaims)
+        .where(
+          and(
+            eq(taskClaims.taskId, taskId),
+            eq(taskClaims.userId, userId),
+            eq(taskClaims.status, 'IN_PROGRESS'),
+          ),
+        );
+
+      if (!claimData) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message:
+            'No active claim found for this task. You must claim the task before submitting.',
+        });
+      }
+
+      // Check if user already has a submission for this task
+      const [existingSubmission] = await db
+        .select()
+        .from(submissions)
+        .where(
           and(
             eq(submissions.taskId, taskId),
-            eq(submissions.completerUserId, ctx.user.id),
+            eq(submissions.completerUserId, userId),
           ),
-      });
+        );
 
       if (existingSubmission) {
         throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'You have already submitted a response for this task.',
+          code: 'BAD_REQUEST',
+          message: 'You have already submitted work for this task',
         });
       }
 
-      // Upload to MinIO
-      const objectKey = `submissions/${Date.now()}-${filename}`;
-      let fileUrl: string;
+      // Prepare submission data reference
+      const submissionData = {
+        type: submissionType,
+        textContent: textContent ?? null,
+        submissionUrl: submissionUrl ?? null,
+        fileMetadata: fileMetadata ?? null,
+        additionalNotes: additionalNotes ?? null,
+        submittedAt: new Date().toISOString(),
+      };
 
-      try {
-        fileUrl = await uploadBase64FileToMinio(file, objectKey, mimetype);
-      } catch (error) {
-        console.error('File upload failed:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'File upload failed. Please try again later.',
-        });
-      }
+      const dataRef = JSON.stringify(submissionData);
 
-      // Insert submission record in DB
-      let submittedTask;
-      try {
-        const inserted = await ctx.db
+      // Create submission record
+      const newSubmission = await db.transaction(async (tx) => {
+        // Insert submission
+        const [submission] = await tx
           .insert(submissions)
           .values({
-            taskId: taskId,
-            completerUserId: ctx.user.id,
+            taskId,
+            completerUserId: userId,
             status: 'PENDING_REVIEW',
-            dataRef: fileUrl,
+            dataRef,
+            rejectionReason: '', // Empty string for new submissions
             submittedAt: new Date(),
-            rejectionReason: '',
           })
-          .returning();
+          .returning({ submissionId: submissions.submissionId });
 
-        submittedTask = inserted[0];
-      } catch (error) {
-        console.error('Failed to save submission:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Submission could not be saved.',
-        });
-      }
+        // Update task claim status to completed
+        await tx
+          .update(taskClaims)
+          .set({
+            status: 'COMPLETED',
+            updatedAt: new Date(),
+          })
+          .where(
+            and(eq(taskClaims.taskId, taskId), eq(taskClaims.userId, userId)),
+          );
 
-      return { submittedTask };
-    }),
+        return submission;
+      });
+
+      return {
+        success: true,
+        submissionId: newSubmission?.submissionId,
+        message: 'Task submitted successfully and is pending review',
+      };
+    })
 
   getDisputes: adminProcedure
     .input(z.object({
