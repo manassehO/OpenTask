@@ -478,3 +478,55 @@ export const userWithdrawalMethods = createTable('user_withdrawal_methods', {
     () => new Date(),
   ),
 });
+
+// User statistics (for dashboard summary cards)
+export const userStats = createTable('user_stats', {
+  statId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  totalEarnings: numeric('total_earnings').default('0').notNull(),
+  totalTasksCompleted: integer('total_tasks_completed').default(0).notNull(),
+  currentStreak: integer('current_streak').default(0).notNull(),
+  longestStreak: integer('longest_streak').default(0).notNull(),
+  totalTimeSpent: integer('total_time_spent').default(0).notNull(), // in minutes
+  averageRating: numeric('average_rating', { precision: 3, scale: 2 }).default(
+    '0',
+  ),
+  totalCoursesCompleted: integer('total_courses_completed')
+    .default(0)
+    .notNull(),
+  lastActivityAt: timestamp('last_activity_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// Daily user activity (for streak calculation and analytics)
+export const userActivity = createTable(
+  'user_activity',
+  {
+    activityId: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    date: timestamp('date', { withTimezone: true }).notNull(),
+    tasksCompleted: integer('tasks_completed').default(0).notNull(),
+    earningsAmount: numeric('earnings_amount').default('0').notNull(),
+    timeSpent: integer('time_spent').default(0).notNull(), // in minutes
+    coursesCompleted: integer('courses_completed').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    userDateIdx: index('user_activity_user_date_idx').on(
+      table.userId,
+      table.date,
+    ),
+  }),
+);
