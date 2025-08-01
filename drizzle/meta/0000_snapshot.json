@@ -1,5 +1,5 @@
 {
-  "id": "46dd6c47-4dc3-4449-aab6-5d306aa2b212",
+  "id": "ec94f4e0-a125-45d8-8785-a8407628c9ca",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -95,8 +95,12 @@
           "name": "opentask_account_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_account",
           "tableTo": "opentask_user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -154,8 +158,12 @@
           "name": "opentask_nonce_verification_identifier_opentask_user_id_fk",
           "tableFrom": "opentask_nonce_verification",
           "tableTo": "opentask_user",
-          "columnsFrom": ["identifier"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "identifier"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -165,7 +173,9 @@
         "opentask_nonce_verification_value_unique": {
           "name": "opentask_nonce_verification_value_unique",
           "nullsNotDistinct": false,
-          "columns": ["value"]
+          "columns": [
+            "value"
+          ]
         }
       }
     },
@@ -266,7 +276,9 @@
         "opentask_otps_email_unique": {
           "name": "opentask_otps_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       }
     },
@@ -331,8 +343,12 @@
           "name": "opentask_session_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_session",
           "tableTo": "opentask_user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -342,7 +358,9 @@
         "opentask_session_token_unique": {
           "name": "opentask_session_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       }
     },
@@ -365,7 +383,7 @@
         },
         "completer_user_id": {
           "name": "completer_user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -386,7 +404,7 @@
           "name": "rejection_reason",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "approval_tx_hash": {
           "name": "approval_tx_hash",
@@ -413,8 +431,12 @@
           "name": "opentask_submissions_task_id_opentask_tasks_task_id_fk",
           "tableFrom": "opentask_submissions",
           "tableTo": "opentask_tasks",
-          "columnsFrom": ["task_id"],
-          "columnsTo": ["task_id"],
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "task_id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -422,8 +444,12 @@
           "name": "opentask_submissions_completer_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_submissions",
           "tableTo": "opentask_user",
-          "columnsFrom": ["completer_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "completer_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -482,8 +508,12 @@
           "name": "opentask_task_claims_task_id_opentask_tasks_task_id_fk",
           "tableFrom": "opentask_task_claims",
           "tableTo": "opentask_tasks",
-          "columnsFrom": ["task_id"],
-          "columnsTo": ["task_id"],
+          "columnsFrom": [
+            "task_id"
+          ],
+          "columnsTo": [
+            "task_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -491,8 +521,12 @@
           "name": "opentask_task_claims_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_task_claims",
           "tableTo": "opentask_user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -619,8 +653,12 @@
           "name": "opentask_tasks_creator_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_tasks",
           "tableTo": "opentask_user",
-          "columnsFrom": ["creator_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "creator_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -725,9 +763,46 @@
         "opentask_user_email_unique": {
           "name": "opentask_user_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       }
+    },
+    "public.opentask_user_balances": {
+      "name": "opentask_user_balances",
+      "schema": "",
+      "columns": {
+        "user_address": {
+          "name": "user_address",
+          "type": "varchar(100)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.opentask_verification": {
       "name": "opentask_verification",
@@ -871,8 +946,12 @@
           "name": "opentask_wallets_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_wallets",
           "tableTo": "opentask_user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -882,7 +961,9 @@
         "opentask_wallets_starknet_address_unique": {
           "name": "opentask_wallets_starknet_address_unique",
           "nullsNotDistinct": false,
-          "columns": ["starknet_address"]
+          "columns": [
+            "starknet_address"
+          ]
         }
       }
     }

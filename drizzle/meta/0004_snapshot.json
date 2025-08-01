@@ -1,5 +1,5 @@
 {
-  "id": "ead3b66c-a280-4006-b8f7-0bd548c0e1c1",
+  "id": "ead3b66c-a280-4006-b8f7-0bd548c0e1c1",p
   "prevId": "e05c22c6-cf60-4581-b304-d5b9d1b7b76e",
   "version": "7",
   "dialect": "postgresql",
@@ -107,6 +107,197 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
+    },
+    "public.opentask_admin_logs": {
+      "name": "opentask_admin_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_id": {
+          "name": "admin_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_table": {
+          "name": "target_table",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "opentask_admin_logs_admin_id_opentask_user_id_fk": {
+          "name": "opentask_admin_logs_admin_id_opentask_user_id_fk",
+          "tableFrom": "opentask_admin_logs",
+          "tableTo": "opentask_user",
+          "columnsFrom": [
+            "admin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.opentask_disputes": {
+      "name": "opentask_disputes",
+      "schema": "",
+      "columns": {
+        "dispute_id": {
+          "name": "dispute_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completer_claim": {
+          "name": "completer_claim",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator_response": {
+          "name": "creator_response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admin_resolver_id": {
+          "name": "admin_resolver_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "dispute_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'OPEN'"
+        },
+        "resolution": {
+          "name": "resolution",
+          "type": "dispute_resolution",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admin_notes": {
+          "name": "admin_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "flag_tx_hash": {
+          "name": "flag_tx_hash",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolve_tx_hash": {
+          "name": "resolve_tx_hash",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "opentask_disputes_submission_id_opentask_submissions_submission_id_fk": {
+          "name": "opentask_disputes_submission_id_opentask_submissions_submission_id_fk",
+          "tableFrom": "opentask_disputes",
+          "tableTo": "opentask_submissions",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "submission_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "opentask_disputes_admin_resolver_id_opentask_user_id_fk": {
+          "name": "opentask_disputes_admin_resolver_id_opentask_user_id_fk",
+          "tableFrom": "opentask_disputes",
+          "tableTo": "opentask_user",
+          "columnsFrom": [
+            "admin_resolver_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "opentask_disputes_submission_id_unique": {
+          "name": "opentask_disputes_submission_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "submission_id"
+          ]
+        }
+      }
     },
     "public.opentask_nonce_verification": {
       "name": "opentask_nonce_verification",
@@ -498,7 +689,8 @@
           "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -767,6 +959,41 @@
           ]
         }
       }
+    },
+    "public.opentask_user_balances": {
+      "name": "opentask_user_balances",
+      "schema": "",
+      "columns": {
+        "user_address": {
+          "name": "user_address",
+          "type": "varchar(100)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "balance": {
+          "name": "balance",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.opentask_verification": {
       "name": "opentask_verification",

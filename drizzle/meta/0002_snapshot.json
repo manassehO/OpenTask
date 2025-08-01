@@ -95,12 +95,8 @@
           "name": "opentask_account_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_account",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -158,12 +154,8 @@
           "name": "opentask_nonce_verification_identifier_opentask_user_id_fk",
           "tableFrom": "opentask_nonce_verification",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "identifier"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["identifier"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -173,9 +165,7 @@
         "opentask_nonce_verification_value_unique": {
           "name": "opentask_nonce_verification_value_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "value"
-          ]
+          "columns": ["value"]
         }
       }
     },
@@ -276,9 +266,7 @@
         "opentask_otps_email_unique": {
           "name": "opentask_otps_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     },
@@ -343,12 +331,8 @@
           "name": "opentask_session_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_session",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -358,9 +342,7 @@
         "opentask_session_token_unique": {
           "name": "opentask_session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       }
     },
@@ -421,12 +403,8 @@
           "name": "opentask_submissions_task_id_opentask_tasks_task_id_fk",
           "tableFrom": "opentask_submissions",
           "tableTo": "opentask_tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "task_id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["task_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -434,12 +412,8 @@
           "name": "opentask_submissions_completer_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_submissions",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "completer_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["completer_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -497,12 +471,8 @@
           "name": "opentask_task_claims_task_id_opentask_tasks_task_id_fk",
           "tableFrom": "opentask_task_claims",
           "tableTo": "opentask_tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "task_id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["task_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -510,12 +480,8 @@
           "name": "opentask_task_claims_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_task_claims",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -636,12 +602,8 @@
           "name": "opentask_tasks_creator_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_tasks",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "creator_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["creator_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -746,9 +708,7 @@
         "opentask_user_email_unique": {
           "name": "opentask_user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     },
@@ -894,12 +854,8 @@
           "name": "opentask_wallets_user_id_opentask_user_id_fk",
           "tableFrom": "opentask_wallets",
           "tableTo": "opentask_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -909,9 +865,7 @@
         "opentask_wallets_starknet_address_unique": {
           "name": "opentask_wallets_starknet_address_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "starknet_address"
-          ]
+          "columns": ["starknet_address"]
         }
       }
     }

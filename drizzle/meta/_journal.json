@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1753174704361,
-      "tag": "0000_tired_wendigo",
+      "when": 1753789420329,
+
       "breakpoints": true
     },
     {
-      "idx": 1,
+      "idx": 4,
       "version": "7",
-      "when": 1753441344077,
-      "tag": "0001_glamorous_hellfire_club",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1753100531755,
-      "tag": "0002_blushing_warbound",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1753114183315,
-      "tag": "0003_slimy_kid_colt",
+      "when": 1753824884246,
+      "tag": "0004_pale_titania",
       "breakpoints": true
     },
     {
