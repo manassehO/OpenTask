@@ -34,6 +34,15 @@ const submissionStatusEnum = pgEnum('submission_status', [
   'REJECTED',
   'DISPUTED',
 ]);
+const disputeStatusEnum = pgEnum('dispute_status', [
+  'OPEN',
+  'RESOLVED_APPROVE',
+  'RESOLVED_REJECT',
+]);
+const disputeResolutionEnum = pgEnum('dispute_resolution', [
+  'APPROVED',
+  'REJECTED',
+]);
 
 // Better-Auth required tables
 export const user = createTable('user', {
@@ -212,6 +221,44 @@ export const submissions = createTable('submissions', {
   reviewedAt: timestamp('reviewed_at'),
   submittedAt: timestamp('submitted_at').notNull(),
 });
+
+export const disputes = createTable('disputes', {
+  disputeId: uuid('dispute_id').primaryKey().defaultRandom(),
+  submissionId: uuid('submission_id')
+    .notNull()
+    .unique()
+    .references(() => submissions.submissionId, { onDelete: 'cascade' }),
+  completerClaim: text('completer_claim').notNull(),
+  creatorResponse: text('creator_response'),
+  adminResolverId: text('admin_resolver_id')
+    .references(() => user.id, { onDelete: 'set null' }),
+  status: disputeStatusEnum('status').notNull().default('OPEN'),
+  resolution: disputeResolutionEnum('resolution'),
+  adminNotes: text('admin_notes'),
+  flagTxHash: varchar('flag_tx_hash', { length: 66 }),
+  resolveTxHash: varchar('resolve_tx_hash', { length: 66 }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const adminLogs = createTable('admin_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  adminId: text('admin_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(),
+  targetTable: text('target_table').notNull(),
+  targetId: uuid('target_id'),
+  message: text('message'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 
 export const userBalances = createTable('user_balances', {
   userAddress: varchar('user_address', { length: 100 }).primaryKey(),
