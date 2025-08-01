@@ -1,4 +1,9 @@
-import { createTRPCRouter, protectedProcedure, adminProcedure, completerProcedure } from '~/server/api/trpc';
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  adminProcedure,
+  completerProcedure,
+} from '~/server/api/trpc';
 import { db } from '~/server/db';
 import {
   tasks,
@@ -6,17 +11,15 @@ import {
   wallets,
   taskClaims,
   submissions,
-  disputes
+  disputes,
 } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
-import { db } from '~/server/db';
+import { eq, and, ilike, gte, asc, desc, count, sql } from 'drizzle-orm';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
-  submitTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
 
@@ -86,11 +89,11 @@ export const taskRouter = createTRPCRouter({
       const { category, min_reward, sort_by, order, limit, page } = input;
 
       // Only allow sorting by whitelisted fields
-      /* const sortFieldMap = {
+      const sortFieldMap = {
         created_at: tasks.createdAt,
         reward: tasks.rewardAmount,
       } as const;
- */
+
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
 
@@ -352,7 +355,7 @@ export const taskRouter = createTRPCRouter({
       // TODO: Notify the completer that their submission was rejected
 
       return { success: true };
-  }),
+    }),
 
   /**
    * Submit task completed by users
@@ -475,29 +478,34 @@ export const taskRouter = createTRPCRouter({
         submissionId: newSubmission?.submissionId,
         message: 'Task submitted successfully and is pending review',
       };
-    })
+    }),
 
   getDisputes: adminProcedure
-    .input(z.object({
-      status: z.enum(['OPEN', 'RESOLVED_APPROVE', 'RESOLVED_REJECT']).optional(),
-      limit: z.number().min(1).max(100).default(10),
-      offset: z.number().min(0).default(0),
-    }))
+    .input(
+      z.object({
+        status: z
+          .enum(['OPEN', 'RESOLVED_APPROVE', 'RESOLVED_REJECT'])
+          .optional(),
+        limit: z.number().min(1).max(100).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { status, limit, offset } = input;
 
       if (ctx.user.role !== 'ADMIN') {
-        throw new TRPCError({ code: 'FORBIDDEN', message:  'Only Admins can access this resource' });
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only Admins can access this resource',
+        });
       }
-    
+
       // Base query
-      const whereConditions = status
-        ? (d, { eq }) => eq(d.status, status)
-        : undefined;
-  
+      const whereConditions = status ? eq(disputes.status, status) : undefined;
+
       // Fetch disputes with joins
-      const disputes = await ctx.db.query.disputes.findMany({
-        where: whereConditions,
+      const disputesList = await ctx.db.query.disputes.findMany({
+        where: status ? (d, { eq }) => eq(d.status, status) : undefined,
         limit,
         offset,
         with: {
@@ -530,87 +538,30 @@ export const taskRouter = createTRPCRouter({
         },
         orderBy: (d, { desc }) => [desc(d.createdAt)],
       });
-  
+
       // Total count for pagination
-      const total = await ctx.db.select({ count: sql<number>`count(*)` })
-        .from(disputesTable)
-        .where(whereConditions)
-        .then(rows => rows[0].count);
-  
+      const totalQuery = ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(disputes);
+
+      const total = await (
+        whereConditions ? totalQuery.where(whereConditions) : totalQuery
+      ).then((rows) => rows[0]?.count ?? 0);
+
       return {
-        disputes,
+        disputes: disputesList,
         total,
       };
-    })
-
-  approveSubmission: protectedProcedure
-    .input(
-      z.object({
-        submissionId: z.string(),
-        txHash: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id;
-
-      // Fetch submission and task
-      const submission = await ctx.db.query.submissions.findFirst({
-        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
-        with: { task: true },
-      });
-
-      if (!submission) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Submission not found',
-        });
-      }
-
-      // Verify task ownership
-      if (submission.task.creatorUserId !== userId) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
-      }
-
-      // Verify submission status
-      if (submission.status !== 'PENDING_REVIEW') {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Submission is not pending review',
-        });
-      }
-
-      // Fetch completer's active wallet
-      const wallet = await ctx.db.query.wallets.findFirst({
-        where: (w, { eq, and }) =>
-          and(eq(w.userId, submission.completerUserId), eq(w.isActive, 1)),
-      });
-
-      if (!wallet) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Completer has no active wallet',
-        });
-      }
-
-      // Update DB with txHash
-      await db
-        .update(submissions)
-        .set({
-          approvalTxHash: input.txHash,
-          status: 'APPROVED',
-          reviewedAt: new Date(),
-        })
-        .where(eq(submissions.submissionId, input.submissionId));
-
-      return { success: true };
     }),
 
   initiateDispute: protectedProcedure
-    .input(z.object({
-      submissionId: z.string().uuid(),
-      claim: z.string().min(10),
-      txHash: z.string(),
-    }))
+    .input(
+      z.object({
+        submissionId: z.string().uuid(),
+        claim: z.string().min(10),
+        txHash: z.string(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       // Fetch the submission
@@ -643,21 +594,25 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Create a dispute record
-      const [dispute] = await ctx.db.insert(disputes).values({
-        submissionId: input.submissionId,
-        completerClaim: input.claim,
-        status: 'OPEN',
-        flagTxHash: input.txHash,
-      }).returning({ disputeId: disputes.disputeId });
+      const [dispute] = await ctx.db
+        .insert(disputes)
+        .values({
+          submissionId: input.submissionId,
+          completerClaim: input.claim,
+          status: 'OPEN',
+          flagTxHash: input.txHash,
+        })
+        .returning({ disputeId: disputes.disputeId });
 
       // Update the submission status to DISPUTED
-      await ctx.db.update(submissions)
+      await ctx.db
+        .update(submissions)
         .set({ status: 'DISPUTED' })
         .where(eq(submissions.submissionId, input.submissionId));
 
       return {
         success: true,
-        disputeId: dispute.disputeId,
+        disputeId: dispute?.disputeId,
       };
     }),
 
@@ -685,7 +640,7 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Verify task ownership
-      if (submission.task.creatorUserId !== userId) {
+      if (submission.task?.creatorUserId !== userId) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
       }
 
@@ -700,7 +655,7 @@ export const taskRouter = createTRPCRouter({
       // Fetch completer's active wallet
       const wallet = await ctx.db.query.wallets.findFirst({
         where: (w, { eq, and }) =>
-          and(eq(w.userId, submission.completerUserId), eq(w.isActive, 1)),
+          and(eq(w.userId, submission.completerUserId!), eq(w.isActive, 1)),
       });
 
       if (!wallet) {
@@ -723,4 +678,3 @@ export const taskRouter = createTRPCRouter({
       return { success: true };
     }),
 });
-
