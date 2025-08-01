@@ -202,6 +202,8 @@ export const tasks = createTable('tasks', {
     .notNull()
     .default(0),
   requiredCompletions: integer('required_completions').notNull(),
+  deadline: timestamp('deadline', { withTimezone: true }).notNull(),
+  image: varchar('image', { length: 255 }),
   status: taskStatusEnum('status').default('DRAFT').notNull(),
   fundingTxHash: varchar('funding_tx_hash', { length: 255 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
