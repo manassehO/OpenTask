@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_tasks" ADD COLUMN "max_completions" integer NOT NULL;
