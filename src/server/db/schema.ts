@@ -43,6 +43,23 @@ const disputeResolutionEnum = pgEnum('dispute_resolution', [
   'REJECTED',
 ]);
 
+const notificationTypeEnum = pgEnum('notification_type', [
+  'TASK_APPROVED',
+  'TASK_REJECTED',
+  'TASK_ASSIGNED',
+  'PAYMENT_RECEIVED',
+  'DISPUTE_CREATED',
+  'DISPUTE_RESOLVED',
+  'COURSE_COMPLETED',
+  'SYSTEM_ANNOUNCEMENT',
+]);
+
+const notificationStatusEnum = pgEnum('notification_status', [
+  'UNREAD',
+  'READ',
+  'ARCHIVED',
+]);
+
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey(),
@@ -352,4 +369,56 @@ export const userLearningProgress = createTable('user_learning_progress', {
   lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
+});
+
+// User notifications
+export const notifications = createTable('notifications', {
+  notificationId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum('type').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  message: text('message').notNull(),
+  status: notificationStatusEnum('status').default('UNREAD').notNull(),
+  relatedTaskId: uuid('related_task_id').references(() => tasks.id),
+  relatedSubmissionId: uuid('related_submission_id').references(
+    () => submissions.submissionId,
+  ),
+  relatedDisputeId: uuid('related_dispute_id').references(
+    () => disputes.disputeId,
+  ),
+  metadata: text('metadata'), // JSON string for additional data
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  readAt: timestamp('read_at', { withTimezone: true }),
+});
+
+// User notification preferences
+export const notificationPreferences = createTable('notification_preferences', {
+  preferenceId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  emailNotifications: boolean('email_notifications').default(true).notNull(),
+  pushNotifications: boolean('push_notifications').default(true).notNull(),
+  taskUpdates: boolean('task_updates').default(true).notNull(),
+  paymentNotifications: boolean('payment_notifications')
+    .default(true)
+    .notNull(),
+  disputeNotifications: boolean('dispute_notifications')
+    .default(true)
+    .notNull(),
+  learningNotifications: boolean('learning_notifications')
+    .default(true)
+    .notNull(),
+  marketingEmails: boolean('marketing_emails').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
 });
