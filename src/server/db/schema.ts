@@ -316,6 +316,31 @@ export const taskRelations = relations(tasks, ({ one }) => ({
   }),
 }));
 
+// Add these fields to the existing user table or create a user_profiles extension
+export const userProfiles = createTable('user_profiles', {
+  profileId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  gender: varchar('gender', { length: 20 }),
+  niche: varchar('niche', { length: 100 }), // User's area of expertise/interest
+  bio: text('bio'),
+  location: varchar('location', { length: 100 }),
+  timezone: varchar('timezone', { length: 50 }),
+  preferredLanguage: varchar('preferred_language', { length: 10 }).default(
+    'en',
+  ),
+  skillTags: text('skill_tags'), // JSON array of skills
+  socialLinks: text('social_links'), // JSON object with social media links
+  isProfileComplete: boolean('is_profile_complete').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
 // Learning courses
 export const courses = createTable('courses', {
   courseId: uuid('id').primaryKey().defaultRandom(),
@@ -530,3 +555,58 @@ export const userActivity = createTable(
     ),
   }),
 );
+
+//relations
+export const coursesRelations = relations(courses, ({ many }) => ({
+  userProgress: many(userLearningProgress),
+}));
+
+export const tutorialsRelations = relations(tutorials, ({ many }) => ({
+  userProgress: many(userLearningProgress),
+}));
+
+export const userLearningProgressRelations = relations(
+  userLearningProgress,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [userLearningProgress.userId],
+      references: [user.id],
+    }),
+    course: one(courses, {
+      fields: [userLearningProgress.courseId],
+      references: [courses.courseId],
+    }),
+    tutorial: one(tutorials, {
+      fields: [userLearningProgress.tutorialId],
+      references: [tutorials.tutorialId],
+    }),
+  }),
+);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(user, { fields: [notifications.userId], references: [user.id] }),
+  task: one(tasks, {
+    fields: [notifications.relatedTaskId],
+    references: [tasks.id],
+  }),
+  submission: one(submissions, {
+    fields: [notifications.relatedSubmissionId],
+    references: [submissions.submissionId],
+  }),
+  dispute: one(disputes, {
+    fields: [notifications.relatedDisputeId],
+    references: [disputes.disputeId],
+  }),
+}));
+
+export const withdrawalsRelations = relations(withdrawals, ({ one }) => ({
+  user: one(user, { fields: [withdrawals.userId], references: [user.id] }),
+}));
+
+export const userStatsRelations = relations(userStats, ({ one }) => ({
+  user: one(user, { fields: [userStats.userId], references: [user.id] }),
+}));
+
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
+  user: one(user, { fields: [userProfiles.userId], references: [user.id] }),
+}));
