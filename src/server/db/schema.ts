@@ -13,9 +13,8 @@ import {
   pgEnum,
   uuid,
   numeric,
-  bigint
+  bigint,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
@@ -241,8 +240,9 @@ export const disputes = createTable('disputes', {
     .references(() => submissions.submissionId, { onDelete: 'cascade' }),
   completerClaim: text('completer_claim').notNull(),
   creatorResponse: text('creator_response'),
-  adminResolverId: text('admin_resolver_id')
-    .references(() => user.id, { onDelete: 'set null' }),
+  adminResolverId: text('admin_resolver_id').references(() => user.id, {
+    onDelete: 'set null',
+  }),
   status: disputeStatusEnum('status').notNull().default('OPEN'),
   resolution: disputeResolutionEnum('resolution'),
   adminNotes: text('admin_notes'),
@@ -270,16 +270,14 @@ export const adminLogs = createTable('admin_logs', {
     .notNull(),
 });
 
-
 export const userBalances = createTable('user_balances', {
   userAddress: varchar('user_address', { length: 100 }).primaryKey(),
-  balance: bigint('balance', { mode: "bigint" }).notNull(),
+  balance: bigint('balance', { mode: 'bigint' }).notNull(),
   token: varchar('token', { length: 100 }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
-})
-
+});
 
 export const taskRelations = relations(tasks, ({ one }) => ({
   creator: one(user, {
@@ -288,3 +286,70 @@ export const taskRelations = relations(tasks, ({ one }) => ({
   }),
 }));
 
+// Learning courses
+export const courses = createTable('courses', {
+  courseId: uuid('id').primaryKey().defaultRandom(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  imageUrl: varchar('image_url', { length: 500 }),
+  modules: integer('modules').notNull().default(1),
+  duration: varchar('duration', { length: 50 }), // e.g., "10 mins watch"
+  rewardAmount: numeric('reward_amount').notNull(),
+  rewardTokenAddress: varchar('reward_token_address', {
+    length: 100,
+  }).notNull(),
+  category: varchar('category', { length: 100 }).notNull(),
+  difficulty: varchar('difficulty', { length: 50 }).default('BEGINNER'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// Learning tutorials
+export const tutorials = createTable('tutorials', {
+  tutorialId: uuid('id').primaryKey().defaultRandom(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  imageUrl: varchar('image_url', { length: 500 }),
+  duration: varchar('duration', { length: 50 }), // e.g., "5 mins read"
+  rewardAmount: numeric('reward_amount').notNull(),
+  rewardTokenAddress: varchar('reward_token_address', {
+    length: 100,
+  }).notNull(),
+  category: varchar('category', { length: 100 }).notNull(),
+  contentUrl: varchar('content_url', { length: 500 }),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// User learning progress
+export const userLearningProgress = createTable('user_learning_progress', {
+  progressId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  courseId: uuid('course_id').references(() => courses.courseId, {
+    onDelete: 'cascade',
+  }),
+  tutorialId: uuid('tutorial_id').references(() => tutorials.tutorialId, {
+    onDelete: 'cascade',
+  }),
+  progress: integer('progress').default(0).notNull(), // 0-100 percentage
+  isCompleted: boolean('is_completed').default(false).notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  enrolledAt: timestamp('enrolled_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
