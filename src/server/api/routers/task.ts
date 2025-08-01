@@ -1,10 +1,12 @@
 import { createTRPCRouter, protectedProcedure, adminProcedure } from '~/server/api/trpc';
+import { db } from '~/server/db';
 import {
   tasks,
   user,
   wallets,
   taskClaims,
   submissions,
+  disputes,
 } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, and, ilike, gte, asc, desc, count } from 'drizzle-orm';
@@ -289,6 +291,65 @@ export const taskRouter = createTRPCRouter({
       return { success: true, message: 'Task claimed successfully' };
     }),
 
+  rejectSubmission: protectedProcedure
+    .input(rejectSubmissionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can reject submissions',
+        });
+      }
+
+      const submission = await db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: {
+          task: {
+            columns: {
+              id: true,
+              creatorUserId: true,
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      if (submission.task?.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not the creator of this task',
+        });
+      }
+
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      await db
+        .update(submissions)
+        .set({
+          status: 'REJECTED',
+          reviewedAt: new Date(),
+          rejectionReason: input.reason,
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      // TODO: Notify the completer that their submission was rejected
+
+      return { success: true };
+           }),
+
   /**
    * Submit task completed by users
    */
@@ -435,4 +496,185 @@ export const taskRouter = createTRPCRouter({
         total,
       };
     })
+
+  approveSubmission: protectedProcedure
+    .input(
+      z.object({
+        submissionId: z.string(),
+        txHash: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Fetch submission and task
+      const submission = await ctx.db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      // Verify task ownership
+      if (submission.task.creatorUserId !== userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
+      }
+
+      // Verify submission status
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      // Fetch completer's active wallet
+      const wallet = await ctx.db.query.wallets.findFirst({
+        where: (w, { eq, and }) =>
+          and(eq(w.userId, submission.completerUserId), eq(w.isActive, 1)),
+      });
+
+      if (!wallet) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Completer has no active wallet',
+        });
+      }
+
+      // Update DB with txHash
+      await db
+        .update(submissions)
+        .set({
+          approvalTxHash: input.txHash,
+          status: 'APPROVED',
+          reviewedAt: new Date(),
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      return { success: true };
+    }),
+
+  initiateDispute: protectedProcedure
+    .input(z.object({
+      submissionId: z.string().uuid(),
+      claim: z.string().min(10),
+      txHash: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      // Fetch the submission
+
+      const submission = await ctx.db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      // Ensure user owns the submission
+      if (submission.completerUserId !== userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You do not own this submission',
+        });
+      }
+
+      // Ensure submission is REJECTED
+      if (submission.status !== 'REJECTED') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You can only DISPUTE REJECTED Submissions',
+        });
+      }
+
+      // Create a dispute record
+      const [dispute] = await ctx.db.insert(disputes).values({
+        submissionId: input.submissionId,
+        completerClaim: input.claim,
+        status: 'OPEN',
+        flagTxHash: input.txHash,
+      }).returning({ disputeId: disputes.disputeId });
+
+      // Update the submission status to DISPUTED
+      await ctx.db.update(submissions)
+        .set({ status: 'DISPUTED' })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      return {
+        success: true,
+        disputeId: dispute.disputeId,
+      };
+    }),
+
+  approveSubmission: protectedProcedure
+    .input(
+      z.object({
+        submissionId: z.string(),
+        txHash: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Fetch submission and task
+      const submission = await ctx.db.query.submissions.findFirst({
+        where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Submission not found',
+        });
+      }
+
+      // Verify task ownership
+      if (submission.task.creatorUserId !== userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
+      }
+
+      // Verify submission status
+      if (submission.status !== 'PENDING_REVIEW') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Submission is not pending review',
+        });
+      }
+
+      // Fetch completer's active wallet
+      const wallet = await ctx.db.query.wallets.findFirst({
+        where: (w, { eq, and }) =>
+          and(eq(w.userId, submission.completerUserId), eq(w.isActive, 1)),
+      });
+
+      if (!wallet) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Completer has no active wallet',
+        });
+      }
+
+      // Update DB with txHash
+      await db
+        .update(submissions)
+        .set({
+          approvalTxHash: input.txHash,
+          status: 'APPROVED',
+          reviewedAt: new Date(),
+        })
+        .where(eq(submissions.submissionId, input.submissionId));
+
+      return { success: true };
+    }),
 });
+
