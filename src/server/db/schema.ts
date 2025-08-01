@@ -60,6 +60,19 @@ const notificationStatusEnum = pgEnum('notification_status', [
   'ARCHIVED',
 ]);
 
+const withdrawalStatusEnum = pgEnum('withdrawal_status', [
+  'PENDING',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+]);
+
+const withdrawalMethodEnum = pgEnum('withdrawal_method', [
+  'CRYPTO_WALLET',
+  'BANK_ACCOUNT',
+]);
+
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey(),
@@ -415,6 +428,49 @@ export const notificationPreferences = createTable('notification_preferences', {
     .default(true)
     .notNull(),
   marketingEmails: boolean('marketing_emails').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// Withdrawal requests
+export const withdrawals = createTable('withdrawals', {
+  withdrawalId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  method: withdrawalMethodEnum('method').notNull(),
+  amount: numeric('amount').notNull(),
+  tokenAddress: varchar('token_address', { length: 100 }).notNull(),
+  destinationAddress: varchar('destination_address', { length: 255 }), // For crypto
+  bankAccountDetails: text('bank_account_details'), // JSON for bank details
+  status: withdrawalStatusEnum('status').default('PENDING').notNull(),
+  txHash: varchar('tx_hash', { length: 255 }),
+  processingFee: numeric('processing_fee').default('0'),
+  failureReason: text('failure_reason'),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// User withdrawal methods (saved payment methods)
+export const userWithdrawalMethods = createTable('user_withdrawal_methods', {
+  methodId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  method: withdrawalMethodEnum('method').notNull(),
+  name: varchar('name', { length: 100 }).notNull(), // User-friendly name
+  details: text('details').notNull(), // JSON with method-specific details
+  isActive: boolean('is_active').default(true).notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
