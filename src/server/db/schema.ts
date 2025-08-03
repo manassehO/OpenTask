@@ -43,6 +43,36 @@ const disputeResolutionEnum = pgEnum('dispute_resolution', [
   'REJECTED',
 ]);
 
+const notificationTypeEnum = pgEnum('notification_type', [
+  'TASK_APPROVED',
+  'TASK_REJECTED',
+  'TASK_ASSIGNED',
+  'PAYMENT_RECEIVED',
+  'DISPUTE_CREATED',
+  'DISPUTE_RESOLVED',
+  'COURSE_COMPLETED',
+  'SYSTEM_ANNOUNCEMENT',
+]);
+
+const notificationStatusEnum = pgEnum('notification_status', [
+  'UNREAD',
+  'READ',
+  'ARCHIVED',
+]);
+
+const withdrawalStatusEnum = pgEnum('withdrawal_status', [
+  'PENDING',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+]);
+
+const withdrawalMethodEnum = pgEnum('withdrawal_method', [
+  'CRYPTO_WALLET',
+  'BANK_ACCOUNT',
+]);
+
 // Better-Auth required tables
 export const user = createTable('user', {
   id: text('id').primaryKey(),
@@ -172,6 +202,8 @@ export const tasks = createTable('tasks', {
     .notNull()
     .default(0),
   requiredCompletions: integer('required_completions').notNull(),
+  deadline: timestamp('deadline', { withTimezone: true }).notNull(),
+  image: varchar('image', { length: 255 }),
   status: taskStatusEnum('status').default('DRAFT').notNull(),
   fundingTxHash: varchar('funding_tx_hash', { length: 255 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -286,6 +318,31 @@ export const taskRelations = relations(tasks, ({ one }) => ({
   }),
 }));
 
+// Add these fields to the existing user table or create a user_profiles extension
+export const userProfiles = createTable('user_profiles', {
+  profileId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  gender: varchar('gender', { length: 20 }),
+  niche: varchar('niche', { length: 100 }), // User's area of expertise/interest
+  bio: text('bio'),
+  location: varchar('location', { length: 100 }),
+  timezone: varchar('timezone', { length: 50 }),
+  preferredLanguage: varchar('preferred_language', { length: 10 }).default(
+    'en',
+  ),
+  skillTags: text('skill_tags'), // JSON array of skills
+  socialLinks: text('social_links'), // JSON object with social media links
+  isProfileComplete: boolean('is_profile_complete').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
 // Learning courses
 export const courses = createTable('courses', {
   courseId: uuid('id').primaryKey().defaultRandom(),
@@ -353,3 +410,205 @@ export const userLearningProgress = createTable('user_learning_progress', {
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
 });
+
+// User notifications
+export const notifications = createTable('notifications', {
+  notificationId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum('type').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  message: text('message').notNull(),
+  status: notificationStatusEnum('status').default('UNREAD').notNull(),
+  relatedTaskId: uuid('related_task_id').references(() => tasks.id),
+  relatedSubmissionId: uuid('related_submission_id').references(
+    () => submissions.submissionId,
+  ),
+  relatedDisputeId: uuid('related_dispute_id').references(
+    () => disputes.disputeId,
+  ),
+  metadata: text('metadata'), // JSON string for additional data
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  readAt: timestamp('read_at', { withTimezone: true }),
+});
+
+// User notification preferences
+export const notificationPreferences = createTable('notification_preferences', {
+  preferenceId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  emailNotifications: boolean('email_notifications').default(true).notNull(),
+  pushNotifications: boolean('push_notifications').default(true).notNull(),
+  taskUpdates: boolean('task_updates').default(true).notNull(),
+  paymentNotifications: boolean('payment_notifications')
+    .default(true)
+    .notNull(),
+  disputeNotifications: boolean('dispute_notifications')
+    .default(true)
+    .notNull(),
+  learningNotifications: boolean('learning_notifications')
+    .default(true)
+    .notNull(),
+  marketingEmails: boolean('marketing_emails').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// Withdrawal requests
+export const withdrawals = createTable('withdrawals', {
+  withdrawalId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  method: withdrawalMethodEnum('method').notNull(),
+  amount: numeric('amount').notNull(),
+  tokenAddress: varchar('token_address', { length: 100 }).notNull(),
+  destinationAddress: varchar('destination_address', { length: 255 }), // For crypto
+  bankAccountDetails: text('bank_account_details'), // JSON for bank details
+  status: withdrawalStatusEnum('status').default('PENDING').notNull(),
+  txHash: varchar('tx_hash', { length: 255 }),
+  processingFee: numeric('processing_fee').default('0'),
+  failureReason: text('failure_reason'),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// User withdrawal methods (saved payment methods)
+export const userWithdrawalMethods = createTable('user_withdrawal_methods', {
+  methodId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  method: withdrawalMethodEnum('method').notNull(),
+  name: varchar('name', { length: 100 }).notNull(), // User-friendly name
+  details: text('details').notNull(), // JSON with method-specific details
+  isActive: boolean('is_active').default(true).notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// User statistics (for dashboard summary cards)
+export const userStats = createTable('user_stats', {
+  statId: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique(),
+  totalEarnings: numeric('total_earnings').default('0').notNull(),
+  totalTasksCompleted: integer('total_tasks_completed').default(0).notNull(),
+  currentStreak: integer('current_streak').default(0).notNull(),
+  longestStreak: integer('longest_streak').default(0).notNull(),
+  totalTimeSpent: integer('total_time_spent').default(0).notNull(), // in minutes
+  averageRating: numeric('average_rating', { precision: 3, scale: 2 }).default(
+    '0',
+  ),
+  totalCoursesCompleted: integer('total_courses_completed')
+    .default(0)
+    .notNull(),
+  lastActivityAt: timestamp('last_activity_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+});
+
+// Daily user activity (for streak calculation and analytics)
+export const userActivity = createTable(
+  'user_activity',
+  {
+    activityId: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    date: timestamp('date', { withTimezone: true }).notNull(),
+    tasksCompleted: integer('tasks_completed').default(0).notNull(),
+    earningsAmount: numeric('earnings_amount').default('0').notNull(),
+    timeSpent: integer('time_spent').default(0).notNull(), // in minutes
+    coursesCompleted: integer('courses_completed').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    userDateIdx: index('user_activity_user_date_idx').on(
+      table.userId,
+      table.date,
+    ),
+  }),
+);
+
+//relations
+export const coursesRelations = relations(courses, ({ many }) => ({
+  userProgress: many(userLearningProgress),
+}));
+
+export const tutorialsRelations = relations(tutorials, ({ many }) => ({
+  userProgress: many(userLearningProgress),
+}));
+
+export const userLearningProgressRelations = relations(
+  userLearningProgress,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [userLearningProgress.userId],
+      references: [user.id],
+    }),
+    course: one(courses, {
+      fields: [userLearningProgress.courseId],
+      references: [courses.courseId],
+    }),
+    tutorial: one(tutorials, {
+      fields: [userLearningProgress.tutorialId],
+      references: [tutorials.tutorialId],
+    }),
+  }),
+);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(user, { fields: [notifications.userId], references: [user.id] }),
+  task: one(tasks, {
+    fields: [notifications.relatedTaskId],
+    references: [tasks.id],
+  }),
+  submission: one(submissions, {
+    fields: [notifications.relatedSubmissionId],
+    references: [submissions.submissionId],
+  }),
+  dispute: one(disputes, {
+    fields: [notifications.relatedDisputeId],
+    references: [disputes.disputeId],
+  }),
+}));
+
+export const withdrawalsRelations = relations(withdrawals, ({ one }) => ({
+  user: one(user, { fields: [withdrawals.userId], references: [user.id] }),
+}));
+
+export const userStatsRelations = relations(userStats, ({ one }) => ({
+  user: one(user, { fields: [userStats.userId], references: [user.id] }),
+}));
+
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
+  user: one(user, { fields: [userProfiles.userId], references: [user.id] }),
+}));

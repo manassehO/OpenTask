@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_submissions" ALTER COLUMN "completer_user_id" SET DATA TYPE text;
