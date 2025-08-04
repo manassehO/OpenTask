@@ -35,6 +35,7 @@ const submissionStatusEnum = pgEnum('submission_status', [
 ]);
 const disputeStatusEnum = pgEnum('dispute_status', [
   'OPEN',
+  'DISPUTED',
   'RESOLVED_APPROVE',
   'RESOLVED_REJECT',
 ]);
