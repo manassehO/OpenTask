@@ -15,7 +15,6 @@ import {
   numeric,
   bigint,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
@@ -296,7 +295,7 @@ export const adminLogs = createTable('admin_logs', {
     .references(() => user.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   targetTable: text('target_table').notNull(),
-  targetId: uuid('target_id'),
+  targetId: text('target_id'),
   message: text('message'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

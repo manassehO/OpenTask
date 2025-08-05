@@ -37,7 +37,6 @@ export const createTaskSchema = z.object({
   status: z.enum(allowedStatus),
   fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
     message: 'Invalid fundingTxHash format',
-    
   }),
 });
 
@@ -49,7 +48,6 @@ export const findTaskSchema = z.object({
   limit: z.number().min(1).default(10),
   page: z.number().min(1).default(1),
 });
-
 
 export const rejectSubmissionSchema = z.object({
   submissionId: z.string().uuid(), // or z.number() depending on your schema
@@ -70,4 +68,10 @@ export const getSubmissionsSchema = z.object({
     .optional(),
   limit: z.number().int().min(1).max(50).default(10),
   page: z.number().int().min(1).default(1),
+});
+
+export const resolveDisputeInput = z.object({
+  disputeId: z.string().uuid(),
+  outcome: z.enum(['Approve', 'Reject']),
+  adminNotes: z.string().min(1, 'Admin notes are required'),
 });

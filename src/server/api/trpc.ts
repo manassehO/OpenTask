@@ -225,7 +225,7 @@ export const protectedProcedure = t.procedure
  */
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin']));
+  .use(hasRole(['ADMIN']));
 
 /**
  * Moderator+ procedure
@@ -234,7 +234,7 @@ export const adminProcedure = t.procedure
  */
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin', 'moderator']));
+  .use(hasRole(['ADMIN', 'moderator']));
 
 /**
  * Completer-only procedure
