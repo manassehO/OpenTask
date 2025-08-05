@@ -1,4 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "include": ["alephium.config.ts", "src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
-}
