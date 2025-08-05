@@ -1,7 +1,0 @@
-{
-  "testPathIgnorePatterns": [".*/node_modules/", ".*/dist/.*"],
-  "transform": {
-    "^.+\\.(t|j)sx?$": "ts-jest"
-  },
-  "testMatch": ["<rootDir>/**/*.test.ts"]
-}
