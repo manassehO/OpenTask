@@ -15,7 +15,6 @@ import {
   numeric,
   bigint,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
