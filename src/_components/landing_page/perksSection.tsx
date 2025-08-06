@@ -38,8 +38,8 @@ export default function PerksSection() {
           The perks you’ll experience along the way
         </h2>
         <p className="mt-4 text-lg text-gray-600">
-          Lorem ipsum dolor sit amet consectetur. Natoque fermentum nullam
-          suspendisse.
+          OpenTask empowers anyone to earn by doing what they already
+          know—simple, everyday tasks.
         </p>
       </div>
 

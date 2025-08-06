@@ -13,8 +13,7 @@ function FaqSection() {
           From Start to Finish – What to Expect
         </h2>
         <p className="mt-4 text-sm text-gray-600 lg:text-lg">
-          Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
-          imperdiet.
+          Everything you need to know before getting started.
         </p>
       </div>
       <div className="mt-8 flex w-full items-center justify-center">
