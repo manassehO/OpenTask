@@ -3,6 +3,7 @@ import { authRouter } from '~/server/api/routers/auth/auth';
 import { profileRouter } from '~/server/api/routers/profile';
 import { walletRouter } from './routers/wallet';
 import { taskRouter } from './routers/task';
+import { adminRouter } from './routers/admin';
 import { learningRouter } from './routers/learning';
 
 /*
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   profile: profileRouter,
   wallet: walletRouter,
   task: taskRouter,
+  admin: adminRouter,
   learning: learningRouter,
 });
 
