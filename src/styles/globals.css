@@ -5,6 +5,7 @@
 body {
   @apply bg-[#FAFAFA] text-gray-900;
 }
+
 .custom-scrollbar {
   scrollbar-width: thin;
 }
