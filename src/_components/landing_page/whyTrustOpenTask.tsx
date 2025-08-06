@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { containerVariants } from '~/lib/animations';
 
 import type { Variants } from 'framer-motion';
@@ -35,8 +35,7 @@ export default function WhyTrustOpenTask() {
           Why OpenTask Became the Name You Can Rely On
         </h2>
         <p className="mt-4 text-sm text-gray-600 lg:text-lg">
-          Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
-          imperdiet.
+          Built for transparency. Designed for you.
         </p>
       </div>
       <div className="mt-12 flex max-w-7xl flex-col items-center gap-4 rounded-md">

@@ -15,8 +15,8 @@ function StartToFinishSection() {
           From Start to Finish – What to Expect
         </h2>
         <p className="mt-4 text-sm text-gray-600 lg:text-lg">
-          Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
-          imperdiet.
+          Join in minutes, pick a task, and get rewarded. No crypto knowledge or
+          wallet required.
         </p>
       </div>
       <div className="mt-12 flex w-full items-start justify-center">
