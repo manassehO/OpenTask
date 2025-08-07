@@ -679,4 +679,67 @@ export const taskRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  
+  getRecommendedTasks: protectedProcedure
+    .input(z.object({
+      limit: z.number().min(1).max(20).default(8),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Get tasks the user has already claimed or submitted
+      const [claimedTasks, submittedTasks] = await Promise.all([
+        db.select({ taskId: taskClaims.taskId }).from(taskClaims).where(eq(taskClaims.userId, userId)),
+        db.select({ taskId: submissions.taskId }).from(submissions).where(eq(submissions.completerUserId, userId)),
+      ]);
+
+      const excludedTaskIds = [...new Set([...claimedTasks, ...submittedTasks].map(row => row.taskId))];
+
+      // Get categories of user submitted tasks
+      const categoryRows = await db
+        .select({ category: tasks.category })
+        .from(tasks)
+        .where(inArray(tasks.id, submittedTasks.map(row => row.taskId)));
+
+      const categories = [...new Set(categoryRows.map(row => row.category))];
+
+      const now = new Date();
+
+      // query with popularity + reward sort
+      const recommendedTasks = await db
+        .select({
+          task: tasks,
+          claimCount: sql<number>`COUNT(${taskClaims.id})`.as('claim_count'),
+        })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(
+          and(
+            eq(tasks.status, 'ACTIVE'),
+            gte(tasks.deadline, now),
+            excludedTaskIds.length > 0 ? notInArray(tasks.id, excludedTaskIds) : undefined
+          )
+        )
+        .groupBy(tasks.id)
+        .orderBy(
+          // Category match
+          desc(sql`CASE WHEN ${tasks.category} = ANY(${sql.array(categories)}) THEN 1 ELSE 0 END`),
+
+          //  Popularity
+          desc(sql`COUNT(${taskClaims.id})`),
+
+          // Reward
+          desc(tasks.rewardAmount),
+
+          // Recency
+          desc(tasks.createdAt)
+        )
+        .limit(input.limit);
+
+      return {
+        success: true,
+        tasks: recommendedTasks.map(row => row.task),
+      };
+    }),
+
 });
