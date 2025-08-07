@@ -38,8 +38,8 @@ export default function PerksSection() {
           The perks you’ll experience along the way
         </h2>
         <p className="mt-4 text-lg text-gray-600">
-          Lorem ipsum dolor sit amet consectetur. Natoque fermentum nullam
-          suspendisse.
+          OpenTask empowers anyone to earn by doing what they already
+          know—simple, everyday tasks.
         </p>
       </div>
 
@@ -61,8 +61,8 @@ export default function PerksSection() {
             Zero Risk, Zero Investment
           </h3>
           <p className="mb-6 text-gray-600">
-            Lorem ipsum dolor sit amet consectetur. Amet cras mus ridiculus
-            netus feugiat faucibus varius habitant.
+            Start earning without spending a dime—no deposits, no hidden fees,
+            no surprises.
           </p>
           <ul className="space-y-3 text-gray-700">
             <li className="flex items-start">
@@ -91,21 +91,20 @@ export default function PerksSection() {
             Familiar & Simple
           </h3>
           <p className="mb-6 text-gray-600">
-            Lorem ipsum dolor sit amet consectetur. Amet cras mus ridiculus
-            netus feugiat faucibus varius habitant.
+            No upfront cost. No hidden fees. Just easy tasks and real rewards.
           </p>
           <ul className="space-y-3 text-gray-700">
             <li className="flex items-start">
               <div className="mr-3 mt-2 h-3 w-3 rounded-full bg-blue-500"></div>
-              Simple login with your existing account
+              Sign in with your existing Google or Apple account
             </li>
             <li className="flex items-start">
               <div className="mr-3 mt-2 h-3 w-3 rounded-full bg-blue-500"></div>
-              Complete familiar tasks you already do
+              Complete tasks just like any other app you use
             </li>
             <li className="flex items-start">
               <div className="mr-3 mt-2 h-3 w-3 rounded-full bg-blue-500"></div>
-              Begin your earnings in less than 60 seconds
+              See your earnings in both USD and crypto
             </li>
           </ul>
         </div>
@@ -131,8 +130,8 @@ export default function PerksSection() {
             Learn While You Earn
           </h3>
           <p className="mb-6 text-gray-600">
-            Lorem ipsum dolor sit amet consectetur. Amet cras mus ridiculus
-            netus feugiat faucibus varius habitant.
+            Pick up new skills as you complete tasks and get rewarded along the
+            way.
           </p>
           <ul className="space-y-3 text-gray-700">
             <li className="flex items-start">
@@ -141,11 +140,11 @@ export default function PerksSection() {
             </li>
             <li className="flex items-start">
               <div className="mr-3 mt-2 h-3 w-3 rounded-full bg-blue-500"></div>
-              Educational content embedded naturally
+              Educational content integrated naturally
             </li>
             <li className="flex items-start">
               <div className="mr-3 mt-2 h-3 w-3 rounded-full bg-blue-500"></div>
-              Progress at your own pace and grow
+              Progress at your own comfort level
             </li>
           </ul>
         </div>

@@ -36,6 +36,7 @@ const submissionStatusEnum = pgEnum('submission_status', [
 ]);
 const disputeStatusEnum = pgEnum('dispute_status', [
   'OPEN',
+  'DISPUTED',
   'RESOLVED_APPROVE',
   'RESOLVED_REJECT',
 ]);
@@ -73,6 +74,8 @@ const withdrawalMethodEnum = pgEnum('withdrawal_method', [
   'CRYPTO_WALLET',
   'BANK_ACCOUNT',
 ]);
+
+
 
 // Better-Auth required tables
 export const user = createTable('user', {
@@ -254,17 +257,6 @@ export const submissions = createTable('submissions', {
   submittedAt: timestamp('submitted_at').notNull(),
 });
 
-export const submissionsRelations = relations(submissions, ({ one }) => ({
-  task: one(tasks, {
-    fields: [submissions.taskId],
-    references: [tasks.id],
-  }),
-  completer: one(user, {
-    fields: [submissions.completerUserId],
-    references: [user.id],
-  }),
-}));
-
 export const disputes = createTable('disputes', {
   disputeId: uuid('dispute_id').primaryKey().defaultRandom(),
   submissionId: uuid('submission_id')
@@ -273,9 +265,8 @@ export const disputes = createTable('disputes', {
     .references(() => submissions.submissionId, { onDelete: 'cascade' }),
   completerClaim: text('completer_claim').notNull(),
   creatorResponse: text('creator_response'),
-  adminResolverId: text('admin_resolver_id').references(() => user.id, {
-    onDelete: 'set null',
-  }),
+  adminResolverId: text('admin_resolver_id')
+    .references(() => user.id, { onDelete: 'set null' }),
   status: disputeStatusEnum('status').notNull().default('OPEN'),
   resolution: disputeResolutionEnum('resolution'),
   adminNotes: text('admin_notes'),
@@ -287,6 +278,9 @@ export const disputes = createTable('disputes', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
+    resolvedAt: timestamp("resolved_at").defaultNow().notNull(),
+    resolvedById: text("resolved_by_id").notNull(), 
+
 });
 
 export const adminLogs = createTable('admin_logs', {
@@ -305,12 +299,26 @@ export const adminLogs = createTable('admin_logs', {
 
 export const userBalances = createTable('user_balances', {
   userAddress: varchar('user_address', { length: 100 }).primaryKey(),
-  balance: bigint('balance', { mode: 'bigint' }).notNull(),
+  balance: bigint('balance', { mode: "bigint" }).notNull(),
   token: varchar('token', { length: 100 }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
-});
+})
+
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+  completer: one(user, {
+    fields: [submissions.completerUserId],
+    references: [user.id],
+  }),
+}));
+
+
+
 
 export const taskRelations = relations(tasks, ({ one }) => ({
   creator: one(user, {

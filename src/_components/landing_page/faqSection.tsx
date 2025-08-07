@@ -13,8 +13,7 @@ function FaqSection() {
           From Start to Finish – What to Expect
         </h2>
         <p className="mt-4 text-sm text-gray-600 lg:text-lg">
-          Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
-          imperdiet.
+          Everything you need to know before getting started.
         </p>
       </div>
       <div className="mt-8 flex w-full items-center justify-center">
@@ -36,38 +35,41 @@ export default FaqSection;
 
 const faqs = [
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
+    question: 'What is OpenTask?',
     answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+      'OpenTask is a platform that lets you complete simple tasks online and earn rewards—no crypto experience or investment needed.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
-    answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+    question: 'Do I need to pay to join?',
+    answer: 'No, OpenTask is free to join and use.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
-    answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+    question: 'Do I need a crypto wallet to get started?',
+    answer: 'No, you can use your email address to get started.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
+    question: 'How do I earn rewards?',
     answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+      'You earn rewards by completing tasks. The more tasks you complete, the more rewards you earn.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
+    question: 'What kind of tasks will I find?',
     answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+      'We offer a variety of tasks, including surveys, quizzes, and more. You can find tasks that match your interests and skills.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
+    question: 'Is my data safe?',
     answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+      'Yes, we take your privacy seriously. We never share your data with third parties.',
   },
   {
-    question: 'Lorem ipsum dolor sit amet consectetur?',
+    question: 'When can I withdraw my rewards?',
     answer:
-      'Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam imperdiet.',
+      'You can withdraw your rewards at any time. Just click the "Withdraw" button in your account dashboard.',
+  },
+  {
+    question: 'Can I use OpenTask from any country?',
+    answer:
+      'Yes, you can use OpenTask from any country. We are available in many countries around the world.',
   },
 ];

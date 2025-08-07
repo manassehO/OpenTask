@@ -15,8 +15,8 @@ function StartToFinishSection() {
           From Start to Finish – What to Expect
         </h2>
         <p className="mt-4 text-sm text-gray-600 lg:text-lg">
-          Lorem ipsum dolor sit amet consectetur. Non tortor diam vel nullam
-          imperdiet.
+          Join in minutes, pick a task, and get rewarded. No crypto knowledge or
+          wallet required.
         </p>
       </div>
       <div className="mt-12 flex w-full items-start justify-center">
@@ -54,16 +54,16 @@ const faqItems = [
   {
     question: 'Choose Your Tasks',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'Just sign up with your email or social account and start completing tasks right away',
   },
   {
     question: 'Complete & Earn',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'No need to worry about wallets or losing access—your earnings are safe, and you can withdraw them anytime',
   },
   {
     question: 'Track & Learn',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'Pick up new skills as you complete tasks and get rewarded along the way',
   },
 ];
