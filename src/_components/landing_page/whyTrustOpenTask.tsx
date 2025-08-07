@@ -42,30 +42,30 @@ export default function WhyTrustOpenTask() {
       <div className="mt-12 flex max-w-7xl flex-col items-center gap-4 rounded-md">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <Card
-            text="Lorem ipsum dolor sit amet consectetur. Amet elit eget amet rhoncus viverra. dolor sit amet consectetur"
+            text="OpenTask uses secure OAuth authentication to keep your personal information safe"
             src="/icons/security.svg"
             title="Secure OAuth authentication"
           />
           <Card
             src="/icons/wallet.svg"
-            text="Lorem ipsum dolor sit amet consectetur. Amet elit eget amet rhoncus viverra. dolor sit amet consectetur"
+            text="Just sign up with your email or social account and start completing tasks right away"
             title="No wallet required to start"
           />
           <Card
             src="/icons/locAtm.svg"
-            text="Lorem ipsum dolor sit amet consectetur. Amet elit eget amet rhoncus viverra. dolor sit amet consectetur"
+            text="No need to worry about wallets or losing access—your earnings are safe, and you can withdraw them anytime"
             title="Your earnings are safely stored"
           />
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card
             src="/icons/airline.svg"
-            text="Lorem ipsum dolor sit amet consectetur. Amet elit eget amet rhoncus viverra. dolor sit amet consectetur sit amet consectetur. Amet elit"
+            text="Every task comes with simple, easy-to-follow instructions—so you’ll always know exactly what to do. No confusion, no guesswork. just complete the steps and earn your rewards."
             title="Clear, step-by-step instructions"
           />
           <Card
             src="/icons/document.svg"
-            text="Lorem ipsum dolor sit amet consectetur. Amet elit eget amet rhoncus viverra. dolor sit amet consectetur sit amet consectetur. Amet elit"
+            text="Got questions or need help? Our support team is here for you—anytime, any day. Whether you’re stuck on a task or just need a quick answer, we’re always just a message away."
             title="Support available 24/7"
           />
         </div>

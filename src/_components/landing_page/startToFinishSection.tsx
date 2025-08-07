@@ -54,16 +54,16 @@ const faqItems = [
   {
     question: 'Choose Your Tasks',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'Just sign up with your email or social account and start completing tasks right away',
   },
   {
     question: 'Complete & Earn',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'No need to worry about wallets or losing access—your earnings are safe, and you can withdraw them anytime',
   },
   {
     question: 'Track & Learn',
     answer:
-      'Use your existing social account No wallet setup required Instant access to tasks',
+      'Pick up new skills as you complete tasks and get rewarded along the way',
   },
 ];
