@@ -199,11 +199,6 @@ export const profileRouter = createTRPCRouter({
   getExtendedProfile: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
 
-    /* type UserRow = typeof user.$inferSelect
-      type UserProfileRow = typeof userProfiles.$inferSelect;
-
-      type ExtendedUserRow = UserRow & { profile: UserProfileRow | null }; */
-
     // Fetch basic user info and associated profile
     const userRow = await ctx.db.query.user.findFirst({
       where: (u, { eq }) => eq(u.id, userId),

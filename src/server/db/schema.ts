@@ -615,3 +615,10 @@ export const userStatsRelations = relations(userStats, ({ one }) => ({
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   user: one(user, { fields: [userProfiles.userId], references: [user.id] }),
 }));
+
+export const userRelations = relations(user, ({ one }) => ({
+  profile: one(userProfiles, {
+    fields: [user.id],
+    references: [userProfiles.userId],
+  }),
+}));
