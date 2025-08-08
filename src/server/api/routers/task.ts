@@ -2,7 +2,6 @@ import {
   createTRPCRouter,
   protectedProcedure,
   adminProcedure,
-  completerProcedure,
 } from '~/server/api/trpc';
 import { db } from '~/server/db';
 import {
@@ -89,11 +88,11 @@ export const taskRouter = createTRPCRouter({
       const { category, min_reward, sort_by, order, limit, page } = input;
 
       // Only allow sorting by whitelisted fields
-      const sortFieldMap = {
+      /* const sortFieldMap = {
         created_at: tasks.createdAt,
         reward: tasks.rewardAmount,
       } as const;
-
+ */
       // Build where clause for drizzle
       const whereClauses = [eq(tasks.status, 'ACTIVE')];
 
@@ -105,7 +104,8 @@ export const taskRouter = createTRPCRouter({
         whereClauses.push(gte(tasks.rewardAmount, min_reward.toString()));
       }
 
-      const sortColumn = sortFieldMap[sort_by] ?? tasks.createdAt;
+      const sortColumn =
+        sort_by === 'reward' ? tasks.rewardAmount : tasks.createdAt;
       const orderByClause =
         order === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
@@ -503,9 +503,11 @@ export const taskRouter = createTRPCRouter({
       // Base query
       const whereConditions = status ? eq(disputes.status, status) : undefined;
 
+      type Dispute = typeof disputes.$inferSelect;
+
       // Fetch disputes with joins
-      const disputesList = await ctx.db.query.disputes.findMany({
-        where: status ? (d, { eq }) => eq(d.status, status) : undefined,
+      const disputesList: Dispute[] = await ctx.db.query.disputes.findMany({
+        where: whereConditions,
         limit,
         offset,
         with: {
@@ -564,8 +566,8 @@ export const taskRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
-      // Fetch the submission
 
+      // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
       });
