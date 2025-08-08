@@ -66,7 +66,7 @@ class StorageService {
   async getFileUrl(
     key: string,
     bucketName?: string,
-    expirySeconds = 24 * 60 * 60,
+    // expirySeconds = 24 * 60 * 60,
   ): Promise<string> {
     try {
       // For MinIO, we'll construct the direct URL since existing service returns direct URLs
@@ -81,6 +81,7 @@ class StorageService {
 
   async deleteFile(key: string, bucketName?: string): Promise<void> {
     try {
+      console.log(key, bucketName) 
       // Note: Existing MinIO service doesn't expose delete function
       // This would need to be implemented if file deletion is required
       console.warn('File deletion not implemented with existing MinIO service');
