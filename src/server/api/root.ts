@@ -4,6 +4,7 @@ import { profileRouter } from '~/server/api/routers/profile';
 import { walletRouter } from './routers/wallet';
 import { taskRouter } from './routers/task';
 import { adminRouter } from './routers/admin';
+import { searchRouter } from './routers/search';
 
 /*
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   wallet: walletRouter,
   task: taskRouter,
   admin: adminRouter,
+  search: searchRouter,
 });
 
 // export type definition of API
