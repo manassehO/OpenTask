@@ -134,7 +134,7 @@ if (!userWallet) {
       // if (BigInt(balance.balance) < BigInt(input.amount)) {
       //   throw new TRPCError({ code: 'BAD_REQUEST', message: 'Insufficient balance' });
       // }
-       const inputAmount = parseAmountToBigInt(input.amount); // <-- Fix goes here
+       const inputAmount = parseAmountToBigInt(input.amount); 
 
     if (BigInt(balance.balance) < inputAmount) {
       throw new TRPCError({ code: 'BAD_REQUEST', message: 'Insufficient balance' });
