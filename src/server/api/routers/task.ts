@@ -257,6 +257,8 @@ export const taskRouter = createTRPCRouter({
       const result = await db
         .select({
           id: tasks.id,
+          title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -367,8 +369,6 @@ export const taskRouter = createTRPCRouter({
         })
         .where(eq(submissions.submissionId, input.submissionId));
 
-      // TODO: Notify the completer that their submission was rejected
-
       return { success: true };
     }),
 
@@ -394,6 +394,7 @@ export const taskRouter = createTRPCRouter({
           id: tasks.id,
           status: tasks.status,
           title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
         })
         .from(tasks)
         .where(eq(tasks.id, taskId));
@@ -409,7 +410,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Verify user has an active claim for this task
+      // Verify user has an active claim for the task
       const [claimData] = await db
         .select()
         .from(taskClaims)
@@ -566,6 +567,7 @@ export const taskRouter = createTRPCRouter({
       ).then((rows) => rows[0]?.count ?? 0);
 
       return {
+        success: true,
         disputes: disputesList,
         total,
       };

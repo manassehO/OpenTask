@@ -89,3 +89,33 @@ export const getSubmissionsSchema = z.object({
   limit: z.number().int().min(1).max(50).default(10),
   page: z.number().int().min(1).default(1),
 });
+
+export const resolveDisputeInput = z.object({
+  disputeId: z.string().uuid(),
+  outcome: z.enum(['Approve', 'Reject']),
+  adminNotes: z.string().min(1, 'Admin notes are required'),
+});
+
+export const getTaskByIdOutputSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  status: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  creatorId: z.string(),
+  creatorDisplayName: z.string().nullable(),
+});
+
+export const createTaskOutputSchema = z.object({
+  success: z.boolean(),
+  task: z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    status: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    creatorUserId: z.string(),
+  }),
+
