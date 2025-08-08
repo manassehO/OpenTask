@@ -70,6 +70,12 @@ export const getSubmissionsSchema = z.object({
   page: z.number().int().min(1).default(1),
 });
 
+export const resolveDisputeInput = z.object({
+  disputeId: z.string().uuid(),
+  outcome: z.enum(['Approve', 'Reject']),
+  adminNotes: z.string().min(1, 'Admin notes are required'),
+});
+
 export const getTaskByIdOutputSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -92,4 +98,4 @@ export const createTaskOutputSchema = z.object({
     updatedAt: z.date(),
     creatorUserId: z.string(),
   }),
-});
+
