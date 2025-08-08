@@ -24,6 +24,7 @@ const updateProfileSelfSchema = z
 
 const updateProfileAdminSchema = z
   .object({
+    userId: z.string(),
     name: z.string().min(1).optional(),
     displayName: z.string().min(1).max(150).optional(),
     status: z.enum(['ACTIVE', 'SUSPENDED', 'BANNED']).optional(),
@@ -136,8 +137,13 @@ export const profileRouter = createTRPCRouter({
     .input(updateProfileAdminSchema)
     .mutation(async ({ ctx, input }) => {
       const { userId, ...fields } = input;
-      const foundUser: User | null = await ctx.db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, userId as string),
+
+      // const foundUser: User | null = await ctx.db.query.user.findFirst({
+      //   where: (u, { eq }) => eq(u.id, userId as string),
+      // });
+
+      const foundUser = await ctx.db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, userId),
       });
 
       if (!foundUser) {
@@ -156,7 +162,7 @@ export const profileRouter = createTRPCRouter({
       const result: User[] = await ctx.db
         .update(user)
         .set(dataToUpdate)
-        .where(eq(user.id, userId as string))
+        .where(eq(user.id, userId))
         .returning();
 
       if (result.length === 0) {
@@ -167,7 +173,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      const updatedUser = result[0] as typeof user;
+      const updatedUser = result[0]!;
 
       return {
         success: true,

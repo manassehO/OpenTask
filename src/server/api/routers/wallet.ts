@@ -67,8 +67,8 @@ export const walletRouter = createTRPCRouter({
             })
             .returning();
         }
-      } catch (err) {
-        if (err.code === '23505') {
+      } catch (err: unknown) {
+        if ((err as { code: string }).code === '23505') {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Wallet address already exists',
@@ -81,5 +81,40 @@ export const walletRouter = createTRPCRouter({
       }
 
       return { success: true, wallet: result[0] };
+    }),
+
+  getTransactionHistory: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+        offset: z.number().min(0).default(0),
+        token: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      const userWallets = await ctx.db.query.wallets.findMany({
+        where: (w, { eq, and }) => and(eq(w.userId, userId), eq(w.isActive, 1)),
+      });
+
+      const addresses = userWallets.map((w) => w.starknetAddress.toLowerCase());
+
+      if (addresses.length === 0) {
+        return [];
+      }
+
+      const events = await ctx.db.query.onchainEvents.findMany({
+        where: (e, { inArray, eq, and }) =>
+          and(
+            inArray(e.walletAddress, addresses),
+            input.token ? eq(e.token, input.token) : undefined,
+          ),
+        limit: input.limit,
+        offset: input.offset,
+        orderBy: (e, { desc }) => desc(e.timestamp),
+      });
+
+      return events;
     }),
 });

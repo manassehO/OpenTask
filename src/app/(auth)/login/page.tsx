@@ -45,7 +45,7 @@ function EmailLogin() {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const isEmailValid = validateEmail();
@@ -53,9 +53,6 @@ function EmailLogin() {
     if (!isEmailValid) {
       return;
     }
-
-    // Proceed with form submission if email is valid
-    console.log('Form submitted with email:', email);
   };
 
   return (

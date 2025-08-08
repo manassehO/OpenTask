@@ -12,6 +12,16 @@ import { ZodError } from 'zod';
 
 import { db } from '~/server/db';
 import { auth, type Session, type User } from '~/lib/auth';
+import {
+  deployAAWallet,
+  approve,
+  fundTask,
+  transfer,
+  verifyMessage,
+  flagDispute,
+  resolveDispute,
+  fundTaskWithManagedWallet,
+} from '../../services/starknetSvc';
 
 /**
  * 1. CONTEXT
@@ -60,6 +70,16 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     session,
     user,
     ...opts,
+    starknetSvc: {
+      deployAAWallet,
+      approve,
+      fundTask,
+      transfer,
+      verifyMessage,
+      flagDispute,
+      resolveDispute,
+      fundTaskWithManagedWallet,
+    },
   };
 };
 
@@ -138,7 +158,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'You mustn be logged in to access this resource',
+      message: 'You must be logged in to access this resource',
     });
   }
 
@@ -160,7 +180,7 @@ const hasRole = (roles: string[]) =>
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'You musti be logged in to access this resource',
+        message: 'You must be logged in to access this resource',
       });
     }
 
@@ -215,3 +235,12 @@ export const adminProcedure = t.procedure
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
   .use(hasRole(['admin', 'moderator']));
+
+/**
+ * Completer-only procedure
+ *
+ * Only users with the "COMPLETER" role can access procedures created with this.
+ */
+export const completerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(hasRole(['COMPLETER']));

@@ -12,12 +12,13 @@ export const auth = betterAuth({
     schema,
   }),
   secret: env.BETTER_AUTH_SECRET,
+  basePath: '/api/auth',
   user: {
     additionalFields: {
       role: {
         type: 'string',
         required: true,
-        defaultValue: 'CREATOR',
+        defaultValue: 'COMPLETER',
       },
     },
   },
@@ -42,16 +43,13 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       otpLength: 6,
-      expiresIn: 600, // 10 days
-      async sendVerificationOTP({ email, otp, type }) {
+      expiresIn: 60,
+      async sendVerificationOTP({ email, otp }) {
         await sendOtp(email, otp);
       },
     }),
   ],
 });
-
-// TODO: When Better Auth exposes a new user callback or OAuth success hook,
-// call deployAAWallet(user.id) here to trigger AA Wallet creation.
 
 export type Session = typeof auth.$Infer.Session.session;
 export type User = typeof auth.$Infer.Session.user;

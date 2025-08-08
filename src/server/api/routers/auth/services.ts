@@ -3,6 +3,7 @@ import { user } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { InferModel } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 
 type User = InferModel<typeof user>;
 
@@ -15,7 +16,7 @@ export async function findOrCreateUserByEmail(email: string): Promise<User> {
   if (!createdUser) {
     const inserted = await db
       .insert(user)
-      .values({ email, createdAt: new Date() })
+      .values({ id: randomUUID(), email, createdAt: new Date() })
       .returning();
     createdUser = inserted[0];
   }
