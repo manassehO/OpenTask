@@ -1,23 +1,51 @@
 'use client';
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import OTPInput from '~/_components/ui/form/OTPInput';
+import { verifyEmail } from '~/lib/auth-client';
+
+const otpSchema = z.object({
+  otp: z.string().length(6, 'OTP must be exactly 6 digits'),
+});
+
+type OtpFormData = z.infer<typeof otpSchema>;
 
 function Otp() {
-  const [otp, setOtp] = useState<number | undefined>(undefined);
-  const [error, setError] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<OtpFormData>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: {
+      otp: '',
+    },
+  });
+  const router = useRouter();
+  const otpValue = watch('otp');
   const otpLength = 6;
 
-  const handleChange = (value: number | undefined) => {
-    setOtp(value);
-    setError(false);
+  const handleOtpInputChange = (value: number | undefined) => {
+    setValue('otp', value?.toString() ?? '');
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (otp?.toString().length !== otpLength) {
-      setError(true);
-      return;
+  const onSubmit = async (data: OtpFormData) => {
+    try {
+      console.log('OTP submitted:', data.otp);
+      await verifyEmail({
+        query: {
+          token: data.otp,
+          callbackURL: '/home',
+        },
+      });
+      router.push('/home');
+    } catch (error) {
+      console.error('OTP verification error:', error);
     }
   };
 
@@ -27,17 +55,28 @@ function Otp() {
         text="Welcome to open task. Sign in with your email or connect a wallet to get started"
         title="Welcome"
       >
-        <form onSubmit={handleSubmit} className="flex w-96 flex-col gap-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex w-96 flex-col gap-4"
+        >
           <OTPInput
-            value={otp}
-            onChange={(value) => handleChange(value as number | undefined)}
+            value={otpValue ? parseInt(otpValue) : undefined}
+            // @ts-expect-error - OTPInput has complex type definition
+            onChange={handleOtpInputChange}
             maxLength={otpLength}
             label="OTP"
             placeholder="Enter OTP"
-            error={error}
+            error={!!errors.otp}
           />
-          <button className="rounded-md bg-[#3B82F6] p-4 text-white">
-            Proceed
+          {errors.otp && (
+            <p className="text-sm text-red-500">{errors.otp.message}</p>
+          )}
+          <button
+            type="submit"
+            className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB] disabled:opacity-50"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Verifying...' : 'Proceed'}
           </button>
         </form>
       </AuthWrapper>
