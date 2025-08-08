@@ -14,7 +14,19 @@ import {
 } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { eq, and, ilike, gte, asc, desc, count, sql } from 'drizzle-orm';
+import {
+  eq,
+  and,
+  ilike,
+  gte,
+  asc,
+  desc,
+  count,
+  sql,
+  inArray,
+  type SQLWrapper,
+  notInArray,
+} from 'drizzle-orm';
 import {
   getTaskByIdSchema,
   createTaskSchema,
@@ -58,6 +70,8 @@ export const taskRouter = createTRPCRouter({
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const { deadline, ...rest } = input;
+      const parsedDeadline = new Date(deadline);
 
       if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({
@@ -69,7 +83,8 @@ export const taskRouter = createTRPCRouter({
       const [createdTask] = await db
         .insert(tasks)
         .values({
-          ...input,
+          ...rest,
+          deadline: parsedDeadline,
           creatorUserId: userId, // Ensure task is created by the logged-in user
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -679,33 +694,69 @@ export const taskRouter = createTRPCRouter({
 
       return { success: true };
     }),
-  
+
   getRecommendedTasks: protectedProcedure
-    .input(z.object({
-      limit: z.number().min(1).max(20).default(8),
-    }))
-    .query(async ({ ctx, input }) => {
+    .input(
+      z.object({
+        limit: z.number().min(1).max(20).default(8),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
       // Get tasks the user has already claimed or submitted
       const [claimedTasks, submittedTasks] = await Promise.all([
-        db.select({ taskId: taskClaims.taskId }).from(taskClaims).where(eq(taskClaims.userId, userId)),
-        db.select({ taskId: submissions.taskId }).from(submissions).where(eq(submissions.completerUserId, userId)),
+        db
+          .select({ taskId: taskClaims.taskId })
+          .from(taskClaims)
+          .where(eq(taskClaims.userId, userId)),
+        db
+          .select({ taskId: submissions.taskId })
+          .from(submissions)
+          .where(eq(submissions.completerUserId, userId)),
       ]);
 
-      const excludedTaskIds = [...new Set([...claimedTasks, ...submittedTasks].map(row => row.taskId))];
+      const excludedTaskIds: UUID[] = [
+        ...new Set(
+          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+        ),
+      ];
 
-      // Get categories of user submitted tasks
+      // Get categories of previously submitted tasks
       const categoryRows = await db
         .select({ category: tasks.category })
         .from(tasks)
-        .where(inArray(tasks.id, submittedTasks.map(row => row.taskId)));
+        .where(
+          inArray(
+            tasks.id,
+            submittedTasks.map((row) => row.taskId),
+          ),
+        );
 
-      const categories = [...new Set(categoryRows.map(row => row.category))];
+      const categories = [...new Set(categoryRows.map((row) => row.category))];
 
       const now = new Date();
 
-      // query with popularity + reward sort
+      // Build SQL-safe category array
+      const categoryArraySQL = categories.length
+        ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
+        : sql.raw(`ARRAY[]::text[]`);
+
+      // ✅ Safely build WHERE conditions first
+      const conditions: SQLWrapper[] = [
+        eq(tasks.status, 'ACTIVE'),
+        gte(tasks.deadline, now),
+      ];
+
+      if (excludedTaskIds.length > 0) {
+        const exclusionCondition = notInArray(
+          tasks.id,
+          excludedTaskIds,
+        ) as SQLWrapper;
+        conditions.push(exclusionCondition);
+      }
+
+      // Query recommended tasks
       const recommendedTasks = await db
         .select({
           task: tasks,
@@ -713,33 +764,115 @@ export const taskRouter = createTRPCRouter({
         })
         .from(tasks)
         .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
-        .where(
-          and(
-            eq(tasks.status, 'ACTIVE'),
-            gte(tasks.deadline, now),
-            excludedTaskIds.length > 0 ? notInArray(tasks.id, excludedTaskIds) : undefined
-          )
-        )
+        .where(and(...conditions))
         .groupBy(tasks.id)
         .orderBy(
-          // Category match
-          desc(sql`CASE WHEN ${tasks.category} = ANY(${sql.array(categories)}) THEN 1 ELSE 0 END`),
-
-          //  Popularity
+          desc(
+            sql`CASE WHEN ${tasks.category} = ANY(${categoryArraySQL}) THEN 1 ELSE 0 END`,
+          ),
           desc(sql`COUNT(${taskClaims.id})`),
-
-          // Reward
           desc(tasks.rewardAmount),
-
-          // Recency
-          desc(tasks.createdAt)
+          desc(tasks.createdAt),
         )
         .limit(input.limit);
 
       return {
         success: true,
-        tasks: recommendedTasks.map(row => row.task),
+        tasks: recommendedTasks.map((row) => row.task),
       };
     }),
 
+  getActiveTasks: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    const activeTasks = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        rewardAmount: tasks.rewardAmount,
+        deadline: tasks.deadline,
+        claimedAt: taskClaims.createdAt,
+      })
+      .from(taskClaims)
+      .innerJoin(tasks, eq(tasks.id, taskClaims.taskId))
+      .where(
+        and(
+          eq(taskClaims.userId, userId),
+          eq(taskClaims.status, 'IN_PROGRESS'),
+          eq(tasks.status, 'ACTIVE'),
+        ),
+      )
+      .orderBy(desc(taskClaims.createdAt));
+
+    return activeTasks;
+  }),
+
+  cancelTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { taskId } = input;
+
+      try {
+        // Verify task exists and the user is the creator
+        const task = await ctx.db.query.tasks.findFirst({
+          where: (tasks, { and, eq }) =>
+            and(eq(tasks.id, taskId), eq(tasks.creatorUserId, userId)),
+        });
+
+        if (!task) {
+          throw new Error(
+            'Task not found or you are not authorized to cancel it.',
+          );
+        }
+
+        // Only allow cancellation if it is still ACTIVE
+        if (task.status !== 'ACTIVE') {
+          throw new Error('Only ACTIVE tasks can be cancelled.');
+        }
+
+        // Cancel the task
+        await ctx.db
+          .update(tasks)
+          .set({ status: 'CANCELLED' })
+          .where(eq(tasks.id, taskId));
+
+        // Cancel all related task claims
+        await ctx.db
+          .update(taskClaims)
+          .set({ status: 'CANCELLED' })
+          .where(eq(taskClaims.taskId, taskId));
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error cancelling task:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Something went wrong while cancelling the task.',
+          cause: error,
+        });
+      }
+    }),
+
+  getTaskCategories: protectedProcedure.query(async ({ ctx }) => {
+    const rawCategories = await ctx.db
+      .selectDistinct({ category: tasks.category })
+      .from(tasks)
+      .where(sql`trim(${tasks.category}) != ''`);
+
+    const categories = Array.from(
+      new Set(rawCategories.map((row) => row.category.trim())),
+    ).sort((a, b) => a.localeCompare(b));
+
+    return {
+      success: true,
+      categories,
+    };
+  }),
 });
