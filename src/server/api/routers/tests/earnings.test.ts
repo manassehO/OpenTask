@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TRPCError } from '@trpc/server';
 import { earningsRouter } from '../earning'; 
-import { userStats, wallets, userBalances, withdrawals, onchainEvents, userWithdrawalMethods } from '@/server/db/schema'; // Import your Drizzle schemas
+import { userStats, wallets, userBalances, withdrawals, onchainEvents, userWithdrawalMethods } from '@/server/db/schema'; 
 import { type inferProcedureInput } from '@trpc/server';
-import { type AppRouter } from '@/server/api/root'; // Assuming you have a root router type
+import { type AppRouter } from '@/server/api/root'; 
 
 
 type AppRouterCaller = ReturnType<typeof earningsRouter.createCaller>;
