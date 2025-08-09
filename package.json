@@ -48,6 +48,7 @@
     "lucide-react": "^0.503.0",
     "minio": "^8.0.5",
     "next": "^15.0.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.4",
     "otp-generator": "^4.0.1",
     "postgres": "^3.4.4",

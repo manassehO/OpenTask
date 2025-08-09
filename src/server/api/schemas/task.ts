@@ -38,6 +38,9 @@ export const createTaskSchema = z.object({
   fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
     message: 'Invalid fundingTxHash format',
   }),
+  deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Invalid deadline date format',
+  }),
 });
 
 export const findTaskSchema = z.object({
