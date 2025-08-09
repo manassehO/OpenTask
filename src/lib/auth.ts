@@ -4,7 +4,9 @@ import { db } from '~/server/db';
 import { env } from '~/env';
 import { sendOtp } from '~/server/email';
 import { emailOTP } from 'better-auth/plugins';
+import { createAuthMiddleware } from 'better-auth/api';
 import * as schema from '~/server/db/schema';
+import { NotificationsService } from '~/services/notifications';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -48,6 +50,18 @@ export const auth = betterAuth({
       },
     }),
   ],
+
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith('/sign-up')) {
+        const newSession = ctx.context.newSession;
+        if (newSession) {
+          // Send welcome notification
+          await NotificationsService.sendWelcome(newSession.user.id);
+        }
+      }
+    }),
+  },
 });
 
 // TODO: When Better Auth exposes a new user callback or OAuth success hook,
