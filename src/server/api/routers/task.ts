@@ -259,6 +259,8 @@ export const taskRouter = createTRPCRouter({
         .select({
           creatorUserId: tasks.creatorUserId,
           id: tasks.id,
+          title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -430,7 +432,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Verify user has an active claim for this task
+      // Verify user has an active claim for the task
       const [claimData] = await db
         .select()
         .from(taskClaims)
@@ -599,6 +601,7 @@ export const taskRouter = createTRPCRouter({
       ).then((rows) => rows[0]?.count ?? 0);
 
       return {
+        success: true,
         disputes: disputesList,
         total,
       };
@@ -615,6 +618,7 @@ export const taskRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
+      // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
         with: { task: true },
@@ -818,6 +822,7 @@ export const taskRouter = createTRPCRouter({
 
       const now = new Date();
 
+      // Build SQL-safe category array
       const categoryArraySQL = categories.length
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);

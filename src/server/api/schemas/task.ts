@@ -18,18 +18,30 @@ export const createTaskSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
   category: z.string().min(1, 'Category is required'),
-  maxCompletions: z.number().min(1),
+  maxCompletions: z.number().int().min(1, 'Max completions must be at least 1'),
   rewardAmount: z
     .string()
-    .refine((val) => /^\d+(\.\d{1,18})?$/.test(val) && parseFloat(val) > 0, {
+    .refine((val) => /^\d+(\.\d{1,20})?$/.test(val) && parseFloat(val) > 0, {
       message:
-        'Invalid reward amount: must be a positive number with up to 18 decimals',
+        'Invalid reward amount: must be a positive number with up to 20 digits and no decimals (scale = 0)',
     }),
   rewardTokenAddress: z
     .string()
+    .max(100, 'Reward token address must be at most 100 characters')
     .refine((val) => /^0x[a-fA-F0-9]{40}$/.test(val), {
       message: 'Invalid rewardTokenAddress format',
     }),
+  platformFee: z
+    .string()
+    .optional()
+    .refine(
+      (val) =>
+        val === undefined || (/^\d{1,20}$/.test(val) && parseInt(val) >= 0),
+      {
+        message:
+          'Invalid platform fee: must be a non-negative integer up to 20 digits',
+      },
+    ),
   requiredCompletions: z
     .number()
     .int()
@@ -41,6 +53,10 @@ export const createTaskSchema = z.object({
   deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid deadline date format',
   }),
+  image: z
+    .string()
+    .max(255, 'Image URL must be at most 255 characters')
+    .optional(),
 });
 
 export const findTaskSchema = z.object({

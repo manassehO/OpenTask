@@ -35,6 +35,7 @@ const submissionStatusEnum = pgEnum('submission_status', [
 ]);
 const disputeStatusEnum = pgEnum('dispute_status', [
   'OPEN',
+  'DISPUTED',
   'RESOLVED_APPROVE',
   'RESOLVED_REJECT',
 ]);
@@ -242,7 +243,7 @@ export const taskClaims = createTable('task_claims', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('in_progress'),
+  status: text('status').notNull().default('IN_PROGRESS'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
@@ -260,17 +261,6 @@ export const submissions = createTable('submissions', {
   reviewedAt: timestamp('reviewed_at'),
   submittedAt: timestamp('submitted_at').notNull(),
 });
-
-export const submissionsRelations = relations(submissions, ({ one }) => ({
-  task: one(tasks, {
-    fields: [submissions.taskId],
-    references: [tasks.id],
-  }),
-  completer: one(user, {
-    fields: [submissions.completerUserId],
-    references: [user.id],
-  }),
-}));
 
 export const disputes = createTable('disputes', {
   disputeId: uuid('dispute_id').primaryKey().defaultRandom(),
@@ -294,6 +284,8 @@ export const disputes = createTable('disputes', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
+  resolvedAt: timestamp('resolved_at').defaultNow().notNull(),
+  resolvedById: text('resolved_by_id').notNull(),
 });
 
 export const adminLogs = createTable('admin_logs', {
@@ -318,6 +310,17 @@ export const userBalances = createTable('user_balances', {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [submissions.taskId],
+    references: [tasks.id],
+  }),
+  completer: one(user, {
+    fields: [submissions.completerUserId],
+    references: [user.id],
+  }),
+}));
 
 export const taskRelations = relations(tasks, ({ one }) => ({
   creator: one(user, {
