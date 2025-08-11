@@ -1,5 +1,6 @@
 import { uploadBase64FileToMinio, ensureBucketExists } from './minio';
 import { randomUUID } from 'crypto';
+import { env } from '../env.js';
 
 interface UploadOptions {
   fileName: string;
@@ -18,7 +19,7 @@ class StorageService {
   private defaultBucket: string;
 
   constructor() {
-    this.defaultBucket = process.env.MINIO_BUCKET ?? 'opentask-dev';
+    this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
   }
 
   async initialize(): Promise<void> {
@@ -70,7 +71,7 @@ class StorageService {
   ): Promise<string> {
     try {
       // For MinIO, we'll construct the direct URL since existing service returns direct URLs
-      const endpoint = process.env.MINIO_ENDPOINT ?? 'http://localhost:9000';
+      const endpoint = env.MINIO_ENDPOINT ?? 'http://localhost:9000';
       const bucket = bucketName ?? this.defaultBucket;
       return `${endpoint}/${bucket}/${key}`;
     } catch (error) {
@@ -81,7 +82,7 @@ class StorageService {
 
   async deleteFile(key: string, bucketName?: string): Promise<void> {
     try {
-      console.log(key, bucketName) 
+      console.log(key, bucketName);
       // Note: Existing MinIO service doesn't expose delete function
       // This would need to be implemented if file deletion is required
       console.warn('File deletion not implemented with existing MinIO service');
