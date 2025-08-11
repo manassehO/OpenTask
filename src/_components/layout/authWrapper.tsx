@@ -6,13 +6,25 @@ type AuthWrapperProps = {
   children: ReactNode;
   title?: string;
   text: string;
+  type?: 'login' | 'signup';
 };
 
-const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, title, text }) => {
+const AuthWrapper: React.FC<AuthWrapperProps> = ({
+  children,
+  title,
+  text,
+  type,
+}) => {
   return (
     <div className="flex min-h-screen w-full flex-col bg-transparent p-[2%] lg:flex-row">
       <div className="hidden flex-col items-center justify-center gap-5 rounded-lg bg-gradient-to-b from-[#3B82F6] to-[#2757A4] lg:flex lg:w-[40%]">
-        <Image src="/auth/authbadge.svg" alt="" width={410} height={410} />
+        <Image
+          priority
+          src="/auth/authbadge.svg"
+          alt=""
+          width={410}
+          height={410}
+        />
         <div className="flex max-w-[546px] flex-col items-center justify-between gap-4">
           <p className="text-start text-[44px] font-extrabold text-white">
             Complete simple tasks, earn rewards
@@ -71,7 +83,8 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, title, text }) => {
             🔑 Linked passkey
           </Button>
           <div className="mt-8 flex w-full items-center text-xs font-medium text-black">
-            By signing up, you agree to OpenTask’s
+            By {type !== 'login' ? 'signing up' : 'signing in'}, you agree to
+            OpenTask’s
             <button className="text-[#3B82F6]">Terms of service</button>
           </div>
         </div>

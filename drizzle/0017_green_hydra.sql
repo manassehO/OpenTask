@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_user" ADD COLUMN "password" text NOT NULL;
