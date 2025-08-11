@@ -1,19 +1,19 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { sql, relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   index,
   integer,
+  numeric,
+  pgEnum,
   pgTableCreator,
   text,
   timestamp,
-  varchar,
-  pgEnum,
   uuid,
-  numeric,
-  bigint,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
@@ -48,10 +48,18 @@ const notificationTypeEnum = pgEnum('notification_type', [
   'TASK_APPROVED',
   'TASK_REJECTED',
   'TASK_ASSIGNED',
+  'TASK_SUBMITTED',
   'PAYMENT_RECEIVED',
   'DISPUTE_CREATED',
   'DISPUTE_RESOLVED',
+  'COURSE_ENROLLED',
   'COURSE_COMPLETED',
+  'WITHDRAWAL_REQUESTED',
+  'WITHDRAWAL_COMPLETED',
+  'WITHDRAWAL_FAILED',
+  'WELCOME',
+  'PROFILE_REMINDER',
+  'STREAK_MILESTONE',
   'SYSTEM_ANNOUNCEMENT',
 ]);
 
@@ -235,7 +243,7 @@ export const taskClaims = createTable('task_claims', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('in_progress'),
+  status: text('status').notNull().default('IN_PROGRESS'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
@@ -245,7 +253,7 @@ export const taskClaims = createTable('task_claims', {
 export const submissions = createTable('submissions', {
   submissionId: uuid('submission_id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').references(() => tasks.id),
-  completerUserId: uuid('completer_user_id').references(() => user.id),
+  completerUserId: text('completer_user_id').references(() => user.id),
   status: submissionStatusEnum('status').notNull(),
   dataRef: text('data_ref'),
   rejectionReason: text('rejection_reason'),
@@ -287,7 +295,7 @@ export const adminLogs = createTable('admin_logs', {
     .references(() => user.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   targetTable: text('target_table').notNull(),
-  targetId: uuid('target_id'),
+  targetId: text('target_id'),
   message: text('message'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
