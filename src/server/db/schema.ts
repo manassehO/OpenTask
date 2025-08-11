@@ -48,10 +48,18 @@ const notificationTypeEnum = pgEnum('notification_type', [
   'TASK_APPROVED',
   'TASK_REJECTED',
   'TASK_ASSIGNED',
+  'TASK_SUBMITTED',
   'PAYMENT_RECEIVED',
   'DISPUTE_CREATED',
   'DISPUTE_RESOLVED',
+  'COURSE_ENROLLED',
   'COURSE_COMPLETED',
+  'WITHDRAWAL_REQUESTED',
+  'WITHDRAWAL_COMPLETED',
+  'WITHDRAWAL_FAILED',
+  'WELCOME',
+  'PROFILE_REMINDER',
+  'STREAK_MILESTONE',
   'SYSTEM_ANNOUNCEMENT',
 ]);
 
@@ -235,7 +243,7 @@ export const taskClaims = createTable('task_claims', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('in_progress'),
+  status: text('status').notNull().default('IN_PROGRESS'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
@@ -287,7 +295,7 @@ export const adminLogs = createTable('admin_logs', {
     .references(() => user.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   targetTable: text('target_table').notNull(),
-  targetId: uuid('target_id'),
+  targetId: text('target_id'),
   message: text('message'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

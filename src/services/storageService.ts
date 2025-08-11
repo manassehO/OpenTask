@@ -18,7 +18,7 @@ class StorageService {
   private defaultBucket: string;
 
   constructor() {
-    this.defaultBucket = process.env.MINIO_BUCKET || 'opentask-dev';
+    this.defaultBucket = process.env.MINIO_BUCKET ?? 'opentask-dev';
   }
 
   async initialize(): Promise<void> {
@@ -66,12 +66,12 @@ class StorageService {
   async getFileUrl(
     key: string,
     bucketName?: string,
-    expirySeconds = 24 * 60 * 60,
+    // expirySeconds = 24 * 60 * 60,
   ): Promise<string> {
     try {
       // For MinIO, we'll construct the direct URL since existing service returns direct URLs
-      const endpoint = process.env.MINIO_ENDPOINT || 'http://localhost:9000';
-      const bucket = bucketName || this.defaultBucket;
+      const endpoint = process.env.MINIO_ENDPOINT ?? 'http://localhost:9000';
+      const bucket = bucketName ?? this.defaultBucket;
       return `${endpoint}/${bucket}/${key}`;
     } catch (error) {
       console.error('Failed to get file URL:', error);
@@ -81,6 +81,7 @@ class StorageService {
 
   async deleteFile(key: string, bucketName?: string): Promise<void> {
     try {
+      console.log(key, bucketName) 
       // Note: Existing MinIO service doesn't expose delete function
       // This would need to be implemented if file deletion is required
       console.warn('File deletion not implemented with existing MinIO service');
