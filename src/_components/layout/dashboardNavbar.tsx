@@ -1,11 +1,12 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { Bell, CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
+import { CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
+import { NotificationBell } from '../notifications/notification-bell';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,7 +58,7 @@ export function DashboardNavbar() {
             </button>
           </a>
           <CircleHelp />
-          <Bell />
+          <NotificationBell />
           <Image
             alt="Profile"
             height={40}
@@ -90,7 +91,7 @@ export function DashboardNavbar() {
         <div className="absolute right-0 top-full z-50 flex w-1/2 flex-col gap-4 bg-white p-4 shadow-lg lg:hidden">
           <div className="flex gap-6">
             <CircleHelp />
-            <Bell />
+            <NotificationBell />
             <Image
               alt="Profile"
               height={36}

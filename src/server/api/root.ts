@@ -5,7 +5,10 @@ import { walletRouter } from './routers/wallet';
 import { taskRouter } from './routers/task';
 import { adminRouter } from './routers/admin';
 import { searchRouter } from './routers/search';
+import { learningRouter } from './routers/learning';
+import { notificationsRouter } from '~/server/api/routers/notifications';
 import { earningsRouter } from "./routers/earning";
+import { creatorRouter } from './routers/creator';
 
 /*
  * This is the primary router for your server.
@@ -19,6 +22,9 @@ export const appRouter = createTRPCRouter({
   task: taskRouter,
   admin: adminRouter,
   search: searchRouter,
+  learning: learningRouter,
+  creator: creatorRouter,
+  notifications: notificationsRouter,
   earnings: earningsRouter
 });
 
