@@ -186,7 +186,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
  *
  * This middleware verifies that a user has the required role(s) to access a resource.
  */
-const hasRole = (roles: string[]) =>
+export const hasRole = (roles: string[]) =>
   t.middleware(({ next, ctx }) => {
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
