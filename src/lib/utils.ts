@@ -14,3 +14,10 @@ export function parseAmountToBigInt(amount: string, decimals = 18): bigint {
   }
   return BigInt(normalized);
 }
+
+/** This function is used to clamp progress values between 0 - 100.
+ * It ensures that progress values do not exceed 100 or fall below 0.
+ * This is useful for ensuring that progress values are always within a valid range
+ * and prevents issues with displaying progress in the UI. */
+export const clampProgress = (value: number) =>
+  Math.min(100, Math.max(0, value));
