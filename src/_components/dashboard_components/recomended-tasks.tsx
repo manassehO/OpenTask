@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Button from '../ui/button';
+import { getTasks, useCreateTask, useRecommendedTasks } from '~/app/api/task';
 
 interface RecommendedTask {
   taskImg: string;
@@ -13,6 +14,56 @@ interface RecommendedTask {
 }
 
 const RecomendedTasks = () => {
+  const { data } = getTasks();
+  console.log('active task', data);
+
+  const recommendedTasks = useRecommendedTasks();
+
+  const createTask = useCreateTask();
+
+  const handleCreate = async () => {
+    const payload = {
+      title: 'Translate a YouTube video',
+      description: 'Translate a tech video from English to Spanish',
+      instructions:
+        'Use accurate technical terms. Submit a subtitle file in .srt format.',
+      category: 'Translation',
+      rewardAmount: '50',
+      rewardTokenAddress: '0x123456789abcdef123456789abcdef123456789a',
+      platformFee: '5',
+      approvedCompletions: 0,
+      inProgressCompletions: 0,
+      requiredCompletions: 10,
+      deadline: '2025-09-01T23:59:59Z',
+      image: 'https://example.com/task-thumbnail.png',
+      status: 'ACTIVE' as const,
+      fundingTxHash:
+        '0xabcdef123456789abcdef123456789abcdef123456789abcdef123456789abcd',
+      maxCompletions: 20,
+    };
+
+    try {
+      const res = await createTask.mutateAsync(payload);
+      if (res.success) {
+        alert('Created Successfully!');
+      } else {
+        alert('Something went wrong');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+    }
+  };
+
+  const handleGet = async () => {
+    try {
+      const res = await recommendedTasks.mutateAsync({});
+      console.log(res.tasks);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const task: RecommendedTask = {
     taskImg: '/task-img.png',
     taskName: 'Complete a short survey about defi',
@@ -31,11 +82,21 @@ const RecomendedTasks = () => {
           Recommended For You
         </h1>
         <Button
+          onClick={handleGet}
           backgroundColor="transparent"
           textColor="text-[#3B82F6]"
           className="mt-2 text-[#3B82F6]"
         >
           See All Tasks
+        </Button>
+
+        <Button
+          onClick={handleCreate}
+          backgroundColor="transparent"
+          textColor="text-[#3B82F6]"
+          className="mt-2 text-[#3B82F6]"
+        >
+          Create Tasks
         </Button>
       </div>
 

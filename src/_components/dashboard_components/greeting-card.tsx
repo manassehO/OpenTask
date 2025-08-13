@@ -1,7 +1,4 @@
-type GreetingCardProps = {
-  name: string;
-  className?: string;
-} & React.HTMLProps<HTMLDivElement>;
+import { useProfile } from '~/app/api/profile';
 
 const getTimeOfDay = () => {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -38,16 +35,25 @@ const greetings = [
   },
 ];
 
-function GreetingCard({ name, ...props }: GreetingCardProps) {
+function GreetingCard() {
+  const { user, error, isLoading } = useProfile();
+  if (isLoading) return <p>Page Loading</p>;
+  if (error) return <p>There is an error</p>;
+  const userName = user?.name
+    ? user.name.charAt(0).toUpperCase() + user.name.slice(1)
+    : '';
+
+  console.log('user', user);
+
   const timeOfDay = getTimeOfDay();
   const greeting = greetings.find((g) => g.time === timeOfDay);
   const greetingText = `Good ${greeting?.time} ${greeting?.icon}`;
   return (
-    <div className={`flex flex-col capitalize ${props.className}`}>
+    <div className="flex flex-col capitalize">
       <span className="text-base font-semibold text-[#414141]">
         {greetingText}
       </span>
-      <span className="text-[28px] font-bold">{name}</span>
+      <span className="text-[28px] font-bold">{userName}</span>
     </div>
   );
 }

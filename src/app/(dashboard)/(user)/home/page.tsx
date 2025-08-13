@@ -5,12 +5,10 @@ import Summary from '~/_components/dashboard_components/summary';
 import RightBar from '~/_components/layout/RightBar';
 
 function Dashboardage() {
-  const name = 'Bartholomew Favour';
-
   return (
     <div className="flex h-full w-full flex-row items-start bg-[#FAFAFA] text-black">
       <div className="w-full">
-        <GreetingCard name={name} />
+        <GreetingCard />
         <Summary />
         <RecomendedTasks />
       </div>
