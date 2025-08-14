@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_verification" ALTER COLUMN "identifier" SET DATA TYPE uuid;

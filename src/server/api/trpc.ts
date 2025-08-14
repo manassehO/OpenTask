@@ -235,3 +235,12 @@ export const adminProcedure = t.procedure
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
   .use(hasRole(['admin', 'moderator']));
+
+/**
+ * Completer-only procedure
+ *
+ * Only users with the "COMPLETER" role can access procedures created with this.
+ */
+export const completerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(hasRole(['COMPLETER']));

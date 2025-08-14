@@ -83,6 +83,7 @@
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
     "drizzle-kit": "^0.24.0",
+    "esbuild": "^0.25.8",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.0.1",
     "eslint-config-prettier": "^10.1.5",
