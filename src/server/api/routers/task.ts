@@ -744,7 +744,7 @@ export const taskRouter = createTRPCRouter({
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);
 
-      // ✅ Safely build WHERE conditions first
+      // Safely build WHERE conditions first
       const conditions: SQLWrapper[] = [
         eq(tasks.status, 'ACTIVE'),
         gte(tasks.deadline, now),
