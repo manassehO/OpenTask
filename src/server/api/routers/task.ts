@@ -847,7 +847,7 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Count total active/completed tasks
-      const [{ count }] = await db
+      [{ count }] = await db
         .select({ count: sql<number>`COUNT(*)` })
         .from(taskClaims)
         .innerJoin(tasks, eq(tasks.id, taskClaims.taskId))
@@ -943,19 +943,77 @@ export const taskRouter = createTRPCRouter({
       }
     }),
 
-  getTaskCategories: protectedProcedure.query(async ({ ctx }) => {
-    const rawCategories = await ctx.db
-      .selectDistinct({ category: tasks.category })
-      .from(tasks)
-      .where(sql`trim(${tasks.category}) != ''`);
+  getTaskCategories: protectedProcedure
+    .query(async ({ ctx }) => {
+      const rawCategories = await ctx.db
+        .selectDistinct({ category: tasks.category })
+        .from(tasks)
+        .where(sql`trim(${tasks.category}) != ''`);
 
-    const categories = Array.from(
-      new Set(rawCategories.map((row) => row.category.trim())),
-    ).sort((a, b) => a.localeCompare(b));
+      const categories = Array.from(
+        new Set(rawCategories.map((row) => row.category.trim())),
+      ).sort((a, b) => a.localeCompare(b));
 
-    return {
-      success: true,
-      categories,
-    };
-  }),
+      return {
+        success: true,
+        categories,
+      };
+    }),
+  
+  updateTaskStatus: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid('Invalid task ID'),
+        newStatus: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED']),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, newStatus } = input;
+      const userId = ctx.user.id;
+
+      // Get the task
+      const task = await db.query.tasks.findFirst({
+        where: eq(tasks.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      // Ensure user is the creator
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not allowed to update the status of this task',
+        });
+      }
+
+      // allowed transitions
+      const validTransitions: Record<string, string> = {
+        DRAFT: 'ACTIVE',
+        ACTIVE: 'COMPLETED',
+      };
+
+      if (task.status === newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Task is already ${newStatus}`,
+        });
+      }
+
+      if (validTransitions[task.status] !== newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid status transition from ${task.status} to ${newStatus}`,
+        });
+      }
+
+      // Update status
+      await db
+        .update(tasks)
+        .set({ status: newStatus })
+        .where(eq(tasks.id, taskId));
+
+      return { success: true, message: `Task status updated to ${newStatus}` };
+    }),
 });
