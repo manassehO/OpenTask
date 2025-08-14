@@ -6,6 +6,12 @@ import { eq, ilike, or, and, sql } from 'drizzle-orm';
 import type { InferModel } from 'drizzle-orm';
 import { db } from "@/server/db";
 import { resolveDispute } from "@/services/starknetSvc";
+<<<<<<< HEAD
+
+type User = InferModel<typeof user, 'select'>;
+=======
+import { admin } from "better-auth/plugins";
+>>>>>>> 1d1b6a09726fc7ca25824176a1b540fdad5b5376
 
 type User = InferModel<typeof user, 'select'>;
 
@@ -60,7 +66,11 @@ export const adminRouter = createTRPCRouter({
         limit,
       };
     }),
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 1d1b6a09726fc7ca25824176a1b540fdad5b5376
   // Update a user's status
   updateUserStatus: adminProcedure
     .input(
@@ -109,7 +119,11 @@ export const adminRouter = createTRPCRouter({
         user: result[0]!,
       };
     }),
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 1d1b6a09726fc7ca25824176a1b540fdad5b5376
   resolveDispute: adminProcedure
     .input(
       z.object({
