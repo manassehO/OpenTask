@@ -4,7 +4,7 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user } from '~/server/db/schema';
+import { user, userProfiles } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 // import { type InferModel } from "drizzle-orm";
@@ -195,4 +195,140 @@ export const profileRouter = createTRPCRouter({
         },
       };
     }),
+
+  getExtendedProfile: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    // Fetch basic user info and associated profile
+    const userRow = await ctx.db.query.user.findFirst({
+      where: (u, { eq }) => eq(u.id, userId),
+      with: {
+        profile: true,
+      },
+    });
+
+    if (!userRow) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
+    }
+
+    const profile = (userRow.profile ?? {}) as typeof userProfiles.$inferSelect;
+
+    // Parse skillTags and socialLinks from JSON strings into usable JS objects
+    let parsedSkillTags: string[] = [];
+    let parsedSocialLinks: Record<string, string> = {};
+
+    try {
+      if (typeof profile.skillTags === 'string') {
+        const rawTags = profile.skillTags;
+        parsedSkillTags = JSON.parse(rawTags) as string[];
+      }
+    } catch {
+      parsedSkillTags = [];
+    }
+
+    try {
+      if (typeof profile.socialLinks === 'string') {
+        const rawLinks = profile.socialLinks;
+        parsedSocialLinks = JSON.parse(rawLinks) as Record<string, string>;
+      }
+    } catch {
+      parsedSocialLinks = {};
+    }
+
+    return {
+      ...userRow,
+      profile: {
+        ...profile,
+        skillTags: parsedSkillTags,
+        socialLinks: parsedSocialLinks,
+      },
+    };
+  }),
+
+  updateExtendedProfile: protectedProcedure
+    .input(
+      z.object({
+        // user table fields
+        name: z.string().optional(),
+        displayName: z.string().optional(),
+        email: z.string().email().optional(),
+        image: z.string().url().optional(),
+        walletAddress: z.string().max(100).optional(),
+
+        // userProfiles table fields
+        gender: z.string().optional(),
+        niche: z.string().optional(),
+        bio: z.string().optional(),
+        location: z.string().optional(),
+        timezone: z.string().optional(),
+        skillTags: z.array(z.string()).max(10).optional(),
+        socialLinks: z.record(z.string().url()).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const now = new Date();
+
+      const clean = <T>(value: T | undefined) =>
+        typeof value === 'string' && value.trim() === '' ? undefined : value;
+
+      try {
+        await ctx.db.transaction(async (trx) => {
+          // --- Update user table fields ---
+          const userUpdate: Partial<typeof user.$inferInsert> = {
+            name: clean(input.name),
+            displayName: clean(input.displayName),
+            email: clean(input.email),
+            image: clean(input.image),
+            walletAddress: clean(input.walletAddress),
+            updatedAt: now,
+          };
+          await trx.update(user).set(userUpdate).where(eq(user.id, userId));
+
+          // --- Update userProfiles table fields ---
+          const profileUpdate: Partial<typeof userProfiles.$inferInsert> = {
+            gender: clean(input.gender),
+            niche: clean(input.niche),
+            bio: clean(input.bio),
+            location: clean(input.location),
+            timezone: clean(input.timezone),
+            skillTags: input.skillTags
+              ? JSON.stringify(input.skillTags)
+              : undefined,
+            socialLinks: input.socialLinks
+              ? JSON.stringify(input.socialLinks)
+              : undefined,
+            updatedAt: now,
+          };
+
+          const [existingProfile] = await trx
+            .select({ profileId: userProfiles.profileId })
+            .from(userProfiles)
+            .where(eq(userProfiles.userId, userId));
+
+          if (existingProfile) {
+            await trx
+              .update(userProfiles)
+              .set(profileUpdate)
+              .where(eq(userProfiles.userId, userId));
+          } else {
+            await trx.insert(userProfiles).values({
+              userId,
+              ...profileUpdate,
+              isProfileComplete: true,
+              createdAt: now,
+            });
+          }
+        });
+
+        return { success: true, message: 'Profile updated successfully' };
+      } catch (error) {
+        console.error('DB update error:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update profile',
+          cause: error,
+        });
+      }
+    })
 });
