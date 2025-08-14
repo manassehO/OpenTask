@@ -9,6 +9,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+import { type OpenApiMeta } from 'trpc-to-openapi';
 
 import { db } from '~/server/db';
 import { auth, type Session, type User } from '~/lib/auth';
@@ -90,19 +91,22 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-export const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
-});
+export const t = initTRPC
+  .context<typeof createTRPCContext>()
+  .meta<OpenApiMeta>()
+  .create({
+    transformer: superjson,
+    errorFormatter({ shape, error }) {
+      return {
+        ...shape,
+        data: {
+          ...shape.data,
+          zodError:
+            error.cause instanceof ZodError ? error.cause.flatten() : null,
+        },
+      };
+    },
+  });
 
 /**
  * Create a server-side caller.
@@ -175,7 +179,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
  *
  * This middleware verifies that a user has the required role(s) to access a resource.
  */
-const hasRole = (roles: string[]) =>
+export const hasRole = (roles: string[]) =>
   t.middleware(({ next, ctx }) => {
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
@@ -225,7 +229,7 @@ export const protectedProcedure = t.procedure
  */
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin']));
+  .use(hasRole(['ADMIN']));
 
 /**
  * Moderator+ procedure
@@ -234,7 +238,7 @@ export const adminProcedure = t.procedure
  */
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin', 'moderator']));
+  .use(hasRole(['ADMIN', 'moderator']));
 
 /**
  * Completer-only procedure
