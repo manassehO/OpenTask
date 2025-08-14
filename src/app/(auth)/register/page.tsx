@@ -4,43 +4,48 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
-import { signIn } from '~/lib/auth-client';
+import { signUp } from '~/lib/auth-client';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 6 characters'),
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-function EmailLogin() {
+function EmailSignup() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
   const router = useRouter();
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       console.log('Form submitted with data:', data);
-      await signIn.email({
+      await signUp.email({
         email: data.email,
+        name: data.email.split('@')[0]!,
         password: data.password,
       });
-      router.push('/home');
+      //   await emailOtp.sendVerificationOtp({
+      //     email: data.email,
+      //     type: 'email-verification',
+      //   });
+      router.push('/otp');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Registration error:', error);
     }
   };
 
   return (
     <div className="flex h-svh w-full items-center justify-center">
       <AuthWrapper
-        type="login"
         text="Welcome to open task. Sign in with your email or connect a wallet to get started"
         title="Welcome"
+        type="signup"
       >
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -88,7 +93,7 @@ function EmailLogin() {
             className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB] disabled:opacity-50"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Signing in...' : 'Continue'}
+            {isSubmitting ? 'Creating account...' : 'Continue'}
           </button>
         </form>
       </AuthWrapper>
@@ -96,4 +101,4 @@ function EmailLogin() {
   );
 }
 
-export default EmailLogin;
+export default EmailSignup;

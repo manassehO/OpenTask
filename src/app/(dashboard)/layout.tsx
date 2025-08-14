@@ -2,7 +2,9 @@ import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import { DashboardNavbar } from '~/_components/layout/dashboardNavbar';
+import { ProtectedDashboard } from '~/_components/layout/ProtectedDashboard';
 import SidebarWrapper from '~/_components/layout/sidebarWrapper';
+import { TRPCProvider } from '~/hooks/queryClient';
 import '~/styles/globals.css';
 
 const dmSans = DM_Sans({
@@ -16,20 +18,18 @@ export const metadata: Metadata = {
   icons: [{ rel: 'icon', url: '/logo.svg' }],
 };
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // switch between user roles for testing purposes and development
-  // const userRole = 'creator';
-  // const userRole = 'admin';
-
-  const userRole = 'user';
-
   return (
     <html lang="en" className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>
-        <DashboardNavbar />
-        <SidebarWrapper role={userRole}>{children}</SidebarWrapper>
+        <TRPCProvider>
+          <ProtectedDashboard>
+            <DashboardNavbar />
+            <SidebarWrapper role="user">{children}</SidebarWrapper>
+          </ProtectedDashboard>
+        </TRPCProvider>
       </body>
     </html>
   );
