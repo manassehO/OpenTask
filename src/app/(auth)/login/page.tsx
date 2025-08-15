@@ -1,70 +1,51 @@
 'use client';
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
+import { signIn } from '~/lib/auth-client';
+
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 function EmailLogin() {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState({
-    email: false,
-    emailMessage: '',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
   });
-
-  // Standard email regex pattern
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
-
-    // Clear email error when user types
-    if (error.email) {
-      setError({
-        email: false,
-        emailMessage: '',
+  const router = useRouter();
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      console.log('Form submitted with data:', data);
+      await signIn.email({
+        email: data.email,
+        password: data.password,
       });
+      router.push('/home');
+    } catch (error) {
+      console.error('Login error:', error);
     }
-  };
-
-  const validateEmail = () => {
-    if (!email) {
-      setError({
-        email: true,
-        emailMessage: 'Email is required',
-      });
-      return false;
-    }
-
-    if (!emailRegex.test(email)) {
-      setError({
-        email: true,
-        emailMessage: 'Please enter a valid email address',
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const isEmailValid = validateEmail();
-
-    if (!isEmailValid) {
-      return;
-    }
-
-    // Proceed with form submission if email is valid
-    console.log('Form submitted with email:', email);
   };
 
   return (
     <div className="flex h-svh w-full items-center justify-center">
       <AuthWrapper
+        type="login"
         text="Welcome to open task. Sign in with your email or connect a wallet to get started"
         title="Welcome"
       >
-        <form onSubmit={handleSubmit} className="flex w-96 flex-col gap-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex w-96 flex-col gap-4"
+        >
           <div className="flex flex-col gap-1">
             <label
               htmlFor="email"
@@ -75,24 +56,39 @@ function EmailLogin() {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={handleEmailChange}
-              onBlur={validateEmail}
-              className={`rounded-md border p-4 ${error.email ? 'border-red-500' : 'border-gray-300'}`}
+              {...register('email')}
+              className={`rounded-md border p-4 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               placeholder="Enter your email"
-              required
             />
-            {error.email && (
-              <p className="text-sm text-red-500">{error.emailMessage}</p>
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              {...register('password')}
+              className={`rounded-md border p-4 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+              placeholder="Enter your password"
+            />
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
 
           <button
             type="submit"
-            className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB]"
-            disabled={!email}
+            className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB] disabled:opacity-50"
+            disabled={isSubmitting}
           >
-            Continue
+            {isSubmitting ? 'Signing in...' : 'Continue'}
           </button>
         </form>
       </AuthWrapper>
