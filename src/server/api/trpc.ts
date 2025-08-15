@@ -9,6 +9,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+import { type OpenApiMeta } from 'trpc-to-openapi';
 
 import { db } from '~/server/db';
 import { auth, type Session, type User } from '~/lib/auth';
@@ -36,7 +37,6 @@ import {
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  // Get the authorization header (Bearer token or session token)
   const authorization = opts.headers.get('authorization');
   const sessionToken =
     authorization?.replace('Bearer ', '') ??
@@ -50,17 +50,25 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
   if (sessionToken) {
     try {
-      // Validate session using Better-Auth
       const sessionData = await auth.api.getSession({
         headers: opts.headers,
       });
 
       if (sessionData) {
         session = sessionData.session;
-        user = sessionData.user;
+
+        // Merge DB fields into user
+        const dbUser = await db.query.user.findFirst({
+          where: (u, { eq }) => eq(u.id, sessionData.user.id),
+        });
+
+        if (dbUser) {
+          user = { ...sessionData.user, ...dbUser };
+        } else {
+          user = sessionData.user;
+        }
       }
     } catch (error) {
-      // Session invalid or expired, continue with null session
       console.log('Session validation failed:', error);
     }
   }
@@ -90,19 +98,22 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-export const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
-});
+export const t = initTRPC
+  .context<typeof createTRPCContext>()
+  .meta<OpenApiMeta>()
+  .create({
+    transformer: superjson,
+    errorFormatter({ shape, error }) {
+      return {
+        ...shape,
+        data: {
+          ...shape.data,
+          zodError:
+            error.cause instanceof ZodError ? error.cause.flatten() : null,
+        },
+      };
+    },
+  });
 
 /**
  * Create a server-side caller.
@@ -175,7 +186,7 @@ const isAuthed = t.middleware(({ next, ctx }) => {
  *
  * This middleware verifies that a user has the required role(s) to access a resource.
  */
-const hasRole = (roles: string[]) =>
+export const hasRole = (roles: string[]) =>
   t.middleware(({ next, ctx }) => {
     if (!ctx.user || !ctx.session) {
       throw new TRPCError({
@@ -225,7 +236,7 @@ export const protectedProcedure = t.procedure
  */
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin']));
+  .use(hasRole(['ADMIN']));
 
 /**
  * Moderator+ procedure
@@ -234,4 +245,13 @@ export const adminProcedure = t.procedure
  */
 export const moderatorProcedure = t.procedure
   .use(timingMiddleware)
-  .use(hasRole(['admin', 'moderator']));
+  .use(hasRole(['ADMIN', 'moderator']));
+
+/**
+ * Completer-only procedure
+ *
+ * Only users with the "COMPLETER" role can access procedures created with this.
+ */
+export const completerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(hasRole(['COMPLETER']));

@@ -1,5 +1,6 @@
 const STARKNET_RPC_URL = process.env.STARKNET_RPC_URL;
 
+
 export const deployAAWallet = async (userId: string) => {
   console.log(`[StarknetSvc] Request to deploy AA Wallet for user: ${userId}`);
   console.log(`[StarknetSvc] Using RPC endpoint: ${STARKNET_RPC_URL}`);
@@ -26,9 +27,21 @@ export const flagDispute = () => {
   console.log('Stub: Flagging dispute');
 };
 
-export const resolveDispute = () => {
-  console.log('Stub: Resolving dispute');
-};
+export function resolveDispute(params: {
+  taskId: string;
+  completerUserId: string;
+  resolution: "APPROVE" | "REJECT";
+}) {
+  const { taskId, completerUserId, resolution } = params;
+
+  console.log("Resolving dispute on-chain", {
+    taskId,
+    completerUserId,
+    resolution,
+  });
+
+  // TODO: interact with Starknet contract
+}
 
 export const fundTaskWithManagedWallet = async ({
   taskId,

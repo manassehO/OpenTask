@@ -1,1 +1,0 @@
-ALTER TABLE "opentask_user" DROP COLUMN IF EXISTS "password";
