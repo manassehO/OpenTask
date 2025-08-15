@@ -4,6 +4,7 @@ use starknet::ContractAddress;
 #[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 #[allow(starknet::store_no_default_variant)]
 pub enum TaskStatus {
+    Draft,
     Active, // Task is active and can receive submissions
     Disputed, // Task has a disputed submission
     Completed, // All required submissions completed

@@ -171,13 +171,13 @@ pub trait IOpenTask<TContractState> {
     fn get_submissions(
         self: @TContractState,
         task_id: felt252,
-    ) -> felt252[];
+    ) -> Array<felt252>;
 
     /// Get dispute ids for a task.
     fn get_disputes(
         self: @TContractState,
         task_id: felt252,
-    ) -> felt252[];
+    ) -> Array<felt252>;
 
     /// Get total accrued earnings available for withdrawal for a user.
     ///
