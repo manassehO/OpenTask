@@ -826,7 +826,7 @@ export const taskRouter = createTRPCRouter({
       const categoryArraySQL = categories.length
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);
-      
+
       // Safely build WHERE conditions first
       const conditions: SQLWrapper[] = [
         eq(tasks.status, 'ACTIVE'),
@@ -960,4 +960,53 @@ export const taskRouter = createTRPCRouter({
       categories,
     };
   }),
+
+  getUserClaimedTasks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Count total claimed tasks
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(taskClaims)
+        .where(eq(taskClaims.userId, userId));
+
+      const totalRecordNum = Number(count);
+
+      // Fetch claimed tasks with task details
+      const claimedTasks = await db
+        .select({
+          claimId: taskClaims.id,
+          claimStatus: taskClaims.status,
+          claimCreatedAt: taskClaims.createdAt,
+          claimUpdatedAt: taskClaims.updatedAt,
+          taskId: tasks.id,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          rewardAmount: tasks.rewardAmount,
+          deadline: tasks.deadline,
+          image: tasks.image,
+          createdAt: tasks.createdAt,
+        })
+        .from(taskClaims)
+        .innerJoin(tasks, eq(taskClaims.taskId, tasks.id))
+        .where(eq(taskClaims.userId, userId))
+        .orderBy(desc(taskClaims.createdAt))
+        .limit(input.limit)
+        .offset(input.offset);
+
+      return {
+        pageSize: input.limit,
+        totalPages: Math.ceil(count / input.limit),
+        totalRecords: totalRecordNum,
+        data: claimedTasks,
+      };
+    }),
 });
