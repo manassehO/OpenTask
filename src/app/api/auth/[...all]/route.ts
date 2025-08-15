@@ -5,5 +5,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  console.log('POST request', request);
   return auth.handler(request);
 }

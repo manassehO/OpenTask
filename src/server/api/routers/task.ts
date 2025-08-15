@@ -14,13 +14,26 @@ import {
 } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { eq, and, ilike, gte, asc, desc, count, sql } from 'drizzle-orm';
+import {
+  eq,
+  and,
+  ilike,
+  gte,
+  asc,
+  desc,
+  count,
+  sql,
+  inArray,
+  type SQLWrapper,
+  notInArray,
+} from 'drizzle-orm';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+import { createAutoNotification } from '~/services/notifications';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -58,6 +71,8 @@ export const taskRouter = createTRPCRouter({
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const { deadline, ...rest } = input;
+      const parsedDeadline = new Date(deadline);
 
       if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({
@@ -69,7 +84,8 @@ export const taskRouter = createTRPCRouter({
       const [createdTask] = await db
         .insert(tasks)
         .values({
-          ...input,
+          ...rest,
+          deadline: parsedDeadline,
           creatorUserId: userId, // Ensure task is created by the logged-in user
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -241,7 +257,10 @@ export const taskRouter = createTRPCRouter({
 
       const result = await db
         .select({
+          creatorUserId: tasks.creatorUserId,
           id: tasks.id,
+          title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -288,6 +307,16 @@ export const taskRouter = createTRPCRouter({
             inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
           })
           .where(eq(tasks.id, taskId));
+      });
+
+      console.log(taskData);
+
+      await createAutoNotification({
+        userId: taskData.creatorUserId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Claimed',
+        message: `${ctx.user.email} has claimed your task '${taskData.title}'`,
+        relatedTaskId: taskId,
       });
 
       return { success: true, message: 'Task claimed successfully' };
@@ -352,7 +381,15 @@ export const taskRouter = createTRPCRouter({
         })
         .where(eq(submissions.submissionId, input.submissionId));
 
-      // TODO: Notify the completer that their submission was rejected
+      // Auto Notification Trigger
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_REJECTED',
+        title: 'Task Submission Rejected',
+        message: `Your submission for ${submission.task.title} was rejected. Reason: ${input.reason}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
     }),
@@ -379,6 +416,7 @@ export const taskRouter = createTRPCRouter({
           id: tasks.id,
           status: tasks.status,
           title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
         })
         .from(tasks)
         .where(eq(tasks.id, taskId));
@@ -394,7 +432,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Verify user has an active claim for this task
+      // Verify user has an active claim for the task
       const [claimData] = await db
         .select()
         .from(taskClaims)
@@ -472,6 +510,18 @@ export const taskRouter = createTRPCRouter({
 
         return submission;
       });
+
+      // create notification
+      if (taskData.creatorUserId) {
+        await createAutoNotification({
+          userId: taskData.creatorUserId,
+          type: 'TASK_SUBMITTED',
+          title: 'Task Submission Received',
+          message: `${ctx.user.email} has submitted work for "${taskData.title}". Please review.`,
+          relatedTaskId: taskId,
+          relatedSubmissionId: newSubmission.submissionId,
+        });
+      }
 
       return {
         success: true,
@@ -551,6 +601,7 @@ export const taskRouter = createTRPCRouter({
       ).then((rows) => rows[0]?.count ?? 0);
 
       return {
+        success: true,
         disputes: disputesList,
         total,
       };
@@ -570,6 +621,7 @@ export const taskRouter = createTRPCRouter({
       // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
       });
 
       if (!submission) {
@@ -611,6 +663,34 @@ export const taskRouter = createTRPCRouter({
         .update(submissions)
         .set({ status: 'DISPUTED' })
         .where(eq(submissions.submissionId, input.submissionId));
+
+      // Notify the task creator
+      await createAutoNotification({
+        userId: submission.task.creatorUserId,
+        type: 'DISPUTE_CREATED',
+        title: 'Dispute Opened',
+        message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      const admins = await ctx.db.query.user.findMany({
+        where: (u, { eq }) => eq(u.role, 'ADMIN'),
+        columns: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          createAutoNotification({
+            userId: admin.id,
+            type: 'DISPUTE_CREATED',
+            title: 'Dispute Opened',
+            message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+            relatedTaskId: submission.task.id,
+            relatedSubmissionId: submission.submissionId,
+          }),
+        ),
+      );
 
       return {
         success: true,
@@ -677,6 +757,207 @@ export const taskRouter = createTRPCRouter({
         })
         .where(eq(submissions.submissionId, input.submissionId));
 
+      // Task approved notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_APPROVED',
+        title: 'Task Approved! 🎉',
+        message: `Your submission for ${submission.task.title} has been approved. Reward: ${submission.task.rewardAmount} ETH`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      // Payment received notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment Received! 💰',
+        message: `You've received ${submission.task.rewardAmount} ETH for completing ${submission.task.title}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
       return { success: true };
     }),
+
+  getRecommendedTasks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(20).default(8),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Get tasks the user has already claimed or submitted
+      const [claimedTasks, submittedTasks] = await Promise.all([
+        db
+          .select({ taskId: taskClaims.taskId })
+          .from(taskClaims)
+          .where(eq(taskClaims.userId, userId)),
+        db
+          .select({ taskId: submissions.taskId })
+          .from(submissions)
+          .where(eq(submissions.completerUserId, userId)),
+      ]);
+
+      const excludedTaskIds: UUID[] = [
+        ...new Set(
+          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+        ),
+      ];
+
+      // Get categories of previously submitted tasks
+      const categoryRows = await db
+        .select({ category: tasks.category })
+        .from(tasks)
+        .where(
+          inArray(
+            tasks.id,
+            submittedTasks.map((row) => row.taskId),
+          ),
+        );
+
+      const categories = [...new Set(categoryRows.map((row) => row.category))];
+
+      const now = new Date();
+
+      // Build SQL-safe category array
+      const categoryArraySQL = categories.length
+        ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
+        : sql.raw(`ARRAY[]::text[]`);
+      
+      // Safely build WHERE conditions first
+      const conditions: SQLWrapper[] = [
+        eq(tasks.status, 'ACTIVE'),
+        gte(tasks.deadline, now),
+      ];
+
+      if (excludedTaskIds.length > 0) {
+        const exclusionCondition = notInArray(
+          tasks.id,
+          excludedTaskIds,
+        ) as SQLWrapper;
+        conditions.push(exclusionCondition);
+      }
+
+      // Query recommended tasks
+      const recommendedTasks = await db
+        .select({
+          task: tasks,
+          claimCount: sql<number>`COUNT(${taskClaims.id})`.as('claim_count'),
+        })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(and(...conditions))
+        .groupBy(tasks.id)
+        .orderBy(
+          desc(
+            sql`CASE WHEN ${tasks.category} = ANY(${categoryArraySQL}) THEN 1 ELSE 0 END`,
+          ),
+          desc(sql`COUNT(${taskClaims.id})`),
+          desc(tasks.rewardAmount),
+          desc(tasks.createdAt),
+        )
+        .limit(input.limit);
+
+      return {
+        success: true,
+        tasks: recommendedTasks.map((row) => row.task),
+      };
+    }),
+
+  getActiveTasks: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    const activeTasks = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        rewardAmount: tasks.rewardAmount,
+        deadline: tasks.deadline,
+        claimedAt: taskClaims.createdAt,
+      })
+      .from(taskClaims)
+      .innerJoin(tasks, eq(tasks.id, taskClaims.taskId))
+      .where(
+        and(
+          eq(taskClaims.userId, userId),
+          eq(taskClaims.status, 'IN_PROGRESS'),
+          eq(tasks.status, 'ACTIVE'),
+        ),
+      )
+      .orderBy(desc(taskClaims.createdAt));
+
+    return activeTasks;
+  }),
+
+  cancelTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { taskId } = input;
+
+      try {
+        // Verify task exists and the user is the creator
+        const task = await ctx.db.query.tasks.findFirst({
+          where: (tasks, { and, eq }) =>
+            and(eq(tasks.id, taskId), eq(tasks.creatorUserId, userId)),
+        });
+
+        if (!task) {
+          throw new Error(
+            'Task not found or you are not authorized to cancel it.',
+          );
+        }
+
+        // Only allow cancellation if it is still ACTIVE
+        if (task.status !== 'ACTIVE') {
+          throw new Error('Only ACTIVE tasks can be cancelled.');
+        }
+
+        // Cancel the task
+        await ctx.db
+          .update(tasks)
+          .set({ status: 'CANCELLED' })
+          .where(eq(tasks.id, taskId));
+
+        // Cancel all related task claims
+        await ctx.db
+          .update(taskClaims)
+          .set({ status: 'CANCELLED' })
+          .where(eq(taskClaims.taskId, taskId));
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error cancelling task:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Something went wrong while cancelling the task.',
+          cause: error,
+        });
+      }
+    }),
+
+  getTaskCategories: protectedProcedure.query(async ({ ctx }) => {
+    const rawCategories = await ctx.db
+      .selectDistinct({ category: tasks.category })
+      .from(tasks)
+      .where(sql`trim(${tasks.category}) != ''`);
+
+    const categories = Array.from(
+      new Set(rawCategories.map((row) => row.category.trim())),
+    ).sort((a, b) => a.localeCompare(b));
+
+    return {
+      success: true,
+      categories,
+    };
+  }),
 });
