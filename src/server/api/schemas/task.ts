@@ -45,19 +45,18 @@ export const createTaskSchema = z.object({
   requiredCompletions: z
     .number()
     .int()
-    .min(1, 'Required completions must be at least 1'),
-  deadline: z.string().transform((val) => new Date(val)),
+    .min(1, 'requiredCompletions must be at least 1'),
+  status: z.enum(allowedStatus),
+  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+    message: 'Invalid fundingTxHash format',
+  }),
+  deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Invalid deadline date format',
+  }),
   image: z
     .string()
     .max(255, 'Image URL must be at most 255 characters')
     .optional(),
-  status: z.enum(allowedStatus), // assumed taskStatusEnum is mapped to allowedStatus
-  fundingTxHash: z
-    .string()
-    .max(255, 'Funding transaction hash must be at most 255 characters')
-    .refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-      message: 'Invalid fundingTxHash format',
-    }),
 });
 
 export const findTaskSchema = z.object({
@@ -95,27 +94,3 @@ export const resolveDisputeInput = z.object({
   outcome: z.enum(['Approve', 'Reject']),
   adminNotes: z.string().min(1, 'Admin notes are required'),
 });
-
-export const getTaskByIdOutputSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  status: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  creatorId: z.string(),
-  creatorDisplayName: z.string().nullable(),
-});
-
-export const createTaskOutputSchema = z.object({
-  success: z.boolean(),
-  task: z.object({
-    id: z.string(),
-    title: z.string(),
-    description: z.string(),
-    status: z.string(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-    creatorUserId: z.string(),
-  }),
-

@@ -61,7 +61,7 @@ export const adminRouter = createTRPCRouter({
         limit,
       };
     }),
-  
+
   // Update a user's status
   updateUserStatus: adminProcedure
     .input(
@@ -110,7 +110,7 @@ export const adminRouter = createTRPCRouter({
         user: result[0]!,
       };
     }),
-  
+
   resolveDispute: adminProcedure
     .input(
       z.object({
