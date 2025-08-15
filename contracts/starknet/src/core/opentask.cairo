@@ -1,15 +1,12 @@
 #[starknet::contract]
 pub mod OpenTask {
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
-    use starknet::storage::*;
-
     use opentask::interfaces::Iopentask::IOpenTask;
     use opentask::types::task::{TaskDetails, TaskStatus};
-
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    
+    use starknet::storage::{*, StoragePointerReadAccess};
+    use starknet::{ContractAddress, get_caller_address};
+
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     #[abi(embed_v0)]
@@ -33,6 +30,7 @@ pub mod OpenTask {
         DisputeFlagged: DisputeFlagged,
         DisputeResolved: DisputeResolved,
         RewardPaid: RewardPaid,
+        EarningsWithdrawn: EarningsWithdrawn,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -143,13 +141,25 @@ pub mod OpenTask {
         token: ContractAddress,
     }
 
+    #[derive(Drop, starknet::Event)]
+    struct EarningsWithdrawn {
+        #[key]
+        user: ContractAddress,
+        #[key]
+        token: ContractAddress,
+        amount: u256,
+    }
+
+    ///////////////  STORAGE /////////////////
     #[storage]
     struct Storage {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         tasks: Map<felt252, TaskDetails>,
+        user_earnings: Map<(ContractAddress, ContractAddress), u256>,
+        user_tokens: Map<ContractAddress, Vec<ContractAddress>>,
     }
-
+    ///////////////  CONSTRUCTOR  ///////////////
     #[constructor]
     fn constructor(ref self: ContractState, admin: ContractAddress) {
         self.ownable.initializer(admin);
@@ -162,6 +172,7 @@ pub mod OpenTask {
             task_id: felt252,
             creator: ContractAddress,
             token_address: ContractAddress,
+            description: felt252,
             reward_per_completion: u256,
             required_completions: u32,
         ) -> bool {
@@ -173,6 +184,7 @@ pub mod OpenTask {
             let details = TaskDetails {
                 creator: creator,
                 token_address: token_address,
+                description,
                 reward_per_completion: reward_per_completion,
                 total_funded_amount: 0_u256,
                 required_completions: required_completions,
@@ -182,13 +194,74 @@ pub mod OpenTask {
 
             self.tasks.write(task_id, details);
 
-            self.emit(TaskCreated {
-                task_id: task_id,
-                creator: creator,
-                token: token_address,
-                reward_per_completion: reward_per_completion,
-                required_completions: required_completions,
-            });
+            self
+                .emit(
+                    TaskCreated {
+                        task_id: task_id,
+                        creator: creator,
+                        token: token_address,
+                        reward_per_completion: reward_per_completion,
+                        required_completions: required_completions,
+                    },
+                );
+
+            true
+        }
+
+
+        fn get_users_earning(self: @ContractState, user_address: ContractAddress) -> u256 {
+            let mut total_earnings = 0_u256;
+
+            let tokens_vec = self.user_tokens.entry(user_address);
+
+            let len = tokens_vec.len();
+            let mut i = 0;
+
+            while i != len {
+               
+                let token = tokens_vec.at(i).read(); 
+                let key = (user_address, token);
+                let earning = self.user_earnings.read(key);
+                total_earnings += earning;
+
+                i += 1;
+            }
+
+            total_earnings
+        }
+
+
+        fn withdraw_earnings(ref self: ContractState, user_address: ContractAddress) -> bool {
+            let caller = get_caller_address();
+            assert(caller == user_address, 'NOT_OWNER_OF_FUNDS');
+
+            let tokens = self.user_tokens.entry(user_address);
+
+            let mut any_funds = false;
+
+            let mut i = 0;
+            let len = tokens.len();
+
+            while i != len {
+                let token = tokens.at(i).read();
+                let key = (user_address, token);
+                let earnings = self.user_earnings.read(key);
+
+                if earnings > 0_u256 {
+                    any_funds = true;
+
+                    self.user_earnings.write(key, 0_u256);
+
+                    let client = IERC20Dispatcher { contract_address: token };
+                    client.transfer(user_address, earnings);
+
+                    self.emit(EarningsWithdrawn { user: user_address, token, amount: earnings });
+                }
+
+                i += 1;
+            }
+
+            assert(any_funds, 'NO_FUNDS');
 
             true
         }
