@@ -1,5 +1,6 @@
 use starknet::ContractAddress;
 use crate::types::task::{TaskDetails};
+use crate::types::stats::{ProtocolStats, UserStats, CreatorStats, TokenStats};
 
 #[starknet::interface]
 pub trait IOpenTask<TContractState> {
@@ -197,4 +198,27 @@ pub trait IOpenTask<TContractState> {
         ref self: TContractState,
         user_address: ContractAddress,
     ) -> bool;
+
+    /// Get aggregated protocol-level statistics.
+    fn get_protocol_stats(
+        self: @TContractState,
+    ) -> ProtocolStats;
+
+    /// Get aggregated worker/user statistics.
+    fn get_user_stats(
+        self: @TContractState,
+        user: ContractAddress,
+    ) -> UserStats;
+
+    /// Get aggregated creator statistics.
+    fn get_creator_stats(
+        self: @TContractState,
+        creator: ContractAddress,
+    ) -> CreatorStats;
+
+    /// Get aggregated per-token escrow/payments statistics.
+    fn get_token_stats(
+        self: @TContractState,
+        token: ContractAddress,
+    ) -> TokenStats;
 }
