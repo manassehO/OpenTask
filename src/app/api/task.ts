@@ -9,5 +9,5 @@ export function useCreateTask() {
 }
 
 export function getTasks() {
-  return api.task.getActiveTasks.useQuery();
+  return api?.task?.getActiveTasks?.useQuery();
 }

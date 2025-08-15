@@ -4,10 +4,10 @@ import { profileRouter } from '~/server/api/routers/profile';
 import { walletRouter } from './routers/wallet';
 import { taskRouter } from './routers/task';
 import { adminRouter } from './routers/admin';
+import { notificationRouter } from './routers/notification';
 import { searchRouter } from './routers/search';
 import { learningRouter } from './routers/learning';
-import { notificationsRouter } from '~/server/api/routers/notifications';
-import { earningsRouter } from "./routers/earning";
+import { earningsRouter } from './routers/earning';
 import { creatorRouter } from './routers/creator';
 
 /*
@@ -21,11 +21,11 @@ export const appRouter = createTRPCRouter({
   wallet: walletRouter,
   task: taskRouter,
   admin: adminRouter,
+  notification: notificationRouter,
   search: searchRouter,
   learning: learningRouter,
   creator: creatorRouter,
-  notifications: notificationsRouter,
-  earnings: earningsRouter
+  earnings: earningsRouter,
 });
 
 // export type definition of API
