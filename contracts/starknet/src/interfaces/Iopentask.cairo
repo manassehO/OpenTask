@@ -15,6 +15,7 @@ pub trait IOpenTask<TContractState> {
         task_id: felt252,
         creator: ContractAddress,
         token_address: ContractAddress,
+        description: felt252,
         reward_per_completion: u256,
         required_completions: u32,
     ) -> bool;
@@ -29,6 +30,7 @@ pub trait IOpenTask<TContractState> {
         task_id: felt252,
         creator: ContractAddress,
         token_address: ContractAddress,
+        description: felt252,
         reward_per_completion: u256,
         required_completions: u32,
     ) -> bool;
@@ -44,6 +46,7 @@ pub trait IOpenTask<TContractState> {
         task_id: felt252,
         creator: ContractAddress,
         token_address: ContractAddress,
+        description: felt252,
         reward_per_completion: u256,
         required_completions: u32,
     ) -> bool;

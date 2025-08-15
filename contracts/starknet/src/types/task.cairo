@@ -18,6 +18,8 @@ pub struct TaskDetails {
     pub creator: ContractAddress,
     // Token address used for payment (STRK, USDC, etc.)
     pub token_address: ContractAddress,
+    // Description of what the task entails
+    pub description: felt252,
     // Reward amount per individual task completion
     pub reward_per_completion: u256,
     // Total amount initially funded for the task
