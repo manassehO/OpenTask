@@ -1,11 +1,15 @@
 #[starknet::contract]
 pub mod OpenTask {
+
+    use OwnableComponent::InternalTrait;
+    use core::num::traits::zero;
     use opentask::interfaces::Iopentask::IOpenTask;
-    use opentask::types::task::{TaskDetails, TaskStatus};
+    use opentask::types::task::{TaskDetails, TaskStatus,DisputeInfo};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
     use starknet::{ContractAddress, get_caller_address};
+
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -141,6 +145,7 @@ pub mod OpenTask {
         token: ContractAddress,
     }
 
+
     #[derive(Drop, starknet::Event)]
     struct EarningsWithdrawn {
         #[key]
@@ -150,14 +155,17 @@ pub mod OpenTask {
         amount: u256,
     }
 
+
     ///////////////  STORAGE /////////////////
     #[storage]
     struct Storage {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         tasks: Map<felt252, TaskDetails>,
+        disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
         user_earnings: Map<(ContractAddress, ContractAddress), u256>,
         user_tokens: Map<ContractAddress, Vec<ContractAddress>>,
+
     }
     ///////////////  CONSTRUCTOR  ///////////////
     #[constructor]
@@ -207,6 +215,69 @@ pub mod OpenTask {
 
             true
         }
+
+
+        fn dispute_task(ref self: ContractState, task_id: felt252, submission_id: felt252) -> bool {
+            let caller = get_caller_address();
+
+            let task: TaskDetails = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status != TaskStatus::Disputed, 'TASK_ALREADY_DISPUTED');
+
+            // Create dispute record
+            let dispute_info = DisputeInfo {
+                task_id, completer_address: caller, submission_id, resolved: false,
+            };
+            self.disputes.entry((task_id, submission_id)).write(dispute_info);
+
+            // Update task status to Disputed
+            let mut updated_task = task;
+            updated_task.status = TaskStatus::Disputed;
+            self.tasks.write(task_id, updated_task);
+
+            self.emit(DisputeFlagged { task_id, completer: caller, submission_id });
+
+            true
+        }
+
+        fn resolve_dispute(
+            ref self: ContractState,
+            task_id: felt252,
+            submission_id: felt252,
+            status: bool,
+            verdict: felt252,
+        ) -> bool {
+            let caller = get_caller_address();
+            self.ownable.assert_only_owner();
+
+            let mut dispute = self.disputes.read((task_id, submission_id));
+
+            assert(!dispute.completer_address.is_zero(), 'DISPUTE_NOT_FOUND');
+            assert(!dispute.resolved, 'DISPUTE_ALREADY_RESOLVED');
+
+            dispute.resolved = true;
+            self.disputes.write((task_id, submission_id), dispute);
+
+            let mut task = self.tasks.read(task_id);
+            task.status = if status {
+                // add process payment here !
+
+                TaskStatus::Active
+            } else {
+                TaskStatus::Cancelled
+            };
+            self.tasks.write(task_id, task);
+
+            self
+                .emit(
+                    DisputeResolved {
+                        task_id,
+                        completer: dispute.completer_address,
+                        submission_id,
+                        resolver: caller,
+                        approved: status,
+                    },
+                );
 
 
         fn get_users_earning(self: @ContractState, user_address: ContractAddress) -> u256 {
