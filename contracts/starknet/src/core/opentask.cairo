@@ -209,12 +209,22 @@ pub mod OpenTask {
             // Validate amount > 0
             assert(amount > 0, 'INVALID_AMOUNT');
 
+            // Ensure the total deposited amount matches the campaign requirements.
+            // The creator must deposit exactly `reward_per_completion * required_completions`
+            // so that rewards can be fairly distributed to all expected participants.
+            assert(
+                amount == task.reward_per_completion * task.required_completions.into(),
+                'MISMATCHED_TOTAL_REWARD',
+            );
+
             // Get caller address for token transfer
             let caller = get_caller_address();
             let contract_address = starknet::get_contract_address();
 
             // Token Transfer: Transfer tokens from caller to contract
             let token = IERC20Dispatcher { contract_address: token_address };
+            let allowance = token.allowance(caller, contract_address);
+            assert(allowance < amount, 'INSUFFICIENT_ALLOWANCE');
             let transfer_success = token.transfer_from(caller, contract_address, amount);
             assert(transfer_success, 'TRANSFER_FAILED');
 
