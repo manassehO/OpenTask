@@ -33,7 +33,7 @@ pub struct TaskDetails {
 }
 
 /// Structure used for dispute tracking
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 pub struct DisputeInfo {
     // Task ID the dispute is related to
     pub task_id: felt252,

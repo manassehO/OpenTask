@@ -1,3 +1,3 @@
-pub mod types;
-pub mod interfaces;
 pub mod core;
+pub mod interfaces;
+pub mod types;
