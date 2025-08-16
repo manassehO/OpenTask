@@ -23,22 +23,21 @@ pub trait IOpenTask<TContractState> {
         reward_per_completion: u256,
         required_completions: u32,
     ) -> bool;
-
     /// Create and fund a task in a single flow.
     ///
     /// create and fund a task in a single flow.
     /// - Transfers/escrows total amount equivalent to `reward_per_completion *
     /// required_completions` (plus fees off-chain if applicable).
     /// - Emits: TaskCreated, TaskFunded(task_id, amount)
-    fn create_and_fund_task(
-        ref self: TContractState,
-        task_id: felt252,
-        creator: ContractAddress,
-        token_address: ContractAddress,
-        description: felt252,
-        reward_per_completion: u256,
-        required_completions: u32,
-    ) -> bool;
+    // fn create_and_fund_task(
+    //     ref self: TContractState,
+    //     task_id: felt252,
+    //     creator: ContractAddress,
+    //     token_address: ContractAddress,
+    //     description: felt252,
+    //     reward_per_completion: u256,
+    //     required_completions: u32,
+    // ) -> bool;
 
     /// Update editable task parameters before all completions are approved.
     ///
@@ -46,6 +45,7 @@ pub trait IOpenTask<TContractState> {
     /// - Only `creator` can update.
     /// - Cannot reduce below already approved/in-progress counts.
     /// - Emits: TaskUpdated(task_id, token_address, reward_per_completion, required_completions)
+
     fn update_task(
         ref self: TContractState,
         task_id: felt252,
@@ -156,6 +156,7 @@ pub trait IOpenTask<TContractState> {
 
     /// Get total accrued earnings available for withdrawal for a user.
     ///
+
     /// Mirrors backend earnings views that aggregate on-chain events/balances.
     fn get_users_earning(self: @TContractState, user_address: ContractAddress) -> u256;
 
