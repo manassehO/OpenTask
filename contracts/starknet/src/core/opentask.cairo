@@ -1,15 +1,13 @@
 #[starknet::contract]
 pub mod OpenTask {
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
-    use starknet::storage::*;
-
+    use core::num::traits::Zero;
     use opentask::interfaces::Iopentask::IOpenTask;
     use opentask::types::task::{TaskDetails, TaskStatus};
-
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    
+    use starknet::storage::*;
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
+
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     #[abi(embed_v0)]
@@ -162,6 +160,7 @@ pub mod OpenTask {
             task_id: felt252,
             creator: ContractAddress,
             token_address: ContractAddress,
+            description: felt252,
             reward_per_completion: u256,
             required_completions: u32,
         ) -> bool {
@@ -173,6 +172,7 @@ pub mod OpenTask {
             let details = TaskDetails {
                 creator: creator,
                 token_address: token_address,
+                description: description,
                 reward_per_completion: reward_per_completion,
                 total_funded_amount: 0_u256,
                 required_completions: required_completions,
@@ -182,13 +182,53 @@ pub mod OpenTask {
 
             self.tasks.write(task_id, details);
 
-            self.emit(TaskCreated {
-                task_id: task_id,
-                creator: creator,
-                token: token_address,
-                reward_per_completion: reward_per_completion,
-                required_completions: required_completions,
-            });
+            self
+                .emit(
+                    TaskCreated {
+                        task_id: task_id,
+                        creator: creator,
+                        token: token_address,
+                        reward_per_completion: reward_per_completion,
+                        required_completions: required_completions,
+                    },
+                );
+
+            true
+        }
+
+        fn fund_task(
+            ref self: ContractState, task_id: felt252, token_address: ContractAddress, amount: u256,
+        ) -> bool {
+            // Validation: Check task exists
+            let mut task = self.tasks.entry(task_id).read();
+            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
+
+            // Verify token_address matches task's token
+            assert(task.token_address == token_address, 'TOKEN_MISMATCH');
+
+            // Validate amount > 0
+            assert(amount > 0, 'INVALID_AMOUNT');
+
+            // Get caller address for token transfer
+            let caller = get_caller_address();
+            let contract_address = starknet::get_contract_address();
+
+            // Token Transfer: Transfer tokens from caller to contract
+            let token = IERC20Dispatcher { contract_address: token_address };
+            let transfer_success = token.transfer_from(caller, contract_address, amount);
+            assert(transfer_success, 'TRANSFER_FAILED');
+
+            // Storage Updates: Increase total_funded_amount by amount
+            task.total_funded_amount += amount;
+            self.tasks.write(task_id, task);
+
+            // Events: Emit TaskFunded event
+            self
+                .emit(
+                    TaskFunded {
+                        task_id: task_id, funder: caller, amount: amount, token: token_address,
+                    },
+                );
 
             true
         }
