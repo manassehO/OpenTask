@@ -33,6 +33,7 @@ import {
   findTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+import { createAutoNotification } from '~/services/notifications';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -256,6 +257,7 @@ export const taskRouter = createTRPCRouter({
 
       const result = await db
         .select({
+          creatorUserId: tasks.creatorUserId,
           id: tasks.id,
           title: tasks.title,
           creatorUserId: tasks.creatorUserId,
@@ -305,6 +307,16 @@ export const taskRouter = createTRPCRouter({
             inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
           })
           .where(eq(tasks.id, taskId));
+      });
+
+      console.log(taskData);
+
+      await createAutoNotification({
+        userId: taskData.creatorUserId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Claimed',
+        message: `${ctx.user.email} has claimed your task '${taskData.title}'`,
+        relatedTaskId: taskId,
       });
 
       return { success: true, message: 'Task claimed successfully' };
@@ -368,6 +380,16 @@ export const taskRouter = createTRPCRouter({
           rejectionReason: input.reason,
         })
         .where(eq(submissions.submissionId, input.submissionId));
+
+      // Auto Notification Trigger
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_REJECTED',
+        title: 'Task Submission Rejected',
+        message: `Your submission for ${submission.task.title} was rejected. Reason: ${input.reason}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
     }),
@@ -489,6 +511,18 @@ export const taskRouter = createTRPCRouter({
         return submission;
       });
 
+      // create notification
+      if (taskData.creatorUserId) {
+        await createAutoNotification({
+          userId: taskData.creatorUserId,
+          type: 'TASK_SUBMITTED',
+          title: 'Task Submission Received',
+          message: `${ctx.user.email} has submitted work for "${taskData.title}". Please review.`,
+          relatedTaskId: taskId,
+          relatedSubmissionId: newSubmission.submissionId,
+        });
+      }
+
       return {
         success: true,
         submissionId: newSubmission?.submissionId,
@@ -587,6 +621,7 @@ export const taskRouter = createTRPCRouter({
       // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
       });
 
       if (!submission) {
@@ -628,6 +663,34 @@ export const taskRouter = createTRPCRouter({
         .update(submissions)
         .set({ status: 'DISPUTED' })
         .where(eq(submissions.submissionId, input.submissionId));
+
+      // Notify the task creator
+      await createAutoNotification({
+        userId: submission.task.creatorUserId,
+        type: 'DISPUTE_CREATED',
+        title: 'Dispute Opened',
+        message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      const admins = await ctx.db.query.user.findMany({
+        where: (u, { eq }) => eq(u.role, 'ADMIN'),
+        columns: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          createAutoNotification({
+            userId: admin.id,
+            type: 'DISPUTE_CREATED',
+            title: 'Dispute Opened',
+            message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+            relatedTaskId: submission.task.id,
+            relatedSubmissionId: submission.submissionId,
+          }),
+        ),
+      );
 
       return {
         success: true,
@@ -694,6 +757,26 @@ export const taskRouter = createTRPCRouter({
         })
         .where(eq(submissions.submissionId, input.submissionId));
 
+      // Task approved notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_APPROVED',
+        title: 'Task Approved! 🎉',
+        message: `Your submission for ${submission.task.title} has been approved. Reward: ${submission.task.rewardAmount} ETH`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      // Payment received notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment Received! 💰',
+        message: `You've received ${submission.task.rewardAmount} ETH for completing ${submission.task.title}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
       return { success: true };
     }),
 
@@ -743,8 +826,8 @@ export const taskRouter = createTRPCRouter({
       const categoryArraySQL = categories.length
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);
-
-      // ✅ Safely build WHERE conditions first
+      
+      // Safely build WHERE conditions first
       const conditions: SQLWrapper[] = [
         eq(tasks.status, 'ACTIVE'),
         gte(tasks.deadline, now),
