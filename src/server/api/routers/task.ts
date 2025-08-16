@@ -63,6 +63,9 @@ export const taskRouter = createTRPCRouter({
           updatedAt: tasks.updatedAt,
           creatorId: tasks.creatorUserId,
           creatorDisplayName: user.displayName,
+          tags: tasks.tags,
+          example: tasks.example,
+          specialRequirements: tasks.specialRequirements,
         })
         .from(tasks)
         .where(eq(tasks.id, input.taskId))
@@ -72,7 +75,20 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
-      return result[0];
+      // Parse tags for API response
+      const response = result[0];
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
+      return {
+        ...response,
+        tags: parsedTags,
+      };
     }),
 
   /**
@@ -96,16 +112,32 @@ export const taskRouter = createTRPCRouter({
         .insert(tasks)
         .values({
           ...rest,
+          tags: JSON.stringify(input.tags),
+          example: input.example ?? null,
+          specialRequirements: input.specialRequirements ?? null,
           deadline: parsedDeadline,
-          creatorUserId: userId, // Ensure task is created by the logged-in user
+          creatorUserId: userId,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .returning();
 
+      // Parse tags for API response
+      const response = createdTask;
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
       return {
         success: true,
-        task: createdTask,
+        task: {
+          ...response,
+          tags: parsedTags,
+        },
       };
     }),
 

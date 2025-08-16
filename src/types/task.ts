@@ -12,6 +12,9 @@ export interface Task {
   isFlagged?: boolean;
   creator?: string;
   category: string;
+  tags: string[];
+  example?: string;
+  specialRequirements?: string;
 }
 
 export interface TaskCardProps {
