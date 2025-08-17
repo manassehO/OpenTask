@@ -237,10 +237,12 @@ pub mod OpenTask {
             // Ensure the total deposited amount matches the campaign requirements.
             // The creator must deposit exactly `reward_per_completion * required_completions`
             // so that rewards can be fairly distributed to all expected participants.
+            let total_required_amount = task.reward_per_completion * task.required_completions.into();
             assert(
-                amount == task.reward_per_completion * task.required_completions.into(),
+                amount == total_required_amount,
                 'MISMATCHED_TOTAL_REWARD',
             );
+            assert(task.total_funded_amount == 0_u256, 'ALREADY_FUNDED');
 
             // Get caller address for token transfer
             let caller = get_caller_address();
@@ -255,6 +257,8 @@ pub mod OpenTask {
 
             // Storage Updates: Increase total_funded_amount by amount
             task.total_funded_amount += amount;
+            task.status = TaskStatus::Active;
+
             self.tasks.write(task_id, task);
 
             // Events: Emit TaskFunded event
