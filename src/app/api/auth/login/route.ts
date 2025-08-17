@@ -40,8 +40,8 @@ export async function POST(request: Request) {
 
     if (!accountRecord?.password) {
       return NextResponse.json(
-      { error: 'Invalid credentials' },
-      { status: 401 },
+        { error: 'Invalid credentials' },
+        { status: 401 },
       );
     }
 
@@ -56,9 +56,6 @@ export async function POST(request: Request) {
         { status: 401 },
       );
     }
-
-    // At this point authentication succeeded.
-    // (Optionally: create a session / set cookie here.)
 
     // Return user without exposing account/password fields
     const { /* no password on user */ ...safeUser } = userRecord;
