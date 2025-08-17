@@ -99,10 +99,10 @@ function EmailLogin() {
               >
                 {showPassword ? (
                   // eye-off / hidden
-                  <EyeOff />
+                  <EyeIcon />
                 ) : (
                   // eye / visible
-                  <EyeIcon />
+                  <EyeOff />
                 )}
               </button>
             </div>

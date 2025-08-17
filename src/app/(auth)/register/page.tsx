@@ -1,6 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LucideEye, LucideEyeOff } from 'lucide-react';
+import { EyeIcon, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -97,7 +97,13 @@ function EmailSignup() {
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-2 flex items-center justify-center px-2"
               >
-                {showPassword ? <LucideEyeOff /> : <LucideEye />}
+                {showPassword ? (
+                  // eye-off / hidden
+                  <EyeIcon />
+                ) : (
+                  // eye / visible
+                  <EyeOff />
+                )}
               </button>
             </div>
             {errors.password && (
