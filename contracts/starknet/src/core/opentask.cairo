@@ -2,19 +2,14 @@
 pub mod OpenTask {
     use core::num::traits::Zero;
     use opentask::interfaces::Iopentask::IOpenTask;
-    use opentask::types::task::{TaskDetails, TaskStatus};
-    use openzeppelin::access::ownable::OwnableComponent;
-    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::*;
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use OwnableComponent::InternalTrait;
     use core::num::traits::zero;
-    use opentask::interfaces::Iopentask::IOpenTask;
     use opentask::types::task::{TaskDetails, TaskStatus,DisputeInfo};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
-    use starknet::{ContractAddress, get_caller_address};
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -268,6 +263,8 @@ pub mod OpenTask {
                         task_id: task_id, funder: caller, amount: amount, token: token_address,
                     },
                 );
+
+            true
         }
         
         fn dispute_task(ref self: ContractState, task_id: felt252, submission_id: felt252) -> bool {
