@@ -17,7 +17,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function EmailLogin() {
+function EmailLogin() {
   const {
     register,
     handleSubmit,
@@ -26,9 +26,8 @@ export default function EmailLogin() {
     resolver: zodResolver(loginSchema),
   });
 
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-
+  const router = useRouter();
   const onSubmit = async (data: LoginFormData) => {
     try {
       console.log('Form submitted with data:', data);
@@ -41,6 +40,7 @@ export default function EmailLogin() {
       console.error('Login error:', error);
     }
   };
+
   return (
     <div className="flex h-svh w-full items-center justify-center">
       <AuthWrapper
@@ -142,3 +142,5 @@ export default function EmailLogin() {
     </div>
   );
 }
+
+export default EmailLogin;
