@@ -37,7 +37,6 @@ import {
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  // Get the authorization header (Bearer token or session token)
   const authorization = opts.headers.get('authorization');
   const sessionToken =
     authorization?.replace('Bearer ', '') ??
@@ -51,17 +50,25 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
   if (sessionToken) {
     try {
-      // Validate session using Better-Auth
       const sessionData = await auth.api.getSession({
         headers: opts.headers,
       });
 
       if (sessionData) {
         session = sessionData.session;
-        user = sessionData.user;
+
+        // Merge DB fields into user
+        const dbUser = await db.query.user.findFirst({
+          where: (u, { eq }) => eq(u.id, sessionData.user.id),
+        });
+
+        if (dbUser) {
+          user = { ...sessionData.user, ...dbUser };
+        } else {
+          user = sessionData.user;
+        }
       }
     } catch (error) {
-      // Session invalid or expired, continue with null session
       console.log('Session validation failed:', error);
     }
   }
