@@ -10,6 +10,7 @@ pub mod OpenTask {
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
+    use opentask::types::stats::{CreatorStats, ProtocolStats, TokenStats, UserStats};
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -387,5 +388,141 @@ pub mod OpenTask {
 
             true
         }
+
+        fn update_task(
+            ref self: ContractState,
+            task_id: felt252,
+            creator: ContractAddress,
+            token_address: ContractAddress,
+            description: felt252,
+            reward_per_completion: u256,
+            required_completions: u32,
+        ) -> bool {
+            // To do: Implement task update logic
+            true
+        }
+
+        fn approve_completion(
+            ref self: ContractState, task_id: felt252, submission_id: felt252, status: bool,
+        ) -> bool {
+            // To do: Implement completion approval logic
+            false
+        }
+
+        fn get_task(self: @ContractState, task_id: felt252) -> TaskDetails {
+            // To do: Implement task retrieval logic
+            TaskDetails {
+                creator: Zero::zero(),
+                token_address: Zero::zero(),
+                description: 0_felt252,
+                reward_per_completion: 0_u256,
+                total_funded_amount: 0_u256,
+                required_completions: 0_u32,
+                completed_count: 0_u32,
+                status: TaskStatus::Draft,
+            }
+        }
+
+        fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
+            // To do: Implement dispute retrieval logic
+            array![]
+        }
+
+        fn get_protocol_stats(self: @ContractState) -> ProtocolStats {
+            // To do: Implement protocol statistics retrieval logic
+            ProtocolStats {
+                total_funds_escrowed: 0_u256,
+                total_funds_paid_out: 0_u256,
+                total_funds_refunded: 0_u256,
+                total_unique_workers: 0_u128,
+                total_unique_creators: 0_u128,
+                total_disputes_resolved: 0_u128,
+                total_disputes_open: 0_u128,
+                total_submissions: 0_u128,
+                total_tasks_completed: 0_u128,
+                total_tasks_active: 0_u128,
+                total_tasks_created: 0_u128,
+            }
+        }
+
+        fn pause_task(ref self: ContractState, task_id: felt252) -> bool {
+            // To do: Implement task pause logic
+            true
+        }
+
+        fn resume_task(ref self: ContractState, task_id: felt252) -> bool {
+            // To do: Implement task resume logic
+            true
+        }
+
+        fn assign_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
+            // To do: Implement task assignment logic
+            false
+        }
+
+        fn claim_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
+            // To do: Implement task claim logic
+            false
+        }
+
+        fn submit_completion(
+            ref self: ContractState,
+            task_id: felt252,
+            submission_id: felt252,
+            submission_data: felt252,
+        ) -> bool {
+            // To do: Implement task submission logic
+            true
+        }
+
+        fn cancel_task(ref self: ContractState, task_id: felt252) -> bool {
+            // To do: Implement task cancellation logic
+            true
+        }
+
+        fn cancel_task_application(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
+            // To do: Implement application cancellation logic
+            false
+        }
+
+
+        fn get_creator_stats(self: @ContractState, creator: ContractAddress) -> CreatorStats {
+            // To do: Implement creator statistics retrieval logic
+            CreatorStats {
+                tasks_created: 0_u128,
+                tasks_active: 0_u128,
+                tasks_completed: 0_u128,
+                funds_escrowed: 0_u256,
+                funds_refunded: 0_u256,
+            }
+        }
+
+        fn get_user_stats(self: @ContractState, user: ContractAddress) -> UserStats {
+            // To do: Implement user statistics retrieval logic
+            UserStats {
+                active_tasks: 0_u128,
+                completed_tasks: 0_u128,
+                rejected_submissions: 0_u128,
+                earnings_accrued: 0_u256,
+                earnings_withdrawn: 0_u256,
+            }
+        }
+
+        fn get_token_stats(self: @ContractState, token: ContractAddress) -> TokenStats {
+            // To do: Implement token statistics retrieval logic
+            TokenStats {
+                escrowed: 0_u256,
+                paid_out: 0_u256,
+                refunded: 0_u256,
+            }
+        }
+
+        fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
+            // To do: Implement submission retrieval logic
+            array![]
+        }
+
+
+
     }
 }
