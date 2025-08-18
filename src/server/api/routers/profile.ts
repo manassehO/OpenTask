@@ -12,8 +12,6 @@ import { eq, count } from 'drizzle-orm';
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
 
-// type User = InferModel<typeof user>;
-
 const updateProfileSelfSchema = z
   .object({
     name: z.string().min(1).optional(),
@@ -153,9 +151,7 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
         });
       }
 
-      // const updatedUser: User = result[0];
-      const updatedUser: User = result[0]!; // 👈 the `!` tells TypeScript “this is not undefined”
-
+      const updatedUser: User = result[0];
       return {
         success: true,
         user: {

@@ -19,11 +19,7 @@ class StorageService {
   private defaultBucket: string;
 
   constructor() {
-<<<<<<< HEAD
-    this.defaultBucket = process.env.MINIO_BUCKET ?? 'opentask-dev';
-=======
     this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
->>>>>>> 781c1f28b786d98b9a7ab8421069b68a5dc120c6
   }
 
   async initialize(): Promise<void> {
