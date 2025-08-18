@@ -33,6 +33,7 @@ import {
   findTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+import { randomUUID } from "crypto";
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -620,6 +621,9 @@ export const taskRouter = createTRPCRouter({
           completerClaim: input.claim,
           status: 'OPEN',
           flagTxHash: input.txHash,
+          resolvedById: randomUUID(),
+          resolvedAt: new Date(),              
+          updatedAt: new Date(),     
         })
         .returning({ disputeId: disputes.disputeId });
 
@@ -717,10 +721,16 @@ export const taskRouter = createTRPCRouter({
           .from(submissions)
           .where(eq(submissions.completerUserId, userId)),
       ]);
+        
+      
+      type UUID = string;
 
       const excludedTaskIds: UUID[] = [
         ...new Set(
-          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+          [...claimedTasks, ...submittedTasks]
+          .map((row) => row.taskId)
+          .filter((id): id is UUID => id !== null)
+          
         ),
       ];
 
@@ -731,7 +741,7 @@ export const taskRouter = createTRPCRouter({
         .where(
           inArray(
             tasks.id,
-            submittedTasks.map((row) => row.taskId),
+            submittedTasks.map((row) =>String(row.taskId)),
           ),
         );
 
@@ -877,4 +887,68 @@ export const taskRouter = createTRPCRouter({
       categories,
     };
   }),
+
+  editTask: protectedProcedure
+  .input(
+    z.object({
+      taskId: z.string().uuid(),
+      title: z.string().min(3).max(255).optional(),
+      description: z.string().min(10).optional(),
+      category: z.string().min(2).max(100).optional(),
+      rewardAmount: z.string().optional(),
+      requiredCompletions: z.number().min(1).optional(),
+      deadline: z.string().datetime().optional(),  
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const { taskId, deadline, ...updates } = input;
+
+    // Fetch task to verify ownership and status
+    const task = await ctx.db.query.tasks.findFirst({
+      where: (t, { eq }) => eq(t.id, taskId),
+    });
+
+    if (!task) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Task not found",
+      });
+    }
+
+    if (task.creatorUserId !== userId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not the owner of this task",
+      });
+    }
+
+    if (task.status !== "DRAFT") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Only draft tasks can be edited",
+      });
+    }
+
+    const updatePayload: Record<string, unknown> = {
+      ...updates,
+      updatedAt: new Date(),
+    };
+
+    if (deadline) {
+      updatePayload.deadline = new Date(deadline);
+    }
+
+    const [updatedTask] = await ctx.db
+      .update(tasks)
+      .set(updatePayload)
+      .where(eq(tasks.id, taskId))
+      .returning();
+
+    return {
+      success: true,
+      task: updatedTask,
+    };
+  }),
+
 });

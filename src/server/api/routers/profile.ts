@@ -4,9 +4,10 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user, userProfiles } from '~/server/db/schema';
+import { user, userProfiles, submissions, tasks, disputes } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
+
 // import { type InferModel } from "drizzle-orm";
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
@@ -66,6 +67,41 @@ export const profileRouter = createTRPCRouter({
       },
     };
   }),
+
+getUserStats: protectedProcedure.query(async ({ ctx }) => {
+  const userId = ctx.user.id;
+
+  const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
+    // Tasks created by user
+    ctx.db
+      .select({ count: count() })
+      .from(tasks)
+      .where(eq(tasks.creatorUserId, userId)),
+
+    // Submissions completed by user
+    ctx.db
+      .select({ count: count() })
+      .from(submissions)
+      .where(eq(submissions.completerUserId, userId)),
+
+    // Disputes raised by user
+    ctx.db
+      .select({ count: count() })
+      .from(disputes)
+      .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
+      .where(eq(submissions.completerUserId, userId)),
+  ]);
+
+  return {
+    success: true,
+    stats: {
+      createdTasks: Number(createdTasks[0]?.count ?? 0),
+      completedTasks: Number(completedTasks[0]?.count ?? 0),
+      disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+    },
+  };
+}),
+
 
   updateProfile: protectedProcedure
     .input(updateProfileSelfSchema)
@@ -316,5 +352,5 @@ export const profileRouter = createTRPCRouter({
           cause: error,
         });
       }
-    }),
+    }), 
 });
