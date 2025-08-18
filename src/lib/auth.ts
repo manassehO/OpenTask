@@ -1,9 +1,11 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { emailOTP } from 'better-auth/plugins';
+import { createAuthMiddleware } from 'better-auth/api';
+import * as schema from '~/server/db/schema';
+import { NotificationsService } from '~/services/notifications';
 import { env } from '~/env';
 import { db } from '~/server/db';
-import * as schema from '~/server/db/schema';
 import { sendOtp } from '~/server/email';
 
 export const auth = betterAuth({
@@ -50,6 +52,18 @@ export const auth = betterAuth({
       },
     }),
   ],
+
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith('/sign-up')) {
+        const newSession = ctx.context.newSession;
+        if (newSession) {
+          // Send welcome notification
+          await NotificationsService.sendWelcome(newSession.user.id);
+        }
+      }
+    }),
+  },
 });
 
 export type Session = typeof auth.$Infer.Session.session;
