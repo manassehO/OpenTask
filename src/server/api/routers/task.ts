@@ -866,6 +866,7 @@ export const taskRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(20).default(8),
+        offset: z.number().min(0).default(0),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -927,6 +928,13 @@ export const taskRouter = createTRPCRouter({
         conditions.push(exclusionCondition);
       }
 
+      // Count total matching tasks
+      const [{ count: totalRecords }] = await db
+        .select({ count: sql<number>`COUNT(DISTINCT ${tasks.id})` })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(and(...conditions));
+
       // Query recommended tasks
       const recommendedTasks = await db
         .select({
@@ -945,11 +953,17 @@ export const taskRouter = createTRPCRouter({
           desc(tasks.rewardAmount),
           desc(tasks.createdAt),
         )
-        .limit(input.limit);
+        .limit(input.limit)
+        .offset(input.offset);
+
+      const totalRecordsNum = Number(totalRecords)
 
       return {
-        success: true,
-        tasks: recommendedTasks.map((row) => row.task),
+        pageSize: input.limit,
+        offset: input.offset,
+        totalPages: Math.ceil(totalRecords / input.limit),
+        totalRecords: totalRecordsNum,
+        data: recommendedTasks.map((row) => row.task),
       };
     }),
 
