@@ -31,6 +31,7 @@ function EmailLogin() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       console.log('Form submitted with data:', data);
+
       await signIn.email({
         email: data.email,
         password: data.password,
