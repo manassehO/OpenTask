@@ -1,4 +1,3 @@
-pub mod types;
+pub mod core;
 pub mod interfaces;
-pub mod events;
-pub mod contracts;
+pub mod types;

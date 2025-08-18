@@ -1,19 +1,19 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { sql, relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   index,
   integer,
+  numeric,
+  pgEnum,
   pgTableCreator,
   text,
   timestamp,
-  varchar,
-  pgEnum,
   uuid,
-  numeric,
-  bigint,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -49,10 +49,18 @@ const notificationTypeEnum = pgEnum('notification_type', [
   'TASK_APPROVED',
   'TASK_REJECTED',
   'TASK_ASSIGNED',
+  'TASK_SUBMITTED',
   'PAYMENT_RECEIVED',
   'DISPUTE_CREATED',
   'DISPUTE_RESOLVED',
+  'COURSE_ENROLLED',
   'COURSE_COMPLETED',
+  'WITHDRAWAL_REQUESTED',
+  'WITHDRAWAL_COMPLETED',
+  'WITHDRAWAL_FAILED',
+  'WELCOME',
+  'PROFILE_REMINDER',
+  'STREAK_MILESTONE',
   'SYSTEM_ANNOUNCEMENT',
 ]);
 
@@ -74,8 +82,6 @@ const withdrawalMethodEnum = pgEnum('withdrawal_method', [
   'CRYPTO_WALLET',
   'BANK_ACCOUNT',
 ]);
-
-
 
 // Better-Auth required tables
 export const user = createTable('user', {
@@ -192,7 +198,7 @@ export const tasks = createTable('tasks', {
   creatorUserId: text('creator_user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  title: varchar('title').notNull(),
+  title: varchar('title', { length: 60 }).notNull(),
   description: text('description').notNull(),
   instructions: text('instructions').notNull(),
   category: varchar('category').notNull(),
@@ -217,6 +223,9 @@ export const tasks = createTable('tasks', {
     () => new Date(),
   ),
   maxCompletions: integer('max_completions').notNull(),
+  tags: text('tags').notNull(), // JSON stringified array of tags
+  example: text('example'), // optional example field
+  specialRequirements: text('special_requirements'), // optional special requirements
 });
 
 export const onchainEvents = createTable('onchain_events', {
@@ -238,7 +247,7 @@ export const taskClaims = createTable('task_claims', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  status: text('status').notNull().default('in_progress'),
+  status: text('status').notNull().default('IN_PROGRESS'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
@@ -248,7 +257,7 @@ export const taskClaims = createTable('task_claims', {
 export const submissions = createTable('submissions', {
   submissionId: uuid('submission_id').primaryKey().defaultRandom(),
   taskId: uuid('task_id').references(() => tasks.id),
-  completerUserId: uuid('completer_user_id').references(() => user.id),
+  completerUserId: text('completer_user_id').references(() => user.id),
   status: submissionStatusEnum('status').notNull(),
   dataRef: text('data_ref'),
   rejectionReason: text('rejection_reason'),
@@ -265,8 +274,9 @@ export const disputes = createTable('disputes', {
     .references(() => submissions.submissionId, { onDelete: 'cascade' }),
   completerClaim: text('completer_claim').notNull(),
   creatorResponse: text('creator_response'),
-  adminResolverId: text('admin_resolver_id')
-    .references(() => user.id, { onDelete: 'set null' }),
+  adminResolverId: text('admin_resolver_id').references(() => user.id, {
+    onDelete: 'set null',
+  }),
   status: disputeStatusEnum('status').notNull().default('OPEN'),
   resolution: disputeResolutionEnum('resolution'),
   adminNotes: text('admin_notes'),
@@ -278,9 +288,8 @@ export const disputes = createTable('disputes', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
-    resolvedAt: timestamp("resolved_at").defaultNow().notNull(),
-    resolvedById: text("resolved_by_id").notNull(), 
-
+  resolvedAt: timestamp('resolved_at').defaultNow().notNull(),
+  resolvedById: text('resolved_by_id').notNull(),
 });
 
 export const adminLogs = createTable('admin_logs', {
@@ -290,7 +299,7 @@ export const adminLogs = createTable('admin_logs', {
     .references(() => user.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   targetTable: text('target_table').notNull(),
-  targetId: uuid('target_id'),
+  targetId: text('target_id'),
   message: text('message'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
@@ -299,12 +308,12 @@ export const adminLogs = createTable('admin_logs', {
 
 export const userBalances = createTable('user_balances', {
   userAddress: varchar('user_address', { length: 100 }).primaryKey(),
-  balance: bigint('balance', { mode: "bigint" }).notNull(),
+  balance: bigint('balance', { mode: 'bigint' }).notNull(),
   token: varchar('token', { length: 100 }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date()),
-})
+});
 
 export const submissionsRelations = relations(submissions, ({ one }) => ({
   task: one(tasks, {
@@ -316,9 +325,6 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
     references: [user.id],
   }),
 }));
-
-
-
 
 export const taskRelations = relations(tasks, ({ one }) => ({
   creator: one(user, {
@@ -620,4 +626,11 @@ export const userStatsRelations = relations(userStats, ({ one }) => ({
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   user: one(user, { fields: [userProfiles.userId], references: [user.id] }),
+}));
+
+export const userRelations = relations(user, ({ one }) => ({
+  profile: one(userProfiles, {
+    fields: [user.id],
+    references: [userProfiles.userId],
+  }),
 }));

@@ -14,13 +14,27 @@ import {
 } from '@/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { eq, and, ilike, gte, asc, desc, count, sql } from 'drizzle-orm';
+import {
+  eq,
+  and,
+  ilike,
+  gte,
+  asc,
+  desc,
+  count,
+  sql,
+  inArray,
+  ne,
+  type SQLWrapper,
+  notInArray,
+} from 'drizzle-orm';
 import {
   getTaskByIdSchema,
   createTaskSchema,
   findTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+import { createAutoNotification } from '~/services/notifications';
 
 export const taskRouter = createTRPCRouter({
   /**
@@ -28,17 +42,30 @@ export const taskRouter = createTRPCRouter({
    */
   getTaskById: protectedProcedure
     .input(getTaskByIdSchema)
-    .query(async ({ input }) => {
-      const result = await db
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db
         .select({
           id: tasks.id,
           title: tasks.title,
           description: tasks.description,
+          instructions: tasks.instructions,
+          category: tasks.category,
+          rewardAmount: tasks.rewardAmount,
+          rewardTokenAddress: tasks.rewardTokenAddress,
+          platformFee: tasks.platformFee,
+          approvedCompletions: tasks.approvedCompletions,
+          inProgressCompletions: tasks.inProgressCompletions,
+          requiredCompletions: tasks.requiredCompletions,
+          deadline: tasks.deadline,
+          image: tasks.image,
           status: tasks.status,
           createdAt: tasks.createdAt,
           updatedAt: tasks.updatedAt,
           creatorId: tasks.creatorUserId,
           creatorDisplayName: user.displayName,
+          tags: tasks.tags,
+          example: tasks.example,
+          specialRequirements: tasks.specialRequirements,
         })
         .from(tasks)
         .where(eq(tasks.id, input.taskId))
@@ -48,7 +75,20 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
-      return result[0];
+      // Parse tags for API response
+      const response = result[0];
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
+      return {
+        ...response,
+        tags: parsedTags,
+      };
     }),
 
   /**
@@ -58,6 +98,8 @@ export const taskRouter = createTRPCRouter({
     .input(createTaskSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const { deadline, ...rest } = input;
+      const parsedDeadline = new Date(deadline);
 
       if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({
@@ -69,16 +111,33 @@ export const taskRouter = createTRPCRouter({
       const [createdTask] = await db
         .insert(tasks)
         .values({
-          ...input,
-          creatorUserId: userId, // Ensure task is created by the logged-in user
+          ...rest,
+          tags: JSON.stringify(input.tags),
+          example: input.example ?? null,
+          specialRequirements: input.specialRequirements ?? null,
+          deadline: parsedDeadline,
+          creatorUserId: userId,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .returning();
 
+      // Parse tags for API response
+      const response = createdTask;
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
       return {
         success: true,
-        task: createdTask,
+        task: {
+          ...response,
+          tags: parsedTags,
+        },
       };
     }),
 
@@ -241,7 +300,10 @@ export const taskRouter = createTRPCRouter({
 
       const result = await db
         .select({
+          creatorUserId: tasks.creatorUserId,
           id: tasks.id,
+          title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -259,6 +321,25 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Task is not active',
+        });
+      }
+
+      // Check if this user already claimed this task
+      const existingClaim = await db
+        .select()
+        .from(taskClaims)
+        .where(
+          and(
+            eq(taskClaims.taskId, taskId),
+            eq(taskClaims.userId, userId),
+            ne(taskClaims.status, 'REJECTED')
+          )
+        );
+
+      if (existingClaim.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You have already claimed this task',
         });
       }
 
@@ -288,6 +369,16 @@ export const taskRouter = createTRPCRouter({
             inProgressCompletions: (taskData.inProgressCompletions ?? 0) + 1,
           })
           .where(eq(tasks.id, taskId));
+      });
+
+      console.log(taskData);
+
+      await createAutoNotification({
+        userId: taskData.creatorUserId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Claimed',
+        message: `${ctx.user.email} has claimed your task '${taskData.title}'`,
+        relatedTaskId: taskId,
       });
 
       return { success: true, message: 'Task claimed successfully' };
@@ -352,7 +443,15 @@ export const taskRouter = createTRPCRouter({
         })
         .where(eq(submissions.submissionId, input.submissionId));
 
-      // TODO: Notify the completer that their submission was rejected
+      // Auto Notification Trigger
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_REJECTED',
+        title: 'Task Submission Rejected',
+        message: `Your submission for ${submission.task.title} was rejected. Reason: ${input.reason}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
     }),
@@ -379,6 +478,7 @@ export const taskRouter = createTRPCRouter({
           id: tasks.id,
           status: tasks.status,
           title: tasks.title,
+          creatorUserId: tasks.creatorUserId,
         })
         .from(tasks)
         .where(eq(tasks.id, taskId));
@@ -394,7 +494,7 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Verify user has an active claim for this task
+      // Verify user has an active claim for the task
       const [claimData] = await db
         .select()
         .from(taskClaims)
@@ -472,6 +572,18 @@ export const taskRouter = createTRPCRouter({
 
         return submission;
       });
+
+      // create notification
+      if (taskData.creatorUserId) {
+        await createAutoNotification({
+          userId: taskData.creatorUserId,
+          type: 'TASK_SUBMITTED',
+          title: 'Task Submission Received',
+          message: `${ctx.user.email} has submitted work for "${taskData.title}". Please review.`,
+          relatedTaskId: taskId,
+          relatedSubmissionId: newSubmission.submissionId,
+        });
+      }
 
       return {
         success: true,
@@ -551,6 +663,7 @@ export const taskRouter = createTRPCRouter({
       ).then((rows) => rows[0]?.count ?? 0);
 
       return {
+        success: true,
         disputes: disputesList,
         total,
       };
@@ -570,6 +683,7 @@ export const taskRouter = createTRPCRouter({
       // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
       });
 
       if (!submission) {
@@ -612,6 +726,34 @@ export const taskRouter = createTRPCRouter({
         .set({ status: 'DISPUTED' })
         .where(eq(submissions.submissionId, input.submissionId));
 
+      // Notify the task creator
+      await createAutoNotification({
+        userId: submission.task.creatorUserId,
+        type: 'DISPUTE_CREATED',
+        title: 'Dispute Opened',
+        message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      const admins = await ctx.db.query.user.findMany({
+        where: (u, { eq }) => eq(u.role, 'ADMIN'),
+        columns: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          createAutoNotification({
+            userId: admin.id,
+            type: 'DISPUTE_CREATED',
+            title: 'Dispute Opened',
+            message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+            relatedTaskId: submission.task.id,
+            relatedSubmissionId: submission.submissionId,
+          }),
+        ),
+      );
+
       return {
         success: true,
         disputeId: dispute?.disputeId,
@@ -628,6 +770,13 @@ export const taskRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can approve submissions',
+        });
+      }
+
       // Fetch submission and task
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
@@ -642,7 +791,7 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Verify task ownership
-      if (submission.task?.creatorUserId !== userId) {
+      if (submission.task.creatorUserId !== userId) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
       }
 
@@ -667,16 +816,337 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Update DB with txHash
-      await db
-        .update(submissions)
-        .set({
-          approvalTxHash: input.txHash,
-          status: 'APPROVED',
-          reviewedAt: new Date(),
-        })
-        .where(eq(submissions.submissionId, input.submissionId));
+      await db.transaction(async (tx) => {
+        // Update DB with txHash
+        await tx
+          .update(submissions)
+          .set({
+            approvalTxHash: input.txHash,
+            status: 'APPROVED',
+            reviewedAt: new Date(),
+          })
+          .where(eq(submissions.submissionId, input.submissionId));
+
+
+        // Increment approvedCompletions in related task
+        await tx
+          .update(tasks)
+          .set({ approvedCompletions: sql`${tasks.approvedCompletions} + 1` })
+          .where(eq(tasks.id, submission.task.id));
+      });
+
+      // Task approved notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_APPROVED',
+        title: 'Task Approved! 🎉',
+        message: `Your submission for ${submission.task.title} has been approved. Reward: ${submission.task.rewardAmount} ETH`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      // Payment received notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment Received! 💰',
+        message: `You've received ${submission.task.rewardAmount} ETH for completing ${submission.task.title}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
+    }),
+
+  getRecommendedTasks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(20).default(8),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Get tasks the user has already claimed or submitted
+      const [claimedTasks, submittedTasks] = await Promise.all([
+        db
+          .select({ taskId: taskClaims.taskId })
+          .from(taskClaims)
+          .where(eq(taskClaims.userId, userId)),
+        db
+          .select({ taskId: submissions.taskId })
+          .from(submissions)
+          .where(eq(submissions.completerUserId, userId)),
+      ]);
+
+      const excludedTaskIds: UUID[] = [
+        ...new Set(
+          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+        ),
+      ];
+
+      // Get categories of previously submitted tasks
+      const categoryRows = await db
+        .select({ category: tasks.category })
+        .from(tasks)
+        .where(
+          inArray(
+            tasks.id,
+            submittedTasks.map((row) => row.taskId),
+          ),
+        );
+
+      const categories = [...new Set(categoryRows.map((row) => row.category))];
+
+      const now = new Date();
+
+      // Build SQL-safe category array
+      const categoryArraySQL = categories.length
+        ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
+        : sql.raw(`ARRAY[]::text[]`);
+      
+      // Safely build WHERE conditions first
+      const conditions: SQLWrapper[] = [
+        eq(tasks.status, 'ACTIVE'),
+        gte(tasks.deadline, now),
+      ];
+
+      if (excludedTaskIds.length > 0) {
+        const exclusionCondition = notInArray(
+          tasks.id,
+          excludedTaskIds,
+        ) as SQLWrapper;
+        conditions.push(exclusionCondition);
+      }
+
+      // Query recommended tasks
+      const recommendedTasks = await db
+        .select({
+          task: tasks,
+          claimCount: sql<number>`COUNT(${taskClaims.id})`.as('claim_count'),
+        })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(and(...conditions))
+        .groupBy(tasks.id)
+        .orderBy(
+          desc(
+            sql`CASE WHEN ${tasks.category} = ANY(${categoryArraySQL}) THEN 1 ELSE 0 END`,
+          ),
+          desc(sql`COUNT(${taskClaims.id})`),
+          desc(tasks.rewardAmount),
+          desc(tasks.createdAt),
+        )
+        .limit(input.limit);
+
+      return {
+        success: true,
+        tasks: recommendedTasks.map((row) => row.task),
+      };
+    }),
+
+  getTasksByStatus: protectedProcedure
+    .input(
+      z.object({
+        status: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED']),
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { status, limit, offset } = input;
+      const userId = ctx.user.id;
+
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can view their tasks',
+        });
+      }
+
+      // Count total tasks for this creator + status
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(tasks)
+        .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)));
+
+      const totalRecordsNum = Number(count)
+      let taskQuery;
+
+      if (['ACTIVE', 'COMPLETED'].includes(status)) {
+        // Include claims
+        taskQuery = db
+          .select({
+            id: tasks.id,
+            title: tasks.title,
+            description: tasks.description,
+            status: tasks.status,
+            rewardAmount: tasks.rewardAmount,
+            deadline: tasks.deadline,
+            image: tasks.image,
+            createdAt: tasks.createdAt,
+            claimedBy: taskClaims.userId,
+            claimStatus: taskClaims.status,
+            claimedAt: taskClaims.createdAt,
+          })
+          .from(tasks)
+          .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+          .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)))
+          .orderBy(desc(tasks.createdAt))
+          .limit(limit)
+          .offset(offset);
+      } else {
+        // No claims
+        taskQuery = db
+          .select({
+            id: tasks.id,
+            title: tasks.title,
+            description: tasks.description,
+            status: tasks.status,
+            rewardAmount: tasks.rewardAmount,
+            deadline: tasks.deadline,
+            image: tasks.image,
+            createdAt: tasks.createdAt,
+          })
+          .from(tasks)
+          .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)))
+          .orderBy(desc(tasks.createdAt))
+          .limit(limit)
+          .offset(offset);
+      }
+
+      const data = await taskQuery;
+
+      return {
+        pageSize: limit,
+        totalPages: Math.ceil(count / limit),
+        totalRecords: totalRecordsNum,
+        data,
+      };
+    }),
+
+  cancelTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { taskId } = input;
+
+      try {
+        // Verify task exists and the user is the creator
+        const task = await ctx.db.query.tasks.findFirst({
+          where: (tasks, { and, eq }) =>
+            and(eq(tasks.id, taskId), eq(tasks.creatorUserId, userId)),
+        });
+
+        if (!task) {
+          throw new Error(
+            'Task not found or you are not authorized to cancel it.',
+          );
+        }
+
+        // Only allow cancellation if it is still ACTIVE
+        if (task.status !== 'ACTIVE') {
+          throw new Error('Only ACTIVE tasks can be cancelled.');
+        }
+
+        // Cancel the task
+        await ctx.db
+          .update(tasks)
+          .set({ status: 'CANCELLED' })
+          .where(eq(tasks.id, taskId));
+
+        // Cancel all related task claims
+        await ctx.db
+          .update(taskClaims)
+          .set({ status: 'CANCELLED' })
+          .where(eq(taskClaims.taskId, taskId));
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error cancelling task:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Something went wrong while cancelling the task.',
+          cause: error,
+        });
+      }
+    }),
+
+  getTaskCategories: protectedProcedure
+    .query(async ({ ctx }) => {
+      const rawCategories = await ctx.db
+        .selectDistinct({ category: tasks.category })
+        .from(tasks)
+        .where(sql`trim(${tasks.category}) != ''`);
+
+      const categories = Array.from(
+        new Set(rawCategories.map((row) => row.category.trim())),
+      ).sort((a, b) => a.localeCompare(b));
+
+      return {
+        success: true,
+        categories,
+      };
+    }),
+  
+  updateTaskStatus: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid('Invalid task ID'),
+        newStatus: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED']),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, newStatus } = input;
+      const userId = ctx.user.id;
+
+      // Get the task
+      const task = await db.query.tasks.findFirst({
+        where: eq(tasks.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      // Ensure user is the creator
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not allowed to update the status of this task',
+        });
+      }
+
+      // allowed transitions
+      const validTransitions: Record<string, string> = {
+        DRAFT: 'ACTIVE',
+        ACTIVE: 'COMPLETED',
+      };
+
+      if (task.status === newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Task is already ${newStatus}`,
+        });
+      }
+
+      if (validTransitions[task.status] !== newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid status transition from ${task.status} to ${newStatus}`,
+        });
+      }
+
+      // Update status
+      await db
+        .update(tasks)
+        .set({ status: newStatus })
+        .where(eq(tasks.id, taskId));
+
+      return { success: true, message: `Task status updated to ${newStatus}` };
     }),
 });
