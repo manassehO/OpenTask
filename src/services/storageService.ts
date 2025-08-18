@@ -74,7 +74,7 @@ class StorageService {
     // expirySeconds = 24 * 60 * 60,
   ): Promise<string> {
     try {
-      // For MinIO, we'll construct the direct URL since existing service returns direct URLs
+      // For MinIO, we'll construct the direct URL since existing service returns direct URL
       const endpoint = env.MINIO_ENDPOINT ?? 'http://localhost:9000';
       const bucket = bucketName ?? this.defaultBucket;
       return `${endpoint}/${bucket}/${key}`;
