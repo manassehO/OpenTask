@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 #[derive(Drop, Serde, Copy)]
-struct ProtocolStats {
+pub struct ProtocolStats {
     total_tasks_created: u128,
     total_tasks_active: u128,
     total_tasks_completed: u128,
@@ -16,7 +16,7 @@ struct ProtocolStats {
 }
 
 #[derive(Drop, Serde, Copy)]
-struct UserStats {
+pub struct UserStats {
     active_tasks: u128,
     completed_tasks: u128,
     rejected_submissions: u128,
@@ -25,7 +25,7 @@ struct UserStats {
 }
 
 #[derive(Drop, Serde, Copy)]
-struct CreatorStats {
+pub struct CreatorStats {
     tasks_created: u128,
     tasks_active: u128,
     tasks_completed: u128,
@@ -34,7 +34,7 @@ struct CreatorStats {
 }
 
 #[derive(Drop, Serde, Copy)]
-struct TokenStats {
+pub struct TokenStats {
     escrowed: u256,
     paid_out: u256,
     refunded: u256,
