@@ -8,7 +8,6 @@ import { ToastContainer } from '~/_components/ui/Toast';
 import TaskCard from './TaskCard';
 import type { Task } from '@/types/task';
 import type { TaskSummary } from '~/types/api';
-import { ClientDate } from '~/_components/ui/ClientDate';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
 // Helper function to convert API task summary to UI task format
@@ -168,7 +167,8 @@ export default function CompletedTask() {
               No completed tasks yet
             </h3>
             <p className="mt-2 text-gray-500">
-              Complete some tasks to see your achievements here. Your completed tasks will be permanently tracked in the backend.
+              Complete some tasks to see your achievements here. Your completed
+              tasks will be permanently tracked in the backend.
             </p>
             <button
               onClick={() => router.push('/tasks')}

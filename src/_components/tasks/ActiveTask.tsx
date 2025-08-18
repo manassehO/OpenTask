@@ -32,9 +32,8 @@ export const ActiveTask = () => {
   const { claimedTasks: claimedTaskIds, markTaskAsUnclaimed } =
     useTaskActions();
 
-  const { activeTasks, isLoading, error, refetchActiveTask, fetchActiveTasks } =
-    useActiveTasks();
-  const { toasts, removeToast, showInfo } = useToast();
+  const { activeTasks, isLoading, error, refetchActiveTask } = useActiveTasks();
+  const { toasts, removeToast } = useToast();
   useEffect(() => {
     // fetchActiveTasks();
     refetchActiveTask();
