@@ -118,7 +118,7 @@ export const profileRouter = createTRPCRouter({
       }
 
       // const updatedUser: User = result[0];
-      const updatedUser: User = result[0]!; // 👈 the `!` tells TypeScript “this is not undefined”
+      const updatedUser: User = result[0]!;
 
       return {
         success: true,

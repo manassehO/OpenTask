@@ -15,7 +15,6 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
 const statusEnum = pgEnum('status', ['ACTIVE', 'SUSPENDED', 'BANNED']);
@@ -206,7 +205,7 @@ export const tasks = createTable('tasks', {
   rewardTokenAddress: varchar('reward_token_address', {
     length: 100,
   }).notNull(),
-  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
+  platformFee: numeric('platform_fee'),
   approvedCompletions: integer('approved_completions').notNull().default(0),
   inProgressCompletions: integer('in_progress_completions')
     .notNull()

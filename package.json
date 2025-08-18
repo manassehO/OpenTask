@@ -17,6 +17,7 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
+    "db:seed": "tsx scripts/seed.ts",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "test": "vitest"
@@ -100,6 +101,7 @@
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.20.4",
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"

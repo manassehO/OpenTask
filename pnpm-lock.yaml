@@ -22,7 +22,7 @@ importers:
         version: 1.2.5(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@t3-oss/env-nextjs':
         specifier: ^0.10.1
-        version: 0.10.1(typescript@5.9.2)(zod@4.0.15)
+        version: 0.10.1(typescript@5.9.2)(zod@3.25.76)
       '@tanstack/react-query':
         specifier: ^5.50.0
         version: 5.84.1(react@18.3.1)
@@ -92,6 +92,9 @@ importers:
       next:
         specifier: ^15.0.1
         version: 15.4.6(@babel/core@7.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      node-cron:
+        specifier: ^4.2.1
+        version: 4.2.1
       nodemailer:
         specifier: ^7.0.4
         version: 7.0.5
@@ -107,6 +110,9 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-dropzone:
+        specifier: ^14.3.8
+        version: 14.3.8(react@18.3.1)
       react-hook-form:
         specifier: ^7.56.2
         version: 7.62.0(react@18.3.1)
@@ -136,16 +142,19 @@ importers:
         version: 3.3.1
       trpc-panel:
         specifier: ^1.3.4
-        version: 1.3.4(@trpc/server@11.4.4(typescript@5.9.2))(zod@4.0.15)
+        version: 1.3.4(@trpc/server@11.4.4(typescript@5.9.2))(zod@3.25.76)
       trpc-to-openapi:
         specifier: ^3.0.0
-        version: 3.0.1(@trpc/server@11.4.4(typescript@5.9.2))(zod-openapi@5.3.1(zod@4.0.15))(zod@4.0.15)
+        version: 3.0.1(@trpc/server@11.4.4(typescript@5.9.2))(zod-openapi@5.3.1(zod@3.25.76))(zod@3.25.76)
       yup:
         specifier: ^1.6.1
         version: 1.7.0
       zod:
-        specifier: ^4.0.14
-        version: 4.0.15
+        specifier: ^3.23.3
+        version: 3.25.76
+      zustand:
+        specifier: ^5.0.6
+        version: 5.0.7(@types/react@18.3.23)(immer@10.1.1)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
     devDependencies:
       '@alephium/cli':
         specifier: ^1.11.7
@@ -228,15 +237,18 @@ importers:
       tailwindcss:
         specifier: ^3.4.3
         version: 3.4.17
+      tsx:
+        specifier: ^4.20.4
+        version: 4.20.4
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
       vite-tsconfig-paths:
         specifier: ^5.1.4
-        version: 5.1.4(typescript@5.9.2)(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1))
+        version: 5.1.4(typescript@5.9.2)(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1))
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
+        version: 3.2.4(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
 
 packages:
 
@@ -2347,6 +2359,10 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
+  attr-accept@2.2.5:
+    resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
+    engines: {node: '>=4'}
+
   autolinker@3.16.2:
     resolution: {integrity: sha512-JiYl7j2Z19F9NdTmirENSUUIIL/9MytEWtmzhfmsKPCp9E+G35Y0UNCMoM9tFigxT59qSc8Ml2dlZXOCVTYwuA==}
 
@@ -3392,6 +3408,10 @@ packages:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
 
+  file-selector@2.1.2:
+    resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
+    engines: {node: '>= 12'}
+
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
@@ -4426,6 +4446,10 @@ packages:
     resolution: {integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==}
     engines: {node: ^18 || ^20 || >= 21}
 
+  node-cron@4.2.1:
+    resolution: {integrity: sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg==}
+    engines: {node: '>=6.0.0'}
+
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -4909,6 +4933,12 @@ packages:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
       react: ^18.3.1
+
+  react-dropzone@14.3.8:
+    resolution: {integrity: sha512-sBgODnq+lcA4P296DY4wacOZz3JFpD99fp+hb//iBO2HHnyeZU3FwWyXJ6salNpqQdsZrgMrotuko/BdJMV8Ug==}
+    engines: {node: '>= 10.13'}
+    peerDependencies:
+      react: '>= 16.8 || 18.0.0'
 
   react-fast-compare@2.0.4:
     resolution: {integrity: sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==}
@@ -5605,6 +5635,11 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tsx@4.20.4:
+    resolution: {integrity: sha512-yyxBKfORQ7LuRt/BQKBXrpcq59ZvSW0XxwfjAt3w2/8PmdxaFzijtMhTawprSHhpzeM5BgU2hXHG3lklIERZXg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -5994,8 +6029,29 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
   zod@4.0.15:
     resolution: {integrity: sha512-2IVHb9h4Mt6+UXkyMs0XbfICUh1eUrlJJAOupBHUhLRnKkruawyDddYRCs0Eizt900ntIMk9/4RksYl+FgSpcQ==}
+
+  zustand@5.0.7:
+    resolution: {integrity: sha512-Ot6uqHDW/O2VdYsKLLU8GQu8sCOM1LcoE8RwvLv9uuRT9s6SOHCKs0ZEOhxg+I1Ld+A1Q5lwx+UlKXXUoCZITg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -7697,16 +7753,16 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@t3-oss/env-core@0.10.1(typescript@5.9.2)(zod@4.0.15)':
+  '@t3-oss/env-core@0.10.1(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
-      zod: 4.0.15
+      zod: 3.25.76
     optionalDependencies:
       typescript: 5.9.2
 
-  '@t3-oss/env-nextjs@0.10.1(typescript@5.9.2)(zod@4.0.15)':
+  '@t3-oss/env-nextjs@0.10.1(typescript@5.9.2)(zod@3.25.76)':
     dependencies:
-      '@t3-oss/env-core': 0.10.1(typescript@5.9.2)(zod@4.0.15)
-      zod: 4.0.15
+      '@t3-oss/env-core': 0.10.1(typescript@5.9.2)(zod@3.25.76)
+      zod: 3.25.76
     optionalDependencies:
       typescript: 5.9.2
 
@@ -8075,13 +8131,13 @@ snapshots:
       chai: 5.2.1
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
+      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -8268,6 +8324,8 @@ snapshots:
   async@3.2.6: {}
 
   asynckit@0.4.0: {}
+
+  attr-accept@2.2.5: {}
 
   autolinker@3.16.2:
     dependencies:
@@ -9536,6 +9594,10 @@ snapshots:
     dependencies:
       flat-cache: 3.2.0
 
+  file-selector@2.1.2:
+    dependencies:
+      tslib: 2.8.1
+
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
@@ -10743,6 +10805,8 @@ snapshots:
   node-addon-api@8.5.0:
     optional: true
 
+  node-cron@4.2.1: {}
+
   node-domexception@1.0.0: {}
 
   node-fetch-commonjs@3.3.2:
@@ -11157,6 +11221,13 @@ snapshots:
       loose-envify: 1.4.0
       react: 18.3.1
       scheduler: 0.23.2
+
+  react-dropzone@14.3.8(react@18.3.1):
+    dependencies:
+      attr-accept: 2.2.5
+      file-selector: 2.1.2
+      prop-types: 15.8.1
+      react: 18.3.1
 
   react-fast-compare@2.0.4: {}
 
@@ -12006,23 +12077,23 @@ snapshots:
       node-gyp-build: 4.8.4
     optional: true
 
-  trpc-panel@1.3.4(@trpc/server@11.4.4(typescript@5.9.2))(zod@4.0.15):
+  trpc-panel@1.3.4(@trpc/server@11.4.4(typescript@5.9.2))(zod@3.25.76):
     dependencies:
       '@trpc/server': 11.4.4(typescript@5.9.2)
       fuzzysort: 2.0.4
       path: 0.12.7
       url: 0.11.4
-      zod: 4.0.15
-      zod-to-json-schema: 3.24.6(zod@4.0.15)
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
 
-  trpc-to-openapi@3.0.1(@trpc/server@11.4.4(typescript@5.9.2))(zod-openapi@5.3.1(zod@4.0.15))(zod@4.0.15):
+  trpc-to-openapi@3.0.1(@trpc/server@11.4.4(typescript@5.9.2))(zod-openapi@5.3.1(zod@3.25.76))(zod@3.25.76):
     dependencies:
       '@trpc/server': 11.4.4(typescript@5.9.2)
       co-body: 6.2.0
       h3: 1.15.1
       openapi3-ts: 4.4.0
-      zod: 4.0.15
-      zod-openapi: 5.3.1(zod@4.0.15)
+      zod: 3.25.76
+      zod-openapi: 5.3.1(zod@3.25.76)
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.6.1
 
@@ -12050,6 +12121,13 @@ snapshots:
   tslib@2.7.0: {}
 
   tslib@2.8.1: {}
+
+  tsx@4.20.4:
+    dependencies:
+      esbuild: 0.25.8
+      get-tsconfig: 4.10.1
+    optionalDependencies:
+      fsevents: 2.3.3
 
   type-check@0.4.0:
     dependencies:
@@ -12225,13 +12303,13 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite-node@3.2.4(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1):
+  vite-node@3.2.4(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
+      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -12246,13 +12324,13 @@ snapshots:
       - tsx
       - yaml
 
-  vite-tsconfig-paths@5.1.4(typescript@5.9.2)(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)):
+  vite-tsconfig-paths@5.1.4(typescript@5.9.2)(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)):
     dependencies:
       debug: 4.4.1
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.2)
     optionalDependencies:
-      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
+      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -12266,7 +12344,7 @@ snapshots:
       '@types/node': 20.19.9
       fsevents: 2.3.3
 
-  vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1):
+  vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.8
       fdir: 6.4.6(picomatch@4.0.3)
@@ -12278,13 +12356,14 @@ snapshots:
       '@types/node': 20.19.9
       fsevents: 2.3.3
       jiti: 1.21.7
+      tsx: 4.20.4
       yaml: 2.8.1
 
-  vitest@3.2.4(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1):
+  vitest@3.2.4(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(vite@7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -12302,8 +12381,8 @@ snapshots:
       tinyglobby: 0.2.14
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
-      vite-node: 3.2.4(@types/node@20.19.9)(jiti@1.21.7)(yaml@2.8.1)
+      vite: 7.0.6(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
+      vite-node: 3.2.4(@types/node@20.19.9)(jiti@1.21.7)(tsx@4.20.4)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 20.19.9
@@ -12477,12 +12556,21 @@ snapshots:
 
   zenscroll@4.0.2: {}
 
-  zod-openapi@5.3.1(zod@4.0.15):
+  zod-openapi@5.3.1(zod@3.25.76):
     dependencies:
-      zod: 4.0.15
+      zod: 3.25.76
 
-  zod-to-json-schema@3.24.6(zod@4.0.15):
+  zod-to-json-schema@3.24.6(zod@3.25.76):
     dependencies:
-      zod: 4.0.15
+      zod: 3.25.76
+
+  zod@3.25.76: {}
 
   zod@4.0.15: {}
+
+  zustand@5.0.7(@types/react@18.3.23)(immer@10.1.1)(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1)):
+    optionalDependencies:
+      '@types/react': 18.3.23
+      immer: 10.1.1
+      react: 18.3.1
+      use-sync-external-store: 1.5.0(react@18.3.1)
