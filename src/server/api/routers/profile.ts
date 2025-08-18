@@ -70,71 +70,15 @@ export const profileRouter = createTRPCRouter({
   updateProfile: protectedProcedure
     .input(updateProfileSelfSchema)
     .mutation(async ({ ctx, input }) => {
-      const forbiddenFields = [
-        'email',
-        'status',
-        'role',
-        'updatedAt',
-        'createdAt',
-      ];
-      for (const field of forbiddenFields) {
-        if (field in input) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: `You are not allowed to update the field: ${field}`,
-          });
-        }
-      }
-
-      const userId = ctx.user.id;
-
-      const foundUser = await ctx.db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, userId),
+      /**
+       * @deprecated Use updateExtendedProfile instead. This mutation only updates basic user fields.
+       * Frontend should call updateExtendedProfile to update all profile fields in one request.
+       */
+      throw new TRPCError({
+        code: 'NOT_IMPLEMENTED',
+        message:
+          'updateProfile is deprecated. Use updateExtendedProfile instead.',
       });
-
-      if (!foundUser) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
-      }
-
-      const dataToUpdate: Record<string, unknown> = {
-        updatedAt: new Date(),
-        ...(input.name && { name: input.name }),
-        ...(input.displayName && { displayName: input.displayName }),
-        ...(input.image && { image: input.image }),
-      };
-
-      const result: User[] = await ctx.db
-        .update(user)
-        .set(dataToUpdate)
-        .where(eq(user.id, userId))
-        .returning();
-
-      if (result.length === 0) {
-        console.error('No rows updated');
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to update profile',
-        });
-      }
-
-      // const updatedUser: User = result[0];
-      const updatedUser: User = result[0]!; // 👈 the `!` tells TypeScript “this is not undefined”
-
-      return {
-        success: true,
-        user: {
-          id: updatedUser.id,
-          name: updatedUser.name ?? '',
-          email: updatedUser.email,
-          emailVerified: updatedUser.emailVerified,
-          displayName: updatedUser.displayName ?? '',
-          status: updatedUser.status,
-          image: updatedUser.image ?? '',
-          role: updatedUser.role,
-          createdAt: updatedUser.createdAt,
-          updatedAt: updatedUser.updatedAt,
-        },
-      };
     }),
 
   updateProfileAdmin: adminProcedure
@@ -262,8 +206,8 @@ export const profileRouter = createTRPCRouter({
         location: z.string().optional(),
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
-        socialLinks: z.record(z.string().url()).optional(),
-      })
+        socialLinks: z.record(z.string(), z.url()).optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
@@ -330,5 +274,5 @@ export const profileRouter = createTRPCRouter({
           cause: error,
         });
       }
-    })
+    }),
 });
