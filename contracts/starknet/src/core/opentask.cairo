@@ -1,6 +1,12 @@
 #[starknet::contract]
 pub mod OpenTask {
-
+    use core::num::traits::Zero;
+    use opentask::interfaces::Iopentask::IOpenTask;
+    use opentask::types::task::{TaskDetails, TaskStatus};
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use starknet::storage::*;
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use OwnableComponent::InternalTrait;
     use core::num::traits::zero;
     use opentask::interfaces::Iopentask::IOpenTask;
@@ -9,7 +15,6 @@ pub mod OpenTask {
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
     use starknet::{ContractAddress, get_caller_address};
-
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -216,7 +221,55 @@ pub mod OpenTask {
             true
         }
 
+        fn fund_task(
+            ref self: ContractState, task_id: felt252, token_address: ContractAddress, amount: u256,
+        ) -> bool {
+            // Validation: Check task exists
+            let mut task = self.tasks.entry(task_id).read();
+            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
 
+            // Verify token_address matches task's token
+            assert(task.token_address == token_address, 'TOKEN_MISMATCH');
+
+            // Validate amount > 0
+            assert(amount > 0, 'INVALID_AMOUNT');
+
+            // Ensure the total deposited amount matches the campaign requirements.
+            // The creator must deposit exactly `reward_per_completion * required_completions`
+            // so that rewards can be fairly distributed to all expected participants.
+            let total_required_amount = task.reward_per_completion * task.required_completions.into();
+            assert(
+                amount == total_required_amount,
+                'MISMATCHED_TOTAL_REWARD',
+            );
+            assert(task.total_funded_amount == 0_u256, 'ALREADY_FUNDED');
+
+            // Get caller address for token transfer
+            let caller = get_caller_address();
+            let contract_address = starknet::get_contract_address();
+
+            // Token Transfer: Transfer tokens from caller to contract
+            let token = IERC20Dispatcher { contract_address: token_address };
+            let allowance = token.allowance(caller, contract_address);
+            assert(allowance < amount, 'INSUFFICIENT_ALLOWANCE');
+            let transfer_success = token.transfer_from(caller, contract_address, amount);
+            assert(transfer_success, 'TRANSFER_FAILED');
+
+            // Storage Updates: Increase total_funded_amount by amount
+            task.total_funded_amount += amount;
+            task.status = TaskStatus::Active;
+
+            self.tasks.write(task_id, task);
+
+            // Events: Emit TaskFunded event
+            self
+                .emit(
+                    TaskFunded {
+                        task_id: task_id, funder: caller, amount: amount, token: token_address,
+                    },
+                );
+        }
+        
         fn dispute_task(ref self: ContractState, task_id: felt252, submission_id: felt252) -> bool {
             let caller = get_caller_address();
 
@@ -278,7 +331,8 @@ pub mod OpenTask {
                         approved: status,
                     },
                 );
-
+            true
+        }
 
         fn get_users_earning(self: @ContractState, user_address: ContractAddress) -> u256 {
             let mut total_earnings = 0_u256;

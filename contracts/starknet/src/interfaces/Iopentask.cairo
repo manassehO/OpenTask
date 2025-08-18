@@ -165,7 +165,6 @@ pub trait IOpenTask<TContractState> {
     /// - Emits: EarningsWithdrawn(user_address, amount, token)
     fn withdraw_earnings(ref self: TContractState, user_address: ContractAddress) -> bool;
 
-
     /// Get aggregated protocol-level statistics.
     fn get_protocol_stats(self: @TContractState) -> ProtocolStats;
 
@@ -177,5 +176,4 @@ pub trait IOpenTask<TContractState> {
 
     /// Get aggregated per-token escrow/payments statistics.
     fn get_token_stats(self: @TContractState, token: ContractAddress) -> TokenStats;
-
 }
