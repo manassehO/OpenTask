@@ -1,3 +1,5 @@
+import { TaskStatus } from './task';
+
 export type FindTasksInput = {
   category?: string;
   min_reward?: number;
@@ -14,15 +16,15 @@ export type TaskSummary = {
   description: string;
   instructions: string;
   category: string;
-  rewardAmount: number;
+  rewardAmount: string | number;
   rewardTokenAddress: string;
-  platformFee: number;
+  platformFee?: number;
   approvedCompletions: number;
   inProgressCompletions: number;
   requiredCompletions: number;
   deadline: string;
   image: string | null;
-  status: 'ACTIVE' | 'DRAFT' | 'PUBLISHED';
+  status: TaskStatus;
   fundingTxHash: string | null;
   createdAt: string;
   updatedAt: string | null;
@@ -43,7 +45,7 @@ export type TaskDetail = {
   id: string;
   title: string;
   description: string;
-  status: 'ACTIVE' | 'DRAFT' | 'PUBLISHED';
+  status: TaskStatus;
   createdAt: string;
   updatedAt: string | null;
   creatorId: string;
@@ -82,7 +84,7 @@ export type CancelTaskOutput = {
 
 export type SubmitTaskInput = {
   taskId: string;
-  submissionType: 'TEXT' | 'FILE' | 'URL';
+  submissionType: 'text' | 'file' | 'url' | 'mixed';
   textContent?: string;
   submissionUrl?: string | null;
   fileMetadata?: unknown;

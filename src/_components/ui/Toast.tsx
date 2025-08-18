@@ -57,7 +57,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
 
   return (
     <div
-      className={`pointer-events-auto flex w-full max-w-sm rounded-lg border p-4 shadow-lg transition-all duration-300 ${getStyles()}`}
+      className={`pointer-events-auto fixed top-1 flex w-full max-w-sm rounded-lg border p-4 shadow-lg transition-all duration-300 ${getStyles()}`}
     >
       <div className="flex-shrink-0">{getIcon()}</div>
       <div className="ml-3 flex-1">

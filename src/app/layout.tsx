@@ -6,6 +6,7 @@ import { type Metadata } from 'next';
 import { TRPCReactProvider } from '~/trpc/react';
 
 import { Provider } from 'jotai';
+import { ToastProvider } from '~/store/ToastProvider';
 // import Footer from "./_components/layout/Footer";
 
 export const metadata: Metadata = {
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <Provider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </Provider>
+        <ToastProvider>
+          <Provider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </Provider>
+        </ToastProvider>
       </body>
     </html>
   );
