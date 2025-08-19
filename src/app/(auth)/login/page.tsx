@@ -1,6 +1,10 @@
+// app/login/page.tsx
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { EyeIcon, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
@@ -21,10 +25,13 @@ function EmailLogin() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const onSubmit = async (data: LoginFormData) => {
     try {
       console.log('Form submitted with data:', data);
+
       await signIn.email({
         email: data.email,
         password: data.password,
@@ -64,6 +71,7 @@ function EmailLogin() {
               <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
+
           <div className="flex flex-col gap-1">
             <label
               htmlFor="password"
@@ -71,16 +79,47 @@ function EmailLogin() {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              {...register('password')}
-              className={`rounded-md border p-4 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="Enter your password"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                {...register('password')}
+                className={`w-full rounded-md border p-4 pr-12 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="Enter your password"
+                aria-invalid={errors.password ? 'true' : 'false'}
+              />
+
+              <button
+                type="button"
+                tabIndex={0}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute inset-y-0 right-2 flex items-center justify-center px-2"
+              >
+                {showPassword ? (
+                  // eye-off / hidden
+                  <EyeIcon />
+                ) : (
+                  // eye / visible
+                  <EyeOff />
+                )}
+              </button>
+            </div>
+
             {errors.password && (
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
+          </div>
+
+          <div className="text-center text-sm text-gray-600">
+            <Link
+              href="/forget_password"
+              className="font-medium text-[#3B82F6] hover:text-[#2563EB]"
+            >
+              Forgot Password?
+            </Link>
           </div>
 
           <button
@@ -90,6 +129,15 @@ function EmailLogin() {
           >
             {isSubmitting ? 'Signing in...' : 'Continue'}
           </button>
+          <div className="mt-4 text-center text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              className="font-medium text-[#3B82F6] hover:text-[#2563EB]"
+            >
+              Register
+            </Link>
+          </div>
         </form>
       </AuthWrapper>
     </div>

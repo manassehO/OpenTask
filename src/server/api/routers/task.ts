@@ -34,6 +34,8 @@ import {
   findTaskSchema,
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
+
+import { randomUUID } from 'crypto';
 import { createAutoNotification } from '~/services/notifications';
 
 export const taskRouter = createTRPCRouter({
@@ -303,7 +305,6 @@ export const taskRouter = createTRPCRouter({
           creatorUserId: tasks.creatorUserId,
           id: tasks.id,
           title: tasks.title,
-          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -332,8 +333,8 @@ export const taskRouter = createTRPCRouter({
           and(
             eq(taskClaims.taskId, taskId),
             eq(taskClaims.userId, userId),
-            ne(taskClaims.status, 'REJECTED')
-          )
+            ne(taskClaims.status, 'REJECTED'),
+          ),
         );
 
       if (existingClaim.length > 0) {
@@ -408,6 +409,7 @@ export const taskRouter = createTRPCRouter({
             columns: {
               id: true,
               creatorUserId: true,
+              title: true,
             },
           },
         },
@@ -717,6 +719,9 @@ export const taskRouter = createTRPCRouter({
           completerClaim: input.claim,
           status: 'OPEN',
           flagTxHash: input.txHash,
+          resolvedById: randomUUID(),
+          resolvedAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning({ disputeId: disputes.disputeId });
 
@@ -827,7 +832,6 @@ export const taskRouter = createTRPCRouter({
           })
           .where(eq(submissions.submissionId, input.submissionId));
 
-
         // Increment approvedCompletions in related task
         await tx
           .update(tasks)
@@ -862,6 +866,7 @@ export const taskRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(20).default(8),
+        offset: z.number().min(0).default(0),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -879,9 +884,13 @@ export const taskRouter = createTRPCRouter({
           .where(eq(submissions.completerUserId, userId)),
       ]);
 
+      type UUID = string;
+
       const excludedTaskIds: UUID[] = [
         ...new Set(
-          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+          [...claimedTasks, ...submittedTasks]
+            .map((row) => row.taskId)
+            .filter((id): id is UUID => id !== null),
         ),
       ];
 
@@ -892,7 +901,7 @@ export const taskRouter = createTRPCRouter({
         .where(
           inArray(
             tasks.id,
-            submittedTasks.map((row) => row.taskId),
+            submittedTasks.map((row) => String(row.taskId)),
           ),
         );
 
@@ -904,7 +913,7 @@ export const taskRouter = createTRPCRouter({
       const categoryArraySQL = categories.length
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);
-      
+
       // Safely build WHERE conditions first
       const conditions: SQLWrapper[] = [
         eq(tasks.status, 'ACTIVE'),
@@ -918,6 +927,13 @@ export const taskRouter = createTRPCRouter({
         ) as SQLWrapper;
         conditions.push(exclusionCondition);
       }
+
+      // Count total matching tasks
+      const [{ count: totalRecords }] = await db
+        .select({ count: sql<number>`COUNT(DISTINCT ${tasks.id})` })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(and(...conditions));
 
       // Query recommended tasks
       const recommendedTasks = await db
@@ -937,11 +953,17 @@ export const taskRouter = createTRPCRouter({
           desc(tasks.rewardAmount),
           desc(tasks.createdAt),
         )
-        .limit(input.limit);
+        .limit(input.limit)
+        .offset(input.offset);
+
+      const totalRecordsNum = Number(totalRecords)
 
       return {
-        success: true,
-        tasks: recommendedTasks.map((row) => row.task),
+        pageSize: input.limit,
+        offset: input.offset,
+        totalPages: Math.ceil(totalRecords / input.limit),
+        totalRecords: totalRecordsNum,
+        data: recommendedTasks.map((row) => row.task),
       };
     }),
 
@@ -970,7 +992,7 @@ export const taskRouter = createTRPCRouter({
         .from(tasks)
         .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)));
 
-      const totalRecordsNum = Number(count)
+      const totalRecordsNum = Number(count);
       let taskQuery;
 
       if (['ACTIVE', 'COMPLETED'].includes(status)) {
@@ -1019,7 +1041,7 @@ export const taskRouter = createTRPCRouter({
 
       return {
         pageSize: limit,
-        totalPages: Math.ceil(count / limit),
+        totalPages: Math.ceil(Number(count) / limit),
         totalRecords: totalRecordsNum,
         data,
       };
@@ -1076,23 +1098,134 @@ export const taskRouter = createTRPCRouter({
       }
     }),
 
-  getTaskCategories: protectedProcedure
-    .query(async ({ ctx }) => {
-      const rawCategories = await ctx.db
-        .selectDistinct({ category: tasks.category })
-        .from(tasks)
-        .where(sql`trim(${tasks.category}) != ''`);
+  getTaskCategories: protectedProcedure.query(async ({ ctx }) => {
+    const rawCategories = await ctx.db
+      .selectDistinct({ category: tasks.category })
+      .from(tasks)
+      .where(sql`trim(${tasks.category}) != ''`);
 
-      const categories = Array.from(
-        new Set(rawCategories.map((row) => row.category.trim())),
-      ).sort((a, b) => a.localeCompare(b));
+    const categories = Array.from(
+      new Set(rawCategories.map((row) => row.category.trim())),
+    ).sort((a, b) => a.localeCompare(b));
+
+    return {
+      success: true,
+      categories,
+    };
+  }),
+
+  getUserClaimedTasks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Count total claimed tasks
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(taskClaims)
+        .where(eq(taskClaims.userId, userId));
+
+      const totalRecordNum = Number(count);
+
+      // Fetch claimed tasks with task details
+      const claimedTasks = await db
+        .select({
+          claimId: taskClaims.id,
+          claimStatus: taskClaims.status,
+          claimCreatedAt: taskClaims.createdAt,
+          claimUpdatedAt: taskClaims.updatedAt,
+          taskId: tasks.id,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          rewardAmount: tasks.rewardAmount,
+          deadline: tasks.deadline,
+          image: tasks.image,
+          createdAt: tasks.createdAt,
+        })
+        .from(taskClaims)
+        .innerJoin(tasks, eq(taskClaims.taskId, tasks.id))
+        .where(eq(taskClaims.userId, userId))
+        .orderBy(desc(taskClaims.createdAt))
+        .limit(input.limit)
+        .offset(input.offset);
+
+      return {
+        pageSize: input.limit,
+        totalPages: Math.ceil(Number(count) / input.limit),
+        totalRecords: totalRecordNum,
+        data: claimedTasks,
+      };
+    }),
+
+  editTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+        title: z.string().min(3).max(255).optional(),
+        description: z.string().min(10).optional(),
+        category: z.string().min(2).max(100).optional(),
+        rewardAmount: z.string().optional(),
+        requiredCompletions: z.number().min(1).optional(),
+        deadline: z.string().datetime().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { taskId, deadline, ...updates } = input;
+
+      // Fetch task to verify ownership and status
+      const task = await ctx.db.query.tasks.findFirst({
+        where: (t, { eq }) => eq(t.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        });
+      }
+
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not the owner of this task',
+        });
+      }
+
+      if (task.status !== 'DRAFT') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only draft tasks can be edited',
+        });
+      }
+
+      const updatePayload: Record<string, unknown> = {
+        ...updates,
+        updatedAt: new Date(),
+      };
+
+      if (deadline) {
+        updatePayload.deadline = new Date(deadline);
+      }
+
+      const [updatedTask] = await ctx.db
+        .update(tasks)
+        .set(updatePayload)
+        .where(eq(tasks.id, taskId))
+        .returning();
 
       return {
         success: true,
-        categories,
+        task: updatedTask,
       };
     }),
-  
+
   updateTaskStatus: protectedProcedure
     .input(
       z.object({
