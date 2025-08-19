@@ -5,12 +5,12 @@ pub mod OpenTask {
     // Component imports
     use OwnableComponent::InternalTrait;
     use core::num::traits::Zero;
+    use opentask::errors::Errors;
 
     // OpenTask specific imports
     use opentask::interfaces::Iopentask::IOpenTask;
     use opentask::types::stats::{CreatorStats, ProtocolStats, TokenStats, UserStats};
     use opentask::types::task::{DisputeInfo, TaskDetails, TaskStatus};
-    use opentask::errors::Errors;
 
     // OpenZeppelin imports
     use openzeppelin::access::ownable::OwnableComponent;
@@ -297,7 +297,9 @@ pub mod OpenTask {
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
             assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
-            assert(caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
             assert(task.status == TaskStatus::Active, Errors::TASK_NOT_ACTIVE);
 
             task.status = TaskStatus::Paused;
@@ -314,7 +316,9 @@ pub mod OpenTask {
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
             assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
-            assert(caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
             assert(task.status == TaskStatus::Paused, Errors::TASK_NOT_PAUSED);
 
             task.status = TaskStatus::Active;
@@ -331,7 +335,9 @@ pub mod OpenTask {
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
             assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
-            assert(caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
 
             let refund = task.total_funded_amount
                 - (task.completed_count.try_into().unwrap() * task.reward_per_completion);
@@ -370,7 +376,8 @@ pub mod OpenTask {
             // Ensure the total deposited amount matches the campaign requirements.
             // The creator must deposit exactly `reward_per_completion * required_completions`
             // so that rewards can be fairly distributed to all expected participants.
-            let total_required_amount = task.reward_per_completion * task.required_completions.into();
+            let total_required_amount = task.reward_per_completion
+                * task.required_completions.into();
             assert(amount == total_required_amount, Errors::MISMATCHED_TOTAL_REWARD);
             assert(task.total_funded_amount == 0_u256, Errors::ALREADY_FUNDED);
 
