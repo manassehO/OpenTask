@@ -6,7 +6,7 @@ pub mod OpenTask {
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use OwnableComponent::InternalTrait;
     use core::num::traits::zero;
-    use opentask::types::task::{TaskDetails, TaskStatus,DisputeInfo};
+    use opentask::types::task::{TaskDetails, TaskStatus,DisputeInfo, SubmissionInfo};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
@@ -27,6 +27,7 @@ pub mod OpenTask {
         TaskFunded: TaskFunded,
         TaskPaused: TaskPaused,
         TaskResumed: TaskResumed,
+        TaskClaimed: TaskClaimed,
         TaskAssigned: TaskAssigned,
         TaskCancelled: TaskCancelled,
         TaskApplicationCancelled: TaskApplicationCancelled,
@@ -69,6 +70,14 @@ pub mod OpenTask {
     struct TaskResumed {
         #[key]
         task_id: felt252,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct TaskClaimed {
+        #[key]
+        task_id: felt252,
+        application_id: felt252,
+        claimer: ContractAddress,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -164,6 +173,12 @@ pub mod OpenTask {
         ownable: OwnableComponent::Storage,
         tasks: Map<felt252, TaskDetails>,
         disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
+        submissions: Map<(felt252, felt252), SubmissionInfo>, // (task_id, submission_id) → SubmissionInfo
+        task_applications: Map<(felt252, felt252), ContractAddress>, // (task_id, application_id) → applicant
+        task_assignments: Map<(felt252, felt252), bool>, // (task_id, application_id) → assigned?
+        task_worker_claimed: Map<(felt252, ContractAddress), bool>, // (task_id, worker) → claimed
+        task_worker_assigned: Map<(felt252, ContractAddress), bool>, // (task_id, worker) → assigned
+        task_claimed_count: Map<felt252, u32>, // number of active claims for capacity checks
         user_earnings: Map<(ContractAddress, ContractAddress), u256>,
         user_tokens: Map<ContractAddress, Vec<ContractAddress>>,
 
@@ -405,8 +420,62 @@ pub mod OpenTask {
         fn approve_completion(
             ref self: ContractState, task_id: felt252, submission_id: felt252, status: bool,
         ) -> bool {
-            // To do: Implement completion approval logic
-            false
+            let caller = get_caller_address();
+            // Only owner/creator can approve
+            let mut task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active || task.status == TaskStatus::Disputed, 'TASK_NOT_ACTIVE');
+            if caller != task.creator { self.ownable.assert_only_owner(); }
+
+            let mut submission = self.submissions.read((task_id, submission_id));
+            assert(!submission.completer.is_zero(), 'SUBMISSION_NOT_FOUND');
+            assert(!submission.approved, 'ALREADY_APPROVED');
+
+            let completer = submission.completer;
+
+            if status {
+                submission.approved = true;
+                self.submissions.write((task_id, submission_id), submission);
+
+                // accrue earnings for completer in token units
+                let token = task.token_address;
+                let key = (completer, token);
+                let prev = self.user_earnings.read(key);
+                let new_amount = prev + task.reward_per_completion;
+                self.user_earnings.write(key, new_amount);
+
+                // track token list for user if first time
+                let mut seen = false;
+                let tokens_vec = self.user_tokens.entry(completer);
+                let len = tokens_vec.len();
+                let mut i = 0;
+                while i != len {
+                    let existing = tokens_vec.at(i).read();
+                    if existing == token { seen = true; }
+                    i += 1;
+                }
+                if !seen { tokens_vec.push(token); }
+
+                // increment completed count and possibly complete task
+                task.completed_count += 1_u32;
+                let capacity = task.required_completions;
+                if task.completed_count >= capacity { task.status = TaskStatus::Completed; }
+                self.tasks.write(task_id, task);
+
+                self.emit(SubmissionApproved { task_id, submission_id, completer });
+                self.emit(RewardPaid {
+                    task_id,
+                    completer,
+                    submission_id: Option::Some(submission_id),
+                    amount: task.reward_per_completion,
+                    token,
+                });
+            } else {
+                // rejection path, keep record but do not pay
+                self.emit(SubmissionApproved { task_id, submission_id, completer });
+            }
+
+            true
         }
 
         fn get_task(self: @ContractState, task_id: felt252) -> TaskDetails {
@@ -456,13 +525,42 @@ pub mod OpenTask {
         }
 
         fn assign_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
-            // To do: Implement task assignment logic
-            false
+            let caller = get_caller_address();
+            let mut task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
+            // only creator or owner may assign
+            if caller != task.creator { self.ownable.assert_only_owner(); }
+
+            let applicant = self.task_applications.read((task_id, application_id));
+            assert(!applicant.is_zero(), 'APPLICATION_NOT_FOUND');
+            assert(!self.task_assignments.read((task_id, application_id)), 'ALREADY_ASSIGNED');
+
+            self.task_assignments.write((task_id, application_id), true);
+            // mark worker as assigned (authorized via assignment)
+            self.task_worker_assigned.write((task_id, applicant), true);
+
+            self.emit(TaskAssigned { task_id, application_id });
+            true
         }
 
         fn claim_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
-            // To do: Implement task claim logic
-            false
+            let caller = get_caller_address();
+            let task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
+
+            // capacity check
+            let claimed = self.task_claimed_count.read(task_id);
+            assert(claimed < task.required_completions, 'TASK_FULL');
+
+            // store application mapping and mark worker as claimed
+            self.task_applications.write((task_id, application_id), caller);
+            self.task_worker_claimed.write((task_id, caller), true);
+            self.task_claimed_count.write(task_id, claimed + 1_u32);
+
+            self.emit(TaskClaimed { task_id, application_id, claimer: caller });
+            true
         }
 
         fn submit_completion(
@@ -471,7 +569,24 @@ pub mod OpenTask {
             submission_id: felt252,
             submission_data: felt252,
         ) -> bool {
-            // To do: Implement task submission logic
+            let caller = get_caller_address();
+            let task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active || task.status == TaskStatus::Disputed, 'TASK_NOT_ACTIVE');
+
+            // Verify caller has claimed or been assigned
+            let has_claim = self.task_worker_claimed.read((task_id, caller));
+            let is_assigned = self.task_worker_assigned.read((task_id, caller));
+            assert(has_claim || is_assigned, 'NOT_CLAIMED_OR_ASSIGNED');
+
+            // Ensure unique submission id for this task
+            let existing = self.submissions.read((task_id, submission_id));
+            assert(existing.completer.is_zero(), 'SUBMISSION_EXISTS');
+
+            let info = SubmissionInfo { completer: caller, submission_data, approved: false };
+            self.submissions.write((task_id, submission_id), info);
+
+            self.emit(SubmissionReceived { task_id, submission_id, completer: caller });
             true
         }
 
