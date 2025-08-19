@@ -83,6 +83,10 @@ export const auth = betterAuth({
       }
     }),
   },
+
+  advanced: {
+    cookiePrefix: 'opentask',
+  },
 });
 
 export type Session = typeof auth.$Infer.Session.session;
