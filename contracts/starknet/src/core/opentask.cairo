@@ -1,16 +1,14 @@
 #[starknet::contract]
 pub mod OpenTask {
-    use core::num::traits::Zero;
-    use opentask::interfaces::Iopentask::IOpenTask;
-    use starknet::storage::*;
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
     use OwnableComponent::InternalTrait;
-    use core::num::traits::zero;
-    use opentask::types::task::{TaskDetails, TaskStatus,DisputeInfo, SubmissionInfo};
+    use core::num::traits::{Zero, zero};
+    use opentask::interfaces::Iopentask::IOpenTask;
+    use opentask::types::stats::{CreatorStats, ProtocolStats, TokenStats, UserStats};
+    use opentask::types::task::{DisputeInfo, SubmissionInfo, TaskDetails, TaskStatus};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePointerReadAccess};
-    use opentask::types::stats::{CreatorStats, ProtocolStats, TokenStats, UserStats};
+    use starknet::{ContractAddress, get_caller_address, get_contract_address};
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -173,15 +171,22 @@ pub mod OpenTask {
         ownable: OwnableComponent::Storage,
         tasks: Map<felt252, TaskDetails>,
         disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
-        submissions: Map<(felt252, felt252), SubmissionInfo>, // (task_id, submission_id) → SubmissionInfo
-        task_applications: Map<(felt252, felt252), ContractAddress>, // (task_id, application_id) → applicant
+        submissions: Map<
+            (felt252, felt252), SubmissionInfo,
+        >, // (task_id, submission_id) → SubmissionInfo
+        task_applications: Map<
+            (felt252, felt252), ContractAddress,
+        >, // (task_id, application_id) → applicant
         task_assignments: Map<(felt252, felt252), bool>, // (task_id, application_id) → assigned?
-        task_worker_claimed: Map<(felt252, ContractAddress), bool>, // (task_id, worker) → claimed
-        task_worker_assigned: Map<(felt252, ContractAddress), bool>, // (task_id, worker) → assigned
+        task_worker_claimed: Map<
+            (felt252, ContractAddress), bool,
+        >, // (task_id, worker) → claimed
+        task_worker_assigned: Map<
+            (felt252, ContractAddress), bool,
+        >, // (task_id, worker) → assigned
         task_claimed_count: Map<felt252, u32>, // number of active claims for capacity checks
         user_earnings: Map<(ContractAddress, ContractAddress), u256>,
         user_tokens: Map<ContractAddress, Vec<ContractAddress>>,
-
     }
     ///////////////  CONSTRUCTOR  ///////////////
     #[constructor]
@@ -248,11 +253,9 @@ pub mod OpenTask {
             // Ensure the total deposited amount matches the campaign requirements.
             // The creator must deposit exactly `reward_per_completion * required_completions`
             // so that rewards can be fairly distributed to all expected participants.
-            let total_required_amount = task.reward_per_completion * task.required_completions.into();
-            assert(
-                amount == total_required_amount,
-                'MISMATCHED_TOTAL_REWARD',
-            );
+            let total_required_amount = task.reward_per_completion
+                * task.required_completions.into();
+            assert(amount == total_required_amount, 'MISMATCHED_TOTAL_REWARD');
             assert(task.total_funded_amount == 0_u256, 'ALREADY_FUNDED');
 
             // Get caller address for token transfer
@@ -282,7 +285,7 @@ pub mod OpenTask {
 
             true
         }
-        
+
         fn dispute_task(ref self: ContractState, task_id: felt252, submission_id: felt252) -> bool {
             let caller = get_caller_address();
 
@@ -356,8 +359,7 @@ pub mod OpenTask {
             let mut i = 0;
 
             while i != len {
-               
-                let token = tokens_vec.at(i).read(); 
+                let token = tokens_vec.at(i).read();
                 let key = (user_address, token);
                 let earning = self.user_earnings.read(key);
                 total_earnings += earning;
@@ -424,8 +426,13 @@ pub mod OpenTask {
             // Only owner/creator can approve
             let mut task = self.tasks.read(task_id);
             assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
-            assert(task.status == TaskStatus::Active || task.status == TaskStatus::Disputed, 'TASK_NOT_ACTIVE');
-            if caller != task.creator { self.ownable.assert_only_owner(); }
+            assert(
+                task.status == TaskStatus::Active || task.status == TaskStatus::Disputed,
+                'TASK_NOT_ACTIVE',
+            );
+            if caller != task.creator {
+                self.ownable.assert_only_owner();
+            }
 
             let mut submission = self.submissions.read((task_id, submission_id));
             assert(!submission.completer.is_zero(), 'SUBMISSION_NOT_FOUND');
@@ -451,25 +458,34 @@ pub mod OpenTask {
                 let mut i = 0;
                 while i != len {
                     let existing = tokens_vec.at(i).read();
-                    if existing == token { seen = true; }
+                    if existing == token {
+                        seen = true;
+                    }
                     i += 1;
                 }
-                if !seen { tokens_vec.push(token); }
+                if !seen {
+                    tokens_vec.push(token);
+                }
 
                 // increment completed count and possibly complete task
                 task.completed_count += 1_u32;
                 let capacity = task.required_completions;
-                if task.completed_count >= capacity { task.status = TaskStatus::Completed; }
+                if task.completed_count >= capacity {
+                    task.status = TaskStatus::Completed;
+                }
                 self.tasks.write(task_id, task);
 
                 self.emit(SubmissionApproved { task_id, submission_id, completer });
-                self.emit(RewardPaid {
-                    task_id,
-                    completer,
-                    submission_id: Option::Some(submission_id),
-                    amount: task.reward_per_completion,
-                    token,
-                });
+                self
+                    .emit(
+                        RewardPaid {
+                            task_id,
+                            completer,
+                            submission_id: Option::Some(submission_id),
+                            amount: task.reward_per_completion,
+                            token,
+                        },
+                    );
             } else {
                 // rejection path, keep record but do not pay
                 self.emit(SubmissionApproved { task_id, submission_id, completer });
@@ -530,7 +546,9 @@ pub mod OpenTask {
             assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
             assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
             // only creator or owner may assign
-            if caller != task.creator { self.ownable.assert_only_owner(); }
+            if caller != task.creator {
+                self.ownable.assert_only_owner();
+            }
 
             let applicant = self.task_applications.read((task_id, application_id));
             assert(!applicant.is_zero(), 'APPLICATION_NOT_FOUND');
@@ -572,7 +590,10 @@ pub mod OpenTask {
             let caller = get_caller_address();
             let task = self.tasks.read(task_id);
             assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
-            assert(task.status == TaskStatus::Active || task.status == TaskStatus::Disputed, 'TASK_NOT_ACTIVE');
+            assert(
+                task.status == TaskStatus::Active || task.status == TaskStatus::Disputed,
+                'TASK_NOT_ACTIVE',
+            );
 
             // Verify caller has claimed or been assigned
             let has_claim = self.task_worker_claimed.read((task_id, caller));
@@ -595,7 +616,9 @@ pub mod OpenTask {
             true
         }
 
-        fn cancel_task_application(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
+        fn cancel_task_application(
+            ref self: ContractState, task_id: felt252, application_id: felt252,
+        ) -> bool {
             // To do: Implement application cancellation logic
             false
         }
@@ -625,19 +648,12 @@ pub mod OpenTask {
 
         fn get_token_stats(self: @ContractState, token: ContractAddress) -> TokenStats {
             // To do: Implement token statistics retrieval logic
-            TokenStats {
-                escrowed: 0_u256,
-                paid_out: 0_u256,
-                refunded: 0_u256,
-            }
+            TokenStats { escrowed: 0_u256, paid_out: 0_u256, refunded: 0_u256 }
         }
 
         fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
             // To do: Implement submission retrieval logic
             array![]
         }
-
-
-
     }
 }
