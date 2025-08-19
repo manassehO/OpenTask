@@ -14,6 +14,10 @@ pub mod OpenTask {
     
     // Starknet imports
     use starknet::storage::{*, StoragePointerReadAccess};
+    use starknet::storage::{
+        Map, MutableVecTrait, StorageMapReadAccess, StoragePathEntry,
+        StoragePointerWriteAccess, Vec, VecTrait,
+    };
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
     
     // Component imports
@@ -232,6 +236,9 @@ pub mod OpenTask {
         disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
         user_earnings: Map<(ContractAddress, ContractAddress), u256>,
         user_tokens: Map<ContractAddress, Vec<ContractAddress>>,
+        task_submissions: Map<felt252, Vec<felt252>>, // Tracks submission IDs per task
+        task_disputes: Map<felt252, Vec<felt252>>, // Tracks dispute submission IDs per task
+
 
     }
     ///////////////  CONSTRUCTOR  ///////////////
@@ -346,6 +353,9 @@ pub mod OpenTask {
                 task_id, completer_address: caller, submission_id, resolved: false,
             };
             self.disputes.entry((task_id, submission_id)).write(dispute_info);
+
+            // Store the submission ID in the `task_disputes` mapping for iteration
+            self.task_disputes.entry(task_id).push(submission_id);
 
             // Update task status to Disputed
             let mut updated_task = task;
@@ -552,7 +562,10 @@ pub mod OpenTask {
             // TODO: Implement submit completion logic
             
             let caller = get_caller_address();
-            
+
+            // Update task_submissions
+            self.task_submissions.entry(task_id).push(submission_id);
+
             // Emit SubmissionReceived event
             self.emit(
                 SubmissionReceived {
@@ -620,7 +633,12 @@ pub mod OpenTask {
             task_id: felt252,
             application_id: felt252,
         ) -> bool {
-            // TODO: Implement cancel task application logic
+            // Validate that the task exists before attempting to cancel an application for it.
+            let task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+
+            // TODO: claim_task mapping
+            // there is no explicit storage for applications/claims in the contract's Storage struct
             
             // Emit TaskApplicationCancelled event
             self.emit(
@@ -634,13 +652,24 @@ pub mod OpenTask {
         }
 
         fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get submissions logic
-            ArrayTrait::new()
+            let submissions_vec = self.task_submissions.entry(task_id);
+            let mut all_submissions = ArrayTrait::new();
+            let len = submissions_vec.len();
+            for i in 0..len {
+                all_submissions.append(submissions_vec.at(i).read());
+            };
+            all_submissions
+            
         }
 
         fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get disputes logic
-            ArrayTrait::new()
+            let disputes_vec = self.task_disputes.entry(task_id);
+            let mut all_disputes = ArrayTrait::new();
+            let len = disputes_vec.len();
+            for i in 0..len {
+                all_disputes.append(disputes_vec.at(i).read());
+            };
+            all_disputes
         }
 
         fn get_protocol_stats(self: @ContractState) -> ProtocolStats {
