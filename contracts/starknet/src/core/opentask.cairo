@@ -1,23 +1,23 @@
 #[starknet::contract]
 pub mod OpenTask {
     // Core imports
+
+    // Component imports
+    use OwnableComponent::InternalTrait;
     use core::num::traits::Zero;
-    
+
     // OpenTask specific imports
     use opentask::interfaces::Iopentask::IOpenTask;
-    use opentask::types::task::{TaskDetails, TaskStatus, DisputeInfo, SubmissionInfo};
-    use opentask::types::stats::{ProtocolStats, UserStats, CreatorStats, TokenStats};
-    
+    use opentask::types::stats::{CreatorStats, ProtocolStats, TokenStats, UserStats};
+    use opentask::types::task::{DisputeInfo, SubmissionInfo, TaskDetails, TaskStatus};
+
     // OpenZeppelin imports
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    
+
     // Starknet imports
     use starknet::storage::{*, StoragePointerReadAccess};
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
-    
-    // Component imports
-    use OwnableComponent::InternalTrait;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
@@ -33,7 +33,6 @@ pub mod OpenTask {
         TaskCreated: TaskCreated,
         TaskFunded: TaskFunded,
         TaskUpdated: TaskUpdated,
-        TaskClaimed: TaskClaimed,
         TaskPaused: TaskPaused,
         TaskResumed: TaskResumed,
         TaskClaimed: TaskClaimed,
@@ -82,16 +81,6 @@ pub mod OpenTask {
         description: felt252,
         reward_per_completion: u256,
         required_completions: u32,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct TaskClaimed {
-        #[key]
-        task_id: felt252,
-        #[key]
-        application_id: felt252,
-        #[key]
-        claimant: ContractAddress,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -484,19 +473,20 @@ pub mod OpenTask {
             required_completions: u32,
         ) -> bool {
             // TODO: Implement update task logic
-            
+
             // Emit TaskUpdated event
-            self.emit(
-                TaskUpdated {
-                    task_id: task_id,
-                    creator: creator,
-                    token_address: token_address,
-                    description: description,
-                    reward_per_completion: reward_per_completion,
-                    required_completions: required_completions,
-                },
-            );
-            
+            self
+                .emit(
+                    TaskUpdated {
+                        task_id: task_id,
+                        creator: creator,
+                        token_address: token_address,
+                        description: description,
+                        reward_per_completion: reward_per_completion,
+                        required_completions: required_completions,
+                    },
+                );
+
             true
         }
 
@@ -505,223 +495,47 @@ pub mod OpenTask {
             self.tasks.read(task_id)
         }
 
-        fn claim_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
-            // TODO: Implement claim task logic
-            
-            let caller = get_caller_address();
-            
-            // Emit TaskClaimed event
-            self.emit(
-                TaskClaimed {
-                    task_id: task_id,
-                    application_id: application_id,
-                    claimant: caller,
-                },
-            );
-            
-            true
-        }
-
         fn pause_task(ref self: ContractState, task_id: felt252) -> bool {
             // TODO: Implement pause task logic
-            
+
             // Emit TaskPaused event
-            self.emit(
-                TaskPaused {
-                    task_id: task_id,
-                },
-            );
-            
+            self.emit(TaskPaused { task_id: task_id });
+
             true
         }
 
         fn resume_task(ref self: ContractState, task_id: felt252) -> bool {
             // TODO: Implement resume task logic
-            
+
             // Emit TaskResumed event
-            self.emit(
-                TaskResumed {
-                    task_id: task_id,
-                },
-            );
-            
-            true
-        }
+            self.emit(TaskResumed { task_id: task_id });
 
-        fn assign_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
-            // TODO: Implement assign task logic
-            
-            // Emit TaskAssigned event
-            self.emit(
-                TaskAssigned {
-                    task_id: task_id,
-                    application_id: application_id,
-                },
-            );
-            
-            true
-        }
-
-        fn submit_completion(
-            ref self: ContractState,
-            task_id: felt252,
-            submission_id: felt252,
-            submission_data: felt252,
-        ) -> bool {
-            // TODO: Implement submit completion logic
-            
-            let caller = get_caller_address();
-            
-            // Emit SubmissionReceived event
-            self.emit(
-                SubmissionReceived {
-                    task_id: task_id,
-                    submission_id: submission_id,
-                    completer: caller,
-                },
-            );
-            
-            true
-        }
-
-        fn approve_completion(
-            ref self: ContractState,
-            task_id: felt252,
-            submission_id: felt252,
-            status: bool,
-        ) -> bool {
-            // TODO: Implement approve completion logic
-            
-            let caller = get_caller_address();
-            
-            if status {
-                // Emit SubmissionApproved event
-                self.emit(
-                    SubmissionApproved {
-                        task_id: task_id,
-                        submission_id: submission_id,
-                        completer: caller,
-                    },
-                );
-                
-                // TODO: Emit RewardPaid event when payment is processed
-                // TODO: Check if task is completed and emit TaskCompleted
-            } else {
-                // Emit SubmissionRejected event
-                self.emit(
-                    SubmissionRejected {
-                        task_id: task_id,
-                        submission_id: submission_id,
-                        completer: caller,
-                        reason: 0, // TODO: Add proper reason code
-                    },
-                );
-            }
-            
             true
         }
 
         fn cancel_task(ref self: ContractState, task_id: felt252) -> bool {
             // TODO: Implement cancel task logic
-            
+
             // Emit TaskCancelled event
-            self.emit(
-                TaskCancelled {
-                    task_id: task_id,
-                },
-            );
-            
+            self.emit(TaskCancelled { task_id: task_id });
+
             true
         }
 
         fn cancel_task_application(
-            ref self: ContractState,
-            task_id: felt252,
-            application_id: felt252,
+            ref self: ContractState, task_id: felt252, application_id: felt252,
         ) -> bool {
             // TODO: Implement cancel task application logic
-            
+
             // Emit TaskApplicationCancelled event
-            self.emit(
-                TaskApplicationCancelled {
-                    task_id: task_id,
-                    application_id: application_id,
-                },
-            );
-            
+            self
+                .emit(
+                    TaskApplicationCancelled { task_id: task_id, application_id: application_id },
+                );
+
             true
         }
 
-        fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get submissions logic
-            ArrayTrait::new()
-        }
-
-        fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get disputes logic
-            ArrayTrait::new()
-        }
-
-        fn get_protocol_stats(self: @ContractState) -> ProtocolStats {
-            // TODO: Implement get protocol stats logic
-            ProtocolStats {
-                total_tasks_created: 0_u128,
-                total_tasks_active: 0_u128,
-                total_tasks_completed: 0_u128,
-                total_submissions: 0_u128,
-                total_disputes_open: 0_u128,
-                total_disputes_resolved: 0_u128,
-                total_unique_creators: 0_u128,
-                total_unique_workers: 0_u128,
-                total_funds_escrowed: 0_u256,
-                total_funds_paid_out: 0_u256,
-                total_funds_refunded: 0_u256,
-            }
-        }
-
-        fn get_user_stats(self: @ContractState, user: ContractAddress) -> UserStats {
-            // TODO: Implement get user stats logic
-            UserStats {
-                active_tasks: 0_u128,
-                completed_tasks: 0_u128,
-                rejected_submissions: 0_u128,
-                earnings_accrued: 0_u256,
-                earnings_withdrawn: 0_u256,
-            }
-        }
-
-        fn get_creator_stats(self: @ContractState, creator: ContractAddress) -> CreatorStats {
-            // TODO: Implement get creator stats logic
-            CreatorStats {
-                tasks_created: 0_u128,
-                tasks_active: 0_u128,
-                tasks_completed: 0_u128,
-                funds_escrowed: 0_u256,
-                funds_refunded: 0_u256,
-            }
-        }
-
-        fn get_token_stats(self: @ContractState, token: ContractAddress) -> TokenStats {
-            // TODO: Implement get token stats logic
-            TokenStats {
-                escrowed: 0_u256,
-                paid_out: 0_u256,
-                refunded: 0_u256,
-            }
-        }
-
-        fn update_task(
-            ref self: ContractState,
-            task_id: felt252,
-            creator: ContractAddress,
-            token_address: ContractAddress,
-            description: felt252,
-            reward_per_completion: u256,
-            required_completions: u32,
-        ) -> bool {
-            // To do: Implement task update logic
-            true
-        }
 
         fn approve_completion(
             ref self: ContractState, task_id: felt252, submission_id: felt252, status: bool,
@@ -776,6 +590,17 @@ pub mod OpenTask {
                 let capacity = task.required_completions;
                 if task.completed_count >= capacity {
                     task.status = TaskStatus::Completed;
+                    let total_rewards_paid = task.reward_per_completion
+                        * task.completed_count.into();
+                    self
+                        .emit(
+                            TaskCompleted {
+                                task_id: task_id,
+                                creator: task.creator,
+                                total_completions: task.completed_count,
+                                total_rewards_paid: total_rewards_paid,
+                            },
+                        );
                 }
                 self.tasks.write(task_id, task);
 
@@ -791,25 +616,20 @@ pub mod OpenTask {
                         },
                     );
             } else {
-                // rejection path, keep record but do not pay
-                self.emit(SubmissionApproved { task_id, submission_id, completer });
+                // rejection path
+                // Emit SubmissionRejected event
+                self
+                    .emit(
+                        SubmissionRejected {
+                            task_id: task_id,
+                            submission_id: submission_id,
+                            completer: caller,
+                            reason: 0 // TODO: Add proper reason code
+                        },
+                    );
             }
 
             true
-        }
-
-        fn get_task(self: @ContractState, task_id: felt252) -> TaskDetails {
-            // To do: Implement task retrieval logic
-            TaskDetails {
-                creator: Zero::zero(),
-                token_address: Zero::zero(),
-                description: 0_felt252,
-                reward_per_completion: 0_u256,
-                total_funded_amount: 0_u256,
-                required_completions: 0_u32,
-                completed_count: 0_u32,
-                status: TaskStatus::Draft,
-            }
         }
 
         fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
@@ -832,16 +652,6 @@ pub mod OpenTask {
                 total_tasks_active: 0_u128,
                 total_tasks_created: 0_u128,
             }
-        }
-
-        fn pause_task(ref self: ContractState, task_id: felt252) -> bool {
-            // To do: Implement task pause logic
-            true
-        }
-
-        fn resume_task(ref self: ContractState, task_id: felt252) -> bool {
-            // To do: Implement task resume logic
-            true
         }
 
         fn assign_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
@@ -913,18 +723,6 @@ pub mod OpenTask {
 
             self.emit(SubmissionReceived { task_id, submission_id, completer: caller });
             true
-        }
-
-        fn cancel_task(ref self: ContractState, task_id: felt252) -> bool {
-            // To do: Implement task cancellation logic
-            true
-        }
-
-        fn cancel_task_application(
-            ref self: ContractState, task_id: felt252, application_id: felt252,
-        ) -> bool {
-            // To do: Implement application cancellation logic
-            false
         }
 
 
