@@ -11,6 +11,7 @@ pub mod Errors {
     pub const TASK_NOT_FOUND: felt252 = 'Task not found';
     pub const TASK_NOT_EXISTS: felt252 = 'Task does not exist';
     pub const TASK_NOT_ACTIVE: felt252 = 'Task is not active';
+    pub const TASK_NOT_PAUSED: felt252 = 'Task is not paused';
     pub const TASK_ALREADY_DISPUTED: felt252 = 'Task already disputed';
     pub const TASK_FULL: felt252 = 'Task already full';
 
@@ -30,6 +31,8 @@ pub mod Errors {
     pub const SUBMISSION_NOT_FOUND: felt252 = 'Submission not found';
     pub const ALREADY_APPROVED: felt252 = 'Already approved';
     pub const NOT_CLAIMED_OR_ASSIGNED: felt252 = 'Not claimed or assigned';
+    pub const DISPUTE_NOT_FOUND: felt252 = 'Dispute not found';
+    pub const DISPUTE_ALREADY_RESOLVED: felt252 = 'Dispute already resolved';
 
     // Earnings
     pub const NOT_OWNER_OF_FUNDS: felt252 = 'Not owner of funds';
