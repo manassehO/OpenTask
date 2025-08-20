@@ -23,9 +23,6 @@ pub mod OpenTask {
     };
     use starknet::{ContractAddress, get_caller_address, get_contract_address};
     
-    // Component imports
-    use OwnableComponent::InternalTrait;
-
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     #[abi(embed_v0)]
@@ -635,16 +632,32 @@ pub mod OpenTask {
             true
         }
 
+        // submissions: Map<(felt252, felt252), SubmissionInfo,>, // (task_id, submission_id) → SubmissionInfo
+        // task_applications: Map<(felt252, felt252), ContractAddress,>, // (task_id, application_id) → applicant
+        // task_assignments: Map<(felt252, felt252), bool>, // (task_id, application_id) → assigned?
+        // task_worker_claimed: Map< (felt252, ContractAddress), bool, >, // (task_id, worker) → claimed
+        // task_worker_assigned: Map<(felt252, ContractAddress), bool,>, // (task_id, worker) → assigned
+        // task_claimed_count: Map<felt252, u32>, // number of active claims for capacity checks
+
         fn cancel_task_application(
             ref self: ContractState, task_id: felt252, application_id: felt252,
         ) -> bool {
             // Validate that the task exists before attempting to cancel an application for it.
-            let task = self.tasks.read(task_id);
+            let caller = get_caller_address();
+            let mut task = self.tasks.read(task_id);
             assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
 
-            // TODO: claim_task mapping
-            // there is no explicit storage for applications/claims in the contract's Storage struct
-            
+            let applicant = self.task_applications.read((task_id, application_id));
+            assert(!applicant.is_zero(), 'APPLICATION_NOT_FOUND');
+
+            // Cancel task application , let claim == false
+            self.task_worker_claimed.write((task_id, caller), false);
+
+            // Reduce the task_claimed_count by 1 after cancellation
+            let claimed = self.task_claimed_count.read(task_id);
+            self.task_claimed_count.write(task_id, claimed - 1_u32);
+
             // Emit TaskApplicationCancelled event
             self
                 .emit(
