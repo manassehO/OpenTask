@@ -9,7 +9,7 @@ export default function SidebarWrapper({
   role,
 }: {
   children: React.ReactNode;
-  role: 'admin' | 'creator' | 'user';
+  role: 'admin' | 'creator' | 'completer';
 }) {
   const [isSidebarOpen] = useAtom(sidebarAtom);
 
@@ -21,7 +21,7 @@ export default function SidebarWrapper({
         className={`fixed left-0 top-[100px] h-[calc(100vh-100px)] overflow-hidden bg-white transition-all duration-300 ease-in-out`}
         style={{ width: sidebarWidth }}
       >
-        <Sidebar role={'creator'} />
+        <Sidebar role={role} />
       </div>
 
       <main

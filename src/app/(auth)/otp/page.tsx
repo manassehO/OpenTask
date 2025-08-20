@@ -1,11 +1,13 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import OTPInput from '~/_components/ui/form/OTPInput';
-import { verifyEmail } from '~/lib/auth-client';
+import { authClient } from '~/lib/auth-client';
 
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be exactly 6 digits'),
@@ -14,10 +16,13 @@ const otpSchema = z.object({
 type OtpFormData = z.infer<typeof otpSchema>;
 
 function Otp() {
+  const searchParams = useSearchParams();
+  const resetEmail = searchParams.get('reset_email');
+  const email = searchParams.get('email')!;
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
     watch,
   } = useForm<OtpFormData>({
@@ -26,26 +31,41 @@ function Otp() {
       otp: '',
     },
   });
+
   const router = useRouter();
   const otpValue = watch('otp');
   const otpLength = 6;
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleOtpInputChange = (value: number | undefined) => {
     setValue('otp', value?.toString() ?? '');
   };
 
   const onSubmit = async (data: OtpFormData) => {
-    try {
-      console.log('OTP submitted:', data.otp);
-      await verifyEmail({
-        query: {
-          token: data.otp,
-          callbackURL: '/home',
+    if (resetEmail) {
+      console.log({ ...data, resetEmail });
+      localStorage.setItem(
+        'reset_password',
+        JSON.stringify({ ...data, email: resetEmail }),
+      );
+      await authClient.emailOtp.verifyEmail(
+        {
+          otp: data.otp,
+          email: email,
         },
-      });
-      router.push('/home');
-    } catch (error) {
-      console.error('OTP verification error:', error);
+        {
+          onRequest: () => {
+            setIsSubmitting(true);
+          },
+          onSuccess: () => {
+            router.push('/home');
+            setIsSubmitting(false);
+          },
+          onError: (err) => {
+            toast.error('Error: OTP verification failed');
+            setIsSubmitting(false);
+          },
+        },
+      );
     }
   };
 

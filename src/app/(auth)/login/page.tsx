@@ -6,9 +6,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
-import { signIn } from '~/lib/auth-client';
+import GetStarted from '~/_components/layout/GetStarted';
+import { authClient, signIn } from '~/lib/auth-client';
+import { getKeyByValue } from '~/lib/fns';
+import { routes } from '~/lib/route';
+import { UserType } from '~/lib/utils';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -21,25 +26,57 @@ function EmailLogin() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      console.log('Form submitted with data:', data);
-
-      await signIn.email({
+    await signIn.email(
+      {
         email: data.email,
         password: data.password,
-      });
-      router.push('/home');
-    } catch (error) {
-      console.error('Login error:', error);
-    }
+      },
+      {
+        onRequest: () => {
+          setIsSubmitting(true);
+        },
+        onSuccess: () => {
+          authClient.getSession().then((ctx) => {
+            const { data } = ctx;
+
+            if (!data?.user?.emailVerified) {
+              authClient.emailOtp.sendVerificationOtp({
+                email: data?.user?.email ?? '',
+                type: 'email-verification',
+              });
+              router.push(`/verify?email=${data?.user?.email}`);
+              return;
+            }
+            if (data?.user?.roles === 'ADMIN') {
+              router.push(`/admin`);
+              return;
+            }
+            const rootRoute = getKeyByValue(
+              UserType,
+              data?.user?.roles as string,
+            );
+            if (rootRoute)
+              router.push(
+                routes?.[rootRoute?.toLowerCase() as keyof typeof routes]?.root,
+              );
+          });
+          toast.success('Login Successful');
+          setIsSubmitting(false);
+        },
+        onError: (err) => {
+          toast.error('Error: Login failed');
+          setIsSubmitting(false);
+        },
+      },
+    );
   };
 
   return (
@@ -131,12 +168,13 @@ function EmailLogin() {
           </button>
           <div className="mt-4 text-center text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <Link
-              href="/register"
-              className="font-medium text-[#3B82F6] hover:text-[#2563EB]"
-            >
-              Register
-            </Link>
+            <GetStarted
+              component={
+                <button className="font-medium text-[#3B82F6] hover:text-[#2563EB]">
+                  Register
+                </button>
+              }
+            />
           </div>
         </form>
       </AuthWrapper>
