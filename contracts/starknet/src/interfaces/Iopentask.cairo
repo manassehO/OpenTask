@@ -69,7 +69,7 @@ pub trait IOpenTask<TContractState> {
     ///
     /// create and fund a task in a single flow.
     /// - Transfers/escrows total amount equivalent to `reward_per_completion *
-    /// required_completions` (plus fees off-chain if applicable).
+    /// required_completions`.
     /// - Emits: TaskCreated, TaskFunded(task_id, amount)
     fn create_and_fund_task(
         ref self: TContractState,
