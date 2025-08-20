@@ -524,13 +524,9 @@ pub mod OpenTask {
             let caller = get_caller_address();
             assert(task.creator == caller, 'Only creator can update task');
 
-            //Verify task not completed or cancelled
+            //Verify task is active
             assert(task.status == TaskStatus::Active, 'Task is not active');
-
-            //Verify token addresss matches existing
             assert(task.token_address ==token_address, 'Token mismatch');
-            
-            // Validation: Cannot reduce completions below completed count
             assert(required_completions >= task.completed_count, 'Cannot reduce below completed');
             
             //Handle funding/refund logic
