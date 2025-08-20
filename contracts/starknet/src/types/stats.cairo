@@ -13,7 +13,7 @@ pub struct ProtocolStats {
     pub total_funds_refunded: u256,
 }
 
-#[derive(Drop, Serde, Copy)]
+#[derive(Drop, Serde, Copy, starknet::Store)]
 pub struct UserStats {
     pub active_tasks: u128,
     pub completed_tasks: u128,
@@ -22,7 +22,7 @@ pub struct UserStats {
     pub earnings_withdrawn: u256,
 }
 
-#[derive(Drop, Serde, Copy)]
+#[derive(Drop, Serde, Copy, starknet::Store)]
 pub struct CreatorStats {
     pub tasks_created: u128,
     pub tasks_active: u128,
@@ -31,7 +31,7 @@ pub struct CreatorStats {
     pub funds_refunded: u256,
 }
 
-#[derive(Drop, Serde, Copy)]
+#[derive(Drop, Serde, Copy, starknet::Store)]
 pub struct TokenStats {
     pub escrowed: u256,
     pub paid_out: u256,
