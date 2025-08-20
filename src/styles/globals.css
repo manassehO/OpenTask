@@ -5,6 +5,7 @@
 body {
   @apply bg-[#FAFAFA] text-gray-900;
 }
+
 .custom-scrollbar {
   scrollbar-width: thin;
 }
@@ -22,4 +23,3 @@ body {
 .custom-scrollbar::-webkit-scrollbar-track {
   background-color: #f3f3f3;
 }
-

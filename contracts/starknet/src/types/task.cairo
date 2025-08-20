@@ -8,7 +8,8 @@ pub enum TaskStatus {
     Active, // Task is active and can receive submissions
     Disputed, // Task has a disputed submission
     Completed, // All required submissions completed
-    Cancelled // Task was cancelled
+    Cancelled, // Task was cancelled
+    Paused //Task was paused
 }
 
 /// Core data structure for storing task information
@@ -33,7 +34,7 @@ pub struct TaskDetails {
 }
 
 /// Structure used for dispute tracking
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 pub struct DisputeInfo {
     // Task ID the dispute is related to
     pub task_id: felt252,

@@ -12,6 +12,9 @@ export interface Task {
   isFlagged?: boolean;
   creator?: string;
   category: string;
+  tags: string[];
+  example?: string;
+  specialRequirements?: string;
 }
 
 export interface TaskCardProps {
@@ -19,24 +22,91 @@ export interface TaskCardProps {
   onAction: (taskId: string) => void;
 }
 
-export interface RecommendedTask {
-  id: string;
-  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
-  image: string | null;
-  createdAt: Date;
-  updatedAt: Date | null;
-  creatorUserId: string;
+export type BasicInformationValues = {
   title: string;
-  description: string;
-  instructions: string;
+  taskDescription: string;
   category: string;
-  rewardAmount: string;
-  rewardTokenAddress: string;
-  platformFee: string | null;
-  approvedCompletions: number;
-  inProgressCompletions: number;
-  requiredCompletions: number;
-  deadline: Date;
-  fundingTxHash: string;
-  maxCompletions: number;
+  tags: string;
+  thumbnail?: File | null; // Add this
+};
+
+export type RequirementsValues = {
+  instruction: string;
+  example?: string;
+  submissionFormat: string;
+  deadline: string;
+  qualification: string;
+};
+
+export type RewardStructureValues = {
+  rewardPerSubmission: number;
+  currency: 'ETH' | 'USDC' | 'DAI';
+  maxSubmission: number;
+};
+
+export type DistributionValues = {
+  launchTime: string;
+  visibilitySetting: string;
+  userTargeting: string;
+};
+
+export type ReviewValues = {
+  launchTime: string;
+  visibilitySetting: string;
+  userTargeting: string;
+};
+
+export interface TaskStore {
+  // Navigation state
+  currentStep: number;
+  totalSteps: number;
+  setCurrentStep: (step: number) => void;
+  goToNextStep: () => void;
+  goToPreviousStep: () => void;
+  canGoNext: () => boolean;
+  canGoPrevious: () => boolean;
+
+  // Form data for each step
+  basicInformation: BasicInformationValues;
+  requirements: RequirementsValues;
+  rewardStructure: RewardStructureValues;
+  distribution: DistributionValues;
+  review: ReviewValues;
+
+  // Setters for each step
+  setBasicInformation: (data: BasicInformationValues) => void;
+  setRequirements: (data: RequirementsValues) => void;
+  setRewardStructure: (data: RewardStructureValues) => void;
+  setDistribution: (data: DistributionValues) => void;
+  setReview: (data: ReviewValues) => void;
+
+  // Validation state
+  stepValidation: Record<number, boolean>;
+  setStepValid: (step: number, isValid: boolean) => void;
+  isStepValid: (step: number) => boolean;
+
+  // Utility functions
+  getAllFormData: () => TaskFormData;
+  resetForm: () => void;
+  resetStep: (step: number) => void;
 }
+
+// Combined form data type
+export type TaskFormData = {
+  basicInformation: BasicInformationValues;
+  requirements: RequirementsValues;
+  rewardStructure: RewardStructureValues;
+  distribution: DistributionValues;
+  review: ReviewValues;
+};
+
+// Step-specific hook return types
+export type StepHookReturn<T> = {
+  data: T;
+  setData: (data: T) => void;
+  isValid: boolean;
+  goNext?: () => void;
+  goPrevious?: () => void;
+  canGoNext?: boolean;
+  canGoPrevious?: boolean;
+};

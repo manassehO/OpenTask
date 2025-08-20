@@ -197,7 +197,7 @@ export const tasks = createTable('tasks', {
   creatorUserId: text('creator_user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  title: varchar('title').notNull(),
+  title: varchar('title', { length: 60 }).notNull(),
   description: text('description').notNull(),
   instructions: text('instructions').notNull(),
   category: varchar('category').notNull(),
@@ -205,7 +205,7 @@ export const tasks = createTable('tasks', {
   rewardTokenAddress: varchar('reward_token_address', {
     length: 100,
   }).notNull(),
-  platformFee: numeric('platform_fee', { precision: 20, scale: 0 }),
+  platformFee: numeric('platform_fee'),
   approvedCompletions: integer('approved_completions').notNull().default(0),
   inProgressCompletions: integer('in_progress_completions')
     .notNull()
@@ -222,6 +222,9 @@ export const tasks = createTable('tasks', {
     () => new Date(),
   ),
   maxCompletions: integer('max_completions').notNull(),
+  tags: text('tags').notNull(), // JSON stringified array of tags
+  example: text('example'), // optional example field
+  specialRequirements: text('special_requirements'), // optional special requirements
 });
 
 export const onchainEvents = createTable('onchain_events', {

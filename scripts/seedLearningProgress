@@ -1,0 +1,87 @@
+import "dotenv/config";
+import { db } from "~/server/db";
+import { user, courses, tutorials, userLearningProgress } from "~/server/db/schema";
+import { randomUUID } from "crypto";
+
+async function seedUserLearningProgress() {
+  console.log("Using database:", process.env.DATABASE_URL);
+
+  const allUsers = await db.query.user.findMany();
+  const allCourses = await db.query.courses.findMany();
+  const allTutorials = await db.query.tutorials.findMany();
+
+  if (allUsers.length === 0) {
+    console.error("No users found. Seed users first");
+    process.exit(1);
+  }
+
+  if (allCourses.length === 0 && allTutorials.length === 0) {
+    console.error("No courses or tutorials found. Seed them first");
+    process.exit(1);
+  }
+
+  for (const userItem of allUsers) {
+    // Enroll in random subset of courses
+    const coursesToEnroll = allCourses
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.min(3, allCourses.length));
+
+    for (const course of coursesToEnroll) {
+      try {
+        const progress = Math.floor(Math.random() * 101); // 0-100%
+        const isCompleted = progress === 100;
+        const now = new Date();
+        await db.insert(userLearningProgress).values({
+          progressId: randomUUID(),
+          userId: userItem.id,
+          courseId: course.courseId,
+          tutorialId: null,
+          progress,
+          isCompleted,
+          completedAt: isCompleted ? now : null,
+          enrolledAt: now,
+          lastAccessedAt: now,
+        });
+        console.log(`User ${userItem.id} progress created for course ${course.title}`);
+      } catch (err) {
+        console.error(`Error creating course progress for user ${userItem.id}:`, err.message);
+      }
+    }
+
+    // Enroll in random subset of tutorials
+    const tutorialsToEnroll = allTutorials
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.min(3, allTutorials.length));
+
+    for (const tutorial of tutorialsToEnroll) {
+      try {
+        const progress = Math.floor(Math.random() * 101); // 0-100%
+        const isCompleted = progress === 100;
+        const now = new Date();
+        await db.insert(userLearningProgress).values({
+          progressId: randomUUID(),
+          userId: userItem.id,
+          courseId: null,
+          tutorialId: tutorial.tutorialId,
+          progress,
+          isCompleted,
+          completedAt: isCompleted ? now : null,
+          enrolledAt: now,
+          lastAccessedAt: now,
+        });
+        console.log(`User ${userItem.id} progress created for tutorial ${tutorial.title}`);
+      } catch (err) {
+        console.error(`Error creating tutorial progress for user ${userItem.id}:`, err.message);
+      }
+    }
+  }
+
+  console.log("User learning progress seeding process finished");
+}
+
+seedUserLearningProgress()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("Script crashed:", err);
+    process.exit(1);
+  });

@@ -14,7 +14,10 @@ export const getTaskByIdSchema = z.object({
 });
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(60, 'Title must be at most 60 characters'),
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
   category: z.string().min(1, 'Category is required'),
@@ -46,10 +49,6 @@ export const createTaskSchema = z.object({
     .number()
     .int()
     .min(1, 'requiredCompletions must be at least 1'),
-  status: z.enum(allowedStatus),
-  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-    message: 'Invalid fundingTxHash format',
-  }),
   deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid deadline date format',
   }),
@@ -57,6 +56,16 @@ export const createTaskSchema = z.object({
     .string()
     .max(255, 'Image URL must be at most 255 characters')
     .optional(),
+  status: z.enum(allowedStatus), // assumed taskStatusEnum is mapped to allowedStatus
+  fundingTxHash: z
+    .string()
+    .max(255, 'Funding transaction hash must be at most 255 characters')
+    .refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+      message: 'Invalid fundingTxHash format',
+    }),
+  tags: z.array(z.string().min(1)).min(1, 'At least one tag is required'),
+  example: z.string().optional(),
+  specialRequirements: z.string().optional(),
 });
 
 export const findTaskSchema = z.object({
@@ -93,4 +102,28 @@ export const resolveDisputeInput = z.object({
   disputeId: z.string().uuid(),
   outcome: z.enum(['Approve', 'Reject']),
   adminNotes: z.string().min(1, 'Admin notes are required'),
+});
+
+export const getTaskByIdOutputSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  status: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  creatorId: z.string(),
+  creatorDisplayName: z.string().nullable(),
+});
+
+export const createTaskOutputSchema = z.object({
+  success: z.boolean(),
+  task: z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    status: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    creatorUserId: z.string(),
+  }),
 });
