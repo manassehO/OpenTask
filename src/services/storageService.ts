@@ -20,6 +20,7 @@ class StorageService {
 
   constructor() {
 <<<<<<< HEAD
+<<<<<<< HEAD
     this.defaultBucket = process.env.MINIO_BUCKET ?? 'opentask-dev';
 =======
 <<<<<<< HEAD
@@ -28,6 +29,9 @@ class StorageService {
     this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
 >>>>>>> 781c1f28b786d98b9a7ab8421069b68a5dc120c6
 >>>>>>> 082d35cd282ffce9fa75cf98886a0d0ccf458ffa
+=======
+    this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
+>>>>>>> 7885bb9721738fa4d63015d57940d910db482bbb
   }
 
   async initialize(): Promise<void> {
@@ -78,10 +82,14 @@ class StorageService {
     // expirySeconds = 24 * 60 * 60,
   ): Promise<string> {
     try {
+<<<<<<< HEAD
       // For MinIO, we'll construct the direct URL since existing service returns direct URLs
 <<<<<<< HEAD
       const endpoint = process.env.MINIO_ENDPOINT ?? 'http://localhost:9000';
 =======
+=======
+      // For MinIO, we'll construct the direct URL since existing service returns direct URL
+>>>>>>> 7885bb9721738fa4d63015d57940d910db482bbb
       const endpoint = env.MINIO_ENDPOINT ?? 'http://localhost:9000';
 >>>>>>> 082d35cd282ffce9fa75cf98886a0d0ccf458ffa
       const bucket = bucketName ?? this.defaultBucket;
