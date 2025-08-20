@@ -17,7 +17,7 @@ export const notificationRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       console.log(ctx.user);
 
       // Ensure that user is active
@@ -361,5 +361,19 @@ export const notificationRouter = createTRPCRouter({
           preferences: inserted,
         };
       }
+    }),
+
+  getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+      const result = await ctx.db
+        .select({ count: count() })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.userId, ctx.user.id),
+            eq(notifications.status, 'UNREAD'),
+          ),
+        );
+  
+      return result[0]?.count ?? 0;
     }),
 });
