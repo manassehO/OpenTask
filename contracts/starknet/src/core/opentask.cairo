@@ -387,6 +387,77 @@ pub mod OpenTask {
             true
         }
 
+        fn create_and_fund_task(
+            ref self: ContractState,
+            task_id: felt252,
+            creator: ContractAddress,
+            token_address: ContractAddress,
+            description: felt252,
+            reward_per_completion: u256,
+            required_completions: u32,
+        ) -> bool {
+            let caller = get_caller_address();
+            assert(caller == creator, 'NOT_CREATOR');
+
+            let existing_task = self.tasks.entry(task_id).read();
+            assert(existing_task.creator.is_zero(), 'TASK_ALREADY_EXISTS');
+
+            assert(reward_per_completion > 0, 'INVALID_REWARD_AMOUNT');
+
+            assert(required_completions > 0, 'INVALID_COMPLETION_COUNT');
+
+            let total_amount = reward_per_completion
+                * required_completions.try_into().expect('failed to convert');
+
+            let contract_address = starknet::get_contract_address();
+            let token = IERC20Dispatcher { contract_address: token_address };
+
+            let balance = token.balance_of(caller);
+            assert(balance > total_amount, 'INSUFFICIENT BALANCE');
+
+            let allowance = token.allowance(caller, contract_address);
+            assert(allowance >= total_amount, 'INSUFFICIENT_ALLOWANCE');
+
+            let transfer_success = token.transfer_from(caller, contract_address, total_amount);
+            assert(transfer_success, 'TRANSFER_FAILED');
+
+            let details = TaskDetails {
+                creator: creator,
+                token_address: token_address,
+                description: description,
+                reward_per_completion: reward_per_completion,
+                total_funded_amount: total_amount,
+                required_completions: required_completions,
+                completed_count: 0_u32,
+                status: TaskStatus::Active,
+            };
+
+            self.tasks.write(task_id, details);
+
+            self
+                .emit(
+                    TaskCreated {
+                        task_id: task_id,
+                        creator: creator,
+                        token: token_address,
+                        reward_per_completion: reward_per_completion,
+                        required_completions: required_completions,
+                    },
+                );
+
+            self
+                .emit(
+                    TaskFunded {
+                        task_id: task_id,
+                        funder: caller,
+                        amount: total_amount,
+                        token: token_address,
+                    },
+                );
+
+            true
+        }
+
         fn dispute_task(ref self: ContractState, task_id: felt252, submission_id: felt252) -> bool {
             let caller = get_caller_address();
 
