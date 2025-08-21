@@ -20,7 +20,7 @@ export const adminRouter = createTRPCRouter({
         limit: z.number().min(1).max(100).default(20),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { search, status, limit, page } = input;
       const conditions = [];
 
