@@ -43,26 +43,23 @@ function EmailLogin() {
         onRequest: () => {
           setIsSubmitting(true);
         },
-        onSuccess: () => {
-          authClient.getSession().then((ctx) => {
+        onSuccess: async () => {
+          await authClient.getSession().then(async (ctx) => {
             const { data } = ctx;
 
             if (!data?.user?.emailVerified) {
-              authClient.emailOtp.sendVerificationOtp({
+              await authClient.emailOtp.sendVerificationOtp({
                 email: data?.user?.email ?? '',
                 type: 'email-verification',
               });
-              router.push(`/verify?email=${data?.user?.email}`);
+              router.push(`/otp?email=${data?.user?.email}`);
               return;
             }
             if (data?.user?.roles === 'ADMIN') {
               router.push(`/admin`);
               return;
             }
-            const rootRoute = getKeyByValue(
-              UserType,
-              data?.user?.roles as string,
-            );
+            const rootRoute = getKeyByValue(UserType, data?.user?.roles);
             if (rootRoute)
               router.push(
                 routes?.[rootRoute?.toLowerCase() as keyof typeof routes]?.root,

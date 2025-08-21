@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { getKeyByValue } from '~/lib/fns';
-import { AccessType } from '~/lib/route';
+import { type AccessType } from '~/lib/route';
 import { DashboardNavbar } from './dashboardNavbar';
 import SidebarWrapper from './sidebarWrapper';
 
@@ -23,9 +23,9 @@ const AuthenticatedLayout = ({
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
 
-  const checkAccess = () => {
+  const checkAccess = async () => {
     const rootRoute = session?.user?.roles
-      ? getKeyByValue(UserType, session.user.roles as string)
+      ? getKeyByValue(UserType, session.user.roles)
       : undefined;
     console.log({ session, rootRoute, params });
     if (
@@ -38,7 +38,7 @@ const AuthenticatedLayout = ({
     }
     if (session?.user?.roles !== 'ADMIN' && rootRoute !== params.accessType) {
       toast.error('You are not authorized to access this page');
-      authClient.signOut(undefined, {
+      await authClient.signOut(undefined, {
         onSuccess: () => {
           setLoading(false);
           router.push('/login');
@@ -54,7 +54,7 @@ const AuthenticatedLayout = ({
     }
   };
   useEffect(() => {
-    checkAccess();
+    checkAccess().catch(console.error);
   }, [session]);
 
   console.log(session?.user?.roles);
