@@ -7,8 +7,8 @@ import RightBar from '~/_components/layout/RightBar';
 
 function Dashboardage() {
   const name = 'Bartholomew Favour';
-  const task = api.task.getTaskById.useQuery({ taskId: '1' });
-  const { data: tasks, isPending: pending } = api.task.findTasks.useMutation();
+  // const task = api.task.getTaskById.useQuery({ taskId: '1' });
+  // const { data: tasks, isPending: pending } = api.task.findTasks.useMutation();
 
   // useEffect(() => {
   //   findTasks({
@@ -19,7 +19,7 @@ function Dashboardage() {
   //   });
   // }, [findTasks]);
 
-  console.log({ tasks, task });
+  // console.log({ tasks, task });
   return (
     <div className="flex h-full w-full flex-row items-start bg-[#FAFAFA] text-black">
       <div className="w-full">

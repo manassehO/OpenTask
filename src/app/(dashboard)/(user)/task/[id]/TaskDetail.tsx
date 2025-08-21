@@ -111,7 +111,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
 
         <div className="relative mt-6 h-[300px] w-full max-w-6xl md:h-[500px]">
           <Image
-            src={dummyImage.src}
+            src={'../../../../../public/images/banner.webp'}
             alt={task.title}
             fill
             className="object-cover opacity-70"
@@ -229,24 +229,24 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
           {role?.user?.role === 'COMPLETER' && (
             <div className="space-y-3">
               {!claimed && task.status === 'ACTIVE' && (
-                <Button
-                  onClick={handleTakeTask}
-                  disabled={claimMutation.isPending}
-                  className="h-12 w-full text-lg"
-                >
-                  {claimMutation.isPending
-                    ? 'Taking Task...'
-                    : 'Take This Task'}
-                </Button>
+                <div className="flex w-full items-end justify-end gap-4">
+                  <Button
+                    onClick={handleTakeTask}
+                    disabled={claimMutation.isPending}
+                    className="h-12 min-w-[13.8rem] rounded bg-[#3B82F6] p-[10px] text-sm font-bold text-white hover:bg-[#3B82F6]/90 disabled:opacity-50"
+                  >
+                    {claimMutation.isPending ? 'Taking Task...' : 'Take Task'}
+                  </Button>
+                </div>
               )}
               {claimed && task.status === 'ACTIVE' && (
-                <div className="flex items-center justify-between gap-4">
-                  <Button
+                <div className="flex w-full items-center justify-between gap-4">
+                  {/* <Button
                     onClick={() => setShowCancelModal(true)}
-                    className="hover:bg-[#ffffff]/98 h-12 w-full bg-white text-lg text-[#ed1004]"
+                    className="hover:bg-[#ffffff]/98 h-12 w-full bg-white text-lg !text-[#ed1004] hover:!text-[#ed1004]/90"
                   >
                     Cancel Task
-                  </Button>
+                  </Button> */}
                   <Button
                     onClick={handleSubmitTask}
                     className="hover:[#3B82F6]/99 h-12 w-full bg-[#3B82F6] text-lg"
