@@ -17,6 +17,31 @@ export interface Task {
   specialRequirements?: string;
 }
 
+export type TaskType = {
+  id: string;
+  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+  image: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  creatorUserId: string;
+  title: string;
+  description: string;
+  instructions: string;
+  category: string;
+  rewardAmount: string;
+  rewardTokenAddress: string;
+  platformFee: string | null;
+  approvedCompletions: number;
+  inProgressCompletions: number;
+  requiredCompletions: number;
+  deadline: Date;
+  fundingTxHash: string;
+  maxCompletions: number;
+  tags: string;
+  example: string | null;
+  specialRequirements: string | null;
+};
+
 export interface TaskCardProps {
   task: Task;
   onAction: (taskId: string) => void;

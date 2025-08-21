@@ -4,13 +4,11 @@ import Image from 'next/image';
 import Button from '../ui/button';
 import { useCreateTask, useRecommendedTasks } from '~/app/api/task';
 import { useRouter } from 'next/navigation';
-import type { RecommendedTask } from '~/types/task';
+import type { TaskType } from '~/types/task';
 import Link from 'next/link';
 
 const RecomendedTasks = () => {
-  const [recommendedTasks, setRecommendedTasks] = useState<RecommendedTask[]>(
-    [],
-  );
+  const [recommendedTasks, setRecommendedTasks] = useState<TaskType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const getRecommendedTasks = useRecommendedTasks();
   const router = useRouter();
@@ -20,8 +18,8 @@ const RecomendedTasks = () => {
       setIsLoading(true);
       try {
         const res = await getRecommendedTasks.mutateAsync({});
-        if (res.success && res.tasks) {
-          setRecommendedTasks(res.tasks);
+        if (res.data) {
+          setRecommendedTasks(res.data);
         } else {
           throw new Error('Failed to fetch recommended tasks');
         }
