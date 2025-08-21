@@ -639,7 +639,62 @@ pub mod OpenTask {
             reward_per_completion: u256,
             required_completions: u32,
         ) -> bool {
-            // TODO: Implement update task logic
+             //Validation: check task exists
+           let mut task = self.tasks.entry(task_id).read();
+            assert(task.creator.is_non_zero(), 'Task does not exit');
+
+            //Authorization: only the task creator can update
+            let caller = get_caller_address();
+            assert(task.creator == caller, 'Only creator can update task');
+
+            //Verify task is active
+            assert(task.status == TaskStatus::Active, 'Task is not active');
+            assert(task.token_address ==token_address, 'Token mismatch');
+            assert(required_completions >= task.completed_count, 'Cannot reduce below completed');
+            
+            //Handle funding/refund logic
+            let old_total_required = task.reward_per_completion * task.required_completions.into();
+            let new_total_required = reward_per_completion * required_completions.into();
+            
+            if new_total_required > old_total_required {
+                // Need additional funding
+                let additional  = new_total_required - old_total_required;
+                
+                let contract_address = starknet::get_contract_address();
+                let token = IERC20Dispatcher { contract_address: token_address };
+
+                let allowance = token.allowance(caller, contract_address);
+                assert(allowance >= additional, 'insufficient allowance');
+                
+                let transfer_success= token.transfer_from( caller, contract_address, additional );
+                assert(transfer_success, 'Additional funding failed');
+
+                task.total_funded_amount += additional;
+                }else if new_total_required < old_total_required {
+                // Refund excess funding
+                let refund = old_total_required - new_total_required;
+
+                let token = IERC20Dispatcher { contract_address: token_address };
+
+                let refund_success = token.transfer( caller, refund );
+                assert(refund_success, 'Refund transfer failed');
+
+                task.total_funded_amount -= refund;
+                }
+
+                //Storage updates: apply new parameters
+                let updated_task = TaskDetails {
+                creator: task.creator,
+                token_address: task.token_address,
+                description: description,
+                reward_per_completion: reward_per_completion,
+                required_completions: required_completions,
+                completed_count: task.completed_count,
+                total_funded_amount: new_total_required, 
+                status: task.status,
+    };
+
+                self.tasks.write(task_id, updated_task);
 
             // Emit TaskUpdated event
             self
