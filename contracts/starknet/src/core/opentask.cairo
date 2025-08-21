@@ -535,8 +535,21 @@ pub mod OpenTask {
         }
 
         fn get_task(self: @ContractState, task_id: felt252) -> TaskDetails {
-            // TODO: Implement get task logic
-            self.tasks.read(task_id)
+            let mut task = self.tasks.read(task_id);
+
+            // set default values for non-existent tasks
+            if task.creator.is_zero() {
+                task.creator = 0.try_into().unwrap();
+                task.token_address = 0.try_into().unwrap();
+                task.description = 0;
+                task.reward_per_completion = 0;
+                task.total_funded_amount = 0;
+                task.required_completions = 0;
+                task.completed_count = 0;
+                task.status = TaskStatus::Draft;
+            }
+
+            task
         }
 
         fn claim_task(ref self: ContractState, task_id: felt252, application_id: felt252) -> bool {
