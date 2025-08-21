@@ -1,107 +1,33 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Button from '../ui/button';
-import { useCreateTask, useRecommendedTasks } from '~/app/api/task';
-import { useRouter } from 'next/navigation';
-import type { TaskType } from '~/types/task';
+import { useRecommendedTasks } from '~/app/api/task';
 import Link from 'next/link';
+import { useRecommendedTasksStore } from '~/app/store/recommendedTaskStore';
+import { CustomPagination } from '../custom/CustomPagination';
 
 const RecomendedTasks = () => {
-  const [recommendedTasks, setRecommendedTasks] = useState<TaskType[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const getRecommendedTasks = useRecommendedTasks();
-  const router = useRouter();
+  const { data, isLoading } = useRecommendedTasks();
+  const { nextPage, prevPage, offset, limit } = useRecommendedTasksStore();
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const res = await getRecommendedTasks.mutateAsync({});
-        if (res.data) {
-          setRecommendedTasks(res.data);
-        } else {
-          throw new Error('Failed to fetch recommended tasks');
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    void fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  console.log('recommended', recommendedTasks);
-
-  const createTask = useCreateTask();
-
-  const handleCreate = async () => {
-    const payload = {
-      title: 'Translate a YouTube video',
-      description: 'Translate a tech video from English to Spanish',
-      instructions:
-        'Use accurate technical terms. Submit a subtitle file in .srt format.',
-      category: 'Translation',
-      rewardAmount: '50',
-      rewardTokenAddress: '0x123456789abcdef123456789abcdef123456789a',
-      platformFee: '5',
-      approvedCompletions: 0,
-      inProgressCompletions: 0,
-      requiredCompletions: 10,
-      deadline: '2025-09-01T23:59:59Z',
-      image:
-        'https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fHRhc2t8ZW58MHx8MHx8fDA%3D',
-      status: 'ACTIVE' as const,
-      fundingTxHash:
-        '0xabcdef123456789abcdef123456789abcdef123456789abcdef123456789abcd',
-      maxCompletions: 20,
-    };
-
-    try {
-      const res = await createTask.mutateAsync(payload);
-      if (res.success) {
-        alert('Created Successfully!');
-        router.refresh();
-      } else {
-        console.error('Something went wrong');
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-    }
-  };
+  const recommendedTasks = data?.data || [];
+  console.log('rec', recommendedTasks);
 
   return (
     <div>
-      {!isLoading && (
-        <div className="flex w-full items-center justify-between px-4 py-2">
-          <h1 className="text-lg font-semibold lg:text-2xl">
-            Recommended For You
-          </h1>
-          <div className="flex gap-2">
-            <Button
-              backgroundColor="transparent"
-              textColor="text-[#3B82F6]"
-              className="mt-2 text-[#3B82F6]"
-            >
-              See All Tasks
-            </Button>
-            <Button
-              onClick={handleCreate}
-              backgroundColor="transparent"
-              textColor="text-[#3B82F6]"
-              className="mt-2 text-[#3B82F6]"
-            >
-              Create Tasks
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="flex w-full items-center justify-between px-4 py-2">
+        <h1 className="text-lg font-semibold lg:text-2xl">
+          Recommended For You
+        </h1>
+        <Button
+          backgroundColor="transparent"
+          textColor="text-[#3B82F6]"
+          className="mt-2 text-[#3B82F6]"
+        >
+          See All Tasks
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
@@ -144,6 +70,17 @@ const RecomendedTasks = () => {
           ))
         )}
       </div>
+      {data && (
+        <div className="my-8">
+          <CustomPagination
+            offset={offset}
+            limit={limit}
+            totalRecords={data.totalRecords}
+            onPrev={prevPage}
+            onNext={nextPage}
+          />
+        </div>
+      )}
     </div>
   );
 };

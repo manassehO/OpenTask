@@ -6,7 +6,7 @@ import RightBar from '~/_components/layout/RightBar';
 
 function Dashboardage() {
   return (
-    <div className="flex h-full w-full flex-row items-start bg-[#FAFAFA] text-black">
+    <div className="flex h-full w-full flex-row items-start gap-4 bg-[#FAFAFA] text-black">
       <div className="w-full">
         <GreetingCard />
         <Summary />

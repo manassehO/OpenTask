@@ -5,3 +5,9 @@ export function useProfile() {
   const user = data?.user;
   return { user, error, isLoading };
 }
+
+export function getUserStats() {
+  const { data, error, isLoading } = api.profile.getUserStats.useQuery();
+  const userStats = data?.stats;
+  return { userStats, error, isLoading };
+}

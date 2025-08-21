@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { getUserStats } from '~/app/api/profile';
 
 const summaryData = [
   {
@@ -26,6 +27,9 @@ const summaryData = [
 ];
 
 const Summary = () => {
+  const { userStats, isLoading } = getUserStats();
+  console.log('stats', userStats);
+
   return (
     <div className="grid w-full grid-cols-1 items-center justify-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {summaryData.map((item, index) => (
