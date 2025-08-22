@@ -51,6 +51,8 @@ export const auth = betterAuth({
     emailOTP({
       otpLength: 6,
       expiresIn: 60,
+      sendVerificationOnSignUp: true,
+      overrideDefaultEmailVerification: true,
       async sendVerificationOTP({ email, otp }) {
         console.log('Sending verification OTP to', email, otp);
         await sendOtp(email, otp);

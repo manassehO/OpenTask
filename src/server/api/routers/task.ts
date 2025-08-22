@@ -44,7 +44,7 @@ export const taskRouter = createTRPCRouter({
    */
   getTaskById: protectedProcedure
     .input(getTaskByIdSchema)
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const result = await ctx.db
         .select({
           id: tasks.id,
@@ -145,7 +145,7 @@ export const taskRouter = createTRPCRouter({
 
   findTasks: protectedProcedure
     .input(findTaskSchema)
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { category, min_reward, sort_by, order, limit, page } = input;
 
       // Only allow sorting by whitelisted fields
@@ -604,7 +604,7 @@ export const taskRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { status, limit, offset } = input;
 
       if (ctx.user.role !== 'ADMIN') {
@@ -869,7 +869,7 @@ export const taskRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
       // Get tasks the user has already claimed or submitted
@@ -975,7 +975,7 @@ export const taskRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { status, limit, offset } = input;
       const userId = ctx.user.id;
 
@@ -1121,7 +1121,7 @@ export const taskRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
       // Count total claimed tasks

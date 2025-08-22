@@ -5,6 +5,7 @@ import { type Metadata } from 'next';
 import { TRPCReactProvider } from '~/trpc/react';
 import { Provider } from 'jotai';
 import { DM_Sans } from 'next/font/google';
+import { Toaster } from '~/_components/ui/toaster';
 
 // import Footer from "./_components/layout/Footer";
 
@@ -26,7 +27,10 @@ export default function RootLayout({
     <html className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>
         <Provider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            {children}
+            <Toaster />
+          </TRPCReactProvider>
         </Provider>
       </body>
     </html>
