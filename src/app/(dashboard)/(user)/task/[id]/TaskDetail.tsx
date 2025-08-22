@@ -112,7 +112,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
         <div className="relative mt-6 h-[300px] w-full max-w-6xl md:h-[500px]">
           <Image
             src={'../../../../../public/images/banner.webp'}
-            alt={task.title}
+            alt={task.title || 'Task Banner'}
             fill
             className="object-cover opacity-70"
           />

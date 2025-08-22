@@ -7,7 +7,7 @@ import crypto from "crypto";
 const WEBHOOK_SECRET = process.env.APIBARA_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
-  const signature = req.headers.get("x-signature") || "";
+  const signature = req.headers.get("x-signature") ?? "";
   const rawBody = await req.text();
 
   if (!verifySignature(rawBody, signature)) {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const body = JSON.parse(rawBody);
     const { taskId, completer, txHash, resolutionOutcome } = body;
 
-    if (!taskId || !completer || !txHash || !resolutionOutcome) {
+    if (!taskId ?? !completer ?? !txHash ?? !resolutionOutcome) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 

@@ -4,10 +4,12 @@ use starknet::ContractAddress;
 #[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 #[allow(starknet::store_no_default_variant)]
 pub enum TaskStatus {
+    Draft,
     Active, // Task is active and can receive submissions
     Disputed, // Task has a disputed submission
     Completed, // All required submissions completed
-    Cancelled // Task was cancelled
+    Cancelled, // Task was cancelled
+    Paused //Task was paused
 }
 
 /// Core data structure for storing task information
@@ -17,6 +19,8 @@ pub struct TaskDetails {
     pub creator: ContractAddress,
     // Token address used for payment (STRK, USDC, etc.)
     pub token_address: ContractAddress,
+    // Description of what the task entails
+    pub description: felt252,
     // Reward amount per individual task completion
     pub reward_per_completion: u256,
     // Total amount initially funded for the task
@@ -30,14 +34,25 @@ pub struct TaskDetails {
 }
 
 /// Structure used for dispute tracking
-#[derive(Copy, Drop, Serde, PartialEq)]
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
 pub struct DisputeInfo {
     // Task ID the dispute is related to
-    task_id: felt252,
+    pub task_id: felt252,
     // Address of the completer whose submission is disputed
-    completer_address: ContractAddress,
+    pub completer_address: ContractAddress,
     // Optional ID linking to the off-chain submission
-    submission_id: felt252,
+    pub submission_id: felt252,
     // Whether the dispute has been resolved
-    resolved: bool,
+    pub resolved: bool,
+}
+
+/// Structure used for updating task details
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
+pub struct TaskUpdate {
+    pub task_id: felt252,
+    pub creator: ContractAddress,
+    pub old_required_completions: u32,
+    pub new_required_completions: u32,
+    pub old_reward_per_completion: u256,
+    pub new_reward_per_completion: u256,
 }

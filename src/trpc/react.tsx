@@ -27,6 +27,7 @@ function getSessionToken(): string | null {
 
   return null;
 }
+
 const getQueryClient = () => {
   if (typeof window === 'undefined') {
     // Server: always make a new query client

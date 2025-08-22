@@ -4,14 +4,19 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user, userProfiles } from '~/server/db/schema';
+import {
+  user,
+  userProfiles,
+  submissions,
+  tasks,
+  disputes,
+} from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
+
 // import { type InferModel } from "drizzle-orm";
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
-
-// type User = InferModel<typeof user>;
 
 const updateProfileSelfSchema = z
   .object({
@@ -67,6 +72,43 @@ export const profileRouter = createTRPCRouter({
     };
   }),
 
+  getUserStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
+      // Tasks created by user
+      ctx.db
+        .select({ count: count() })
+        .from(tasks)
+        .where(eq(tasks.creatorUserId, userId)),
+
+      // Submissions completed by user
+      ctx.db
+        .select({ count: count() })
+        .from(submissions)
+        .where(eq(submissions.completerUserId, userId)),
+
+      // Disputes raised by user
+      ctx.db
+        .select({ count: count() })
+        .from(disputes)
+        .leftJoin(
+          submissions,
+          eq(disputes.submissionId, submissions.submissionId),
+        )
+        .where(eq(submissions.completerUserId, userId)),
+    ]);
+
+    return {
+      success: true,
+      stats: {
+        createdTasks: Number(createdTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+        disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+      },
+    };
+  }),
+
   updateProfile: protectedProcedure
     .input(updateProfileSelfSchema)
     .mutation(async ({ ctx, input }) => {
@@ -117,9 +159,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      // const updatedUser: User = result[0];
-      const updatedUser: User = result[0]!; // 👈 the `!` tells TypeScript “this is not undefined”
-
+      const updatedUser: User = result[0];
       return {
         success: true,
         user: {
@@ -248,6 +288,14 @@ export const profileRouter = createTRPCRouter({
   updateExtendedProfile: protectedProcedure
     .input(
       z.object({
+        // user table fields
+        name: z.string().optional(),
+        displayName: z.string().optional(),
+        email: z.string().email().optional(),
+        image: z.string().url().optional(),
+        walletAddress: z.string().max(100).optional(),
+
+        // userProfiles table fields
         gender: z.string().optional(),
         niche: z.string().optional(),
         bio: z.string().optional(),
@@ -259,53 +307,59 @@ export const profileRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const now = new Date();
 
-      // Helper to clean up empty strings
       const clean = <T>(value: T | undefined) =>
         typeof value === 'string' && value.trim() === '' ? undefined : value;
 
-      const now = new Date();
-
-      // Prepare the data for update/insert
-      const updateData = {
-        gender: clean(input.gender),
-        niche: clean(input.niche),
-        bio: clean(input.bio),
-        location: clean(input.location),
-        timezone: clean(input.timezone),
-        skillTags: input.skillTags
-          ? JSON.stringify(input.skillTags)
-          : undefined,
-        socialLinks: input.socialLinks
-          ? JSON.stringify(input.socialLinks)
-          : undefined,
-        updatedAt: now,
-      };
-
       try {
-        // Check if profile already exists
-        const [existingProfile] = await ctx.db
-          .select({ profileId: userProfiles.profileId })
-          .from(userProfiles)
-          .where(eq(userProfiles.userId, userId));
+        await ctx.db.transaction(async (trx) => {
+          // --- Update user table fields ---
+          const userUpdate: Partial<typeof user.$inferInsert> = {
+            name: clean(input.name),
+            displayName: clean(input.displayName),
+            email: clean(input.email),
+            image: clean(input.image),
+            walletAddress: clean(input.walletAddress),
+            updatedAt: now,
+          };
+          await trx.update(user).set(userUpdate).where(eq(user.id, userId));
 
-        console.log('userId:', userId, 'existingProfile:', existingProfile);
+          // --- Update userProfiles table fields ---
+          const profileUpdate: Partial<typeof userProfiles.$inferInsert> = {
+            gender: clean(input.gender),
+            niche: clean(input.niche),
+            bio: clean(input.bio),
+            location: clean(input.location),
+            timezone: clean(input.timezone),
+            skillTags: input.skillTags
+              ? JSON.stringify(input.skillTags)
+              : undefined,
+            socialLinks: input.socialLinks
+              ? JSON.stringify(input.socialLinks)
+              : undefined,
+            updatedAt: now,
+          };
 
-        if (existingProfile) {
-          // Update the existing profile
-          await ctx.db
-            .update(userProfiles)
-            .set(updateData)
+          const [existingProfile] = await trx
+            .select({ profileId: userProfiles.profileId })
+            .from(userProfiles)
             .where(eq(userProfiles.userId, userId));
-        } else {
-          // create a new profile
-          await ctx.db.insert(userProfiles).values({
-            userId,
-            ...updateData,
-            isProfileComplete: true,
-            createdAt: now,
-          });
-        }
+
+          if (existingProfile) {
+            await trx
+              .update(userProfiles)
+              .set(profileUpdate)
+              .where(eq(userProfiles.userId, userId));
+          } else {
+            await trx.insert(userProfiles).values({
+              userId,
+              ...profileUpdate,
+              isProfileComplete: true,
+              createdAt: now,
+            });
+          }
+        });
 
         return { success: true, message: 'Profile updated successfully' };
       } catch (error) {

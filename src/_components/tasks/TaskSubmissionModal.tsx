@@ -9,7 +9,7 @@ interface TaskSubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskId: string;
-  taskTitle: string;
+  taskTitle: string | undefined;
 }
 
 export default function TaskSubmissionModal({

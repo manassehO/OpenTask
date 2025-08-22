@@ -10,6 +10,7 @@
 
 bun.lock
 /drizzle
+drizzle/*
 
 # database
 /prisma/db.sqlite

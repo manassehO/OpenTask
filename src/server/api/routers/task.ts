@@ -24,6 +24,7 @@ import {
   count,
   sql,
   inArray,
+  ne,
   type SQLWrapper,
   notInArray,
 } from 'drizzle-orm';
@@ -34,23 +35,39 @@ import {
 } from '../schemas/task';
 import { submitTaskSchema } from '../schemas/submission';
 
+import { randomUUID } from 'crypto';
+import { createAutoNotification } from '~/services/notifications';
+
 export const taskRouter = createTRPCRouter({
   /**
    * Get a single task by its ID
    */
   getTaskById: protectedProcedure
     .input(getTaskByIdSchema)
-    .query(async ({ input }) => {
-      const result = await db
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db
         .select({
           id: tasks.id,
           title: tasks.title,
           description: tasks.description,
+          instructions: tasks.instructions,
+          category: tasks.category,
+          rewardAmount: tasks.rewardAmount,
+          rewardTokenAddress: tasks.rewardTokenAddress,
+          platformFee: tasks.platformFee,
+          approvedCompletions: tasks.approvedCompletions,
+          inProgressCompletions: tasks.inProgressCompletions,
+          requiredCompletions: tasks.requiredCompletions,
+          deadline: tasks.deadline,
+          image: tasks.image,
           status: tasks.status,
           createdAt: tasks.createdAt,
           updatedAt: tasks.updatedAt,
           creatorId: tasks.creatorUserId,
           creatorDisplayName: user.displayName,
+          tags: tasks.tags,
+          example: tasks.example,
+          specialRequirements: tasks.specialRequirements,
         })
         .from(tasks)
         .where(eq(tasks.id, input.taskId))
@@ -60,7 +77,20 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
       }
 
-      return result[0];
+      // Parse tags for API response
+      const response = result[0];
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
+      return {
+        ...response,
+        tags: parsedTags,
+      };
     }),
 
   /**
@@ -84,22 +114,38 @@ export const taskRouter = createTRPCRouter({
         .insert(tasks)
         .values({
           ...rest,
+          tags: JSON.stringify(input.tags),
+          example: input.example ?? null,
+          specialRequirements: input.specialRequirements ?? null,
           deadline: parsedDeadline,
-          creatorUserId: userId, // Ensure task is created by the logged-in user
+          creatorUserId: userId,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .returning();
 
+      // Parse tags for API response
+      const response = createdTask;
+      let parsedTags: string[] = [];
+      if (response?.tags) {
+        try {
+          parsedTags = JSON.parse(response.tags) as string[];
+        } catch {
+          parsedTags = [];
+        }
+      }
       return {
         success: true,
-        task: createdTask,
+        task: {
+          ...response,
+          tags: parsedTags,
+        },
       };
     }),
 
   findTasks: protectedProcedure
     .input(findTaskSchema)
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { category, min_reward, sort_by, order, limit, page } = input;
 
       // Only allow sorting by whitelisted fields
@@ -256,9 +302,9 @@ export const taskRouter = createTRPCRouter({
 
       const result = await db
         .select({
+          creatorUserId: tasks.creatorUserId,
           id: tasks.id,
           title: tasks.title,
-          creatorUserId: tasks.creatorUserId,
           status: tasks.status,
           maxCompletions: tasks.requiredCompletions,
           approvedCompletions: tasks.approvedCompletions,
@@ -276,6 +322,25 @@ export const taskRouter = createTRPCRouter({
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Task is not active',
+        });
+      }
+
+      // Check if this user already claimed this task
+      const existingClaim = await db
+        .select()
+        .from(taskClaims)
+        .where(
+          and(
+            eq(taskClaims.taskId, taskId),
+            eq(taskClaims.userId, userId),
+            ne(taskClaims.status, 'REJECTED'),
+          ),
+        );
+
+      if (existingClaim.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'You have already claimed this task',
         });
       }
 
@@ -307,6 +372,16 @@ export const taskRouter = createTRPCRouter({
           .where(eq(tasks.id, taskId));
       });
 
+      console.log(taskData);
+
+      await createAutoNotification({
+        userId: taskData.creatorUserId,
+        type: 'TASK_ASSIGNED',
+        title: 'Task Claimed',
+        message: `${ctx.user.email} has claimed your task '${taskData.title}'`,
+        relatedTaskId: taskId,
+      });
+
       return { success: true, message: 'Task claimed successfully' };
     }),
 
@@ -334,6 +409,7 @@ export const taskRouter = createTRPCRouter({
             columns: {
               id: true,
               creatorUserId: true,
+              title: true,
             },
           },
         },
@@ -368,6 +444,16 @@ export const taskRouter = createTRPCRouter({
           rejectionReason: input.reason,
         })
         .where(eq(submissions.submissionId, input.submissionId));
+
+      // Auto Notification Trigger
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_REJECTED',
+        title: 'Task Submission Rejected',
+        message: `Your submission for ${submission.task.title} was rejected. Reason: ${input.reason}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
     }),
@@ -489,6 +575,18 @@ export const taskRouter = createTRPCRouter({
         return submission;
       });
 
+      // create notification
+      if (taskData.creatorUserId) {
+        await createAutoNotification({
+          userId: taskData.creatorUserId,
+          type: 'TASK_SUBMITTED',
+          title: 'Task Submission Received',
+          message: `${ctx.user.email} has submitted work for "${taskData.title}". Please review.`,
+          relatedTaskId: taskId,
+          relatedSubmissionId: newSubmission.submissionId,
+        });
+      }
+
       return {
         success: true,
         submissionId: newSubmission?.submissionId,
@@ -506,7 +604,7 @@ export const taskRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { status, limit, offset } = input;
 
       if (ctx.user.role !== 'ADMIN') {
@@ -587,6 +685,7 @@ export const taskRouter = createTRPCRouter({
       // Fetch the submission
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
+        with: { task: true },
       });
 
       if (!submission) {
@@ -620,6 +719,9 @@ export const taskRouter = createTRPCRouter({
           completerClaim: input.claim,
           status: 'OPEN',
           flagTxHash: input.txHash,
+          resolvedById: randomUUID(),
+          resolvedAt: new Date(),
+          updatedAt: new Date(),
         })
         .returning({ disputeId: disputes.disputeId });
 
@@ -628,6 +730,34 @@ export const taskRouter = createTRPCRouter({
         .update(submissions)
         .set({ status: 'DISPUTED' })
         .where(eq(submissions.submissionId, input.submissionId));
+
+      // Notify the task creator
+      await createAutoNotification({
+        userId: submission.task.creatorUserId,
+        type: 'DISPUTE_CREATED',
+        title: 'Dispute Opened',
+        message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      const admins = await ctx.db.query.user.findMany({
+        where: (u, { eq }) => eq(u.role, 'ADMIN'),
+        columns: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          createAutoNotification({
+            userId: admin.id,
+            type: 'DISPUTE_CREATED',
+            title: 'Dispute Opened',
+            message: `A dispute has been opened for ${submission.task.title}. Claim: ${input.claim}`,
+            relatedTaskId: submission.task.id,
+            relatedSubmissionId: submission.submissionId,
+          }),
+        ),
+      );
 
       return {
         success: true,
@@ -645,6 +775,13 @@ export const taskRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can approve submissions',
+        });
+      }
+
       // Fetch submission and task
       const submission = await ctx.db.query.submissions.findFirst({
         where: (s, { eq }) => eq(s.submissionId, input.submissionId),
@@ -659,7 +796,7 @@ export const taskRouter = createTRPCRouter({
       }
 
       // Verify task ownership
-      if (submission.task?.creatorUserId !== userId) {
+      if (submission.task.creatorUserId !== userId) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not your task' });
       }
 
@@ -684,15 +821,43 @@ export const taskRouter = createTRPCRouter({
         });
       }
 
-      // Update DB with txHash
-      await db
-        .update(submissions)
-        .set({
-          approvalTxHash: input.txHash,
-          status: 'APPROVED',
-          reviewedAt: new Date(),
-        })
-        .where(eq(submissions.submissionId, input.submissionId));
+      await db.transaction(async (tx) => {
+        // Update DB with txHash
+        await tx
+          .update(submissions)
+          .set({
+            approvalTxHash: input.txHash,
+            status: 'APPROVED',
+            reviewedAt: new Date(),
+          })
+          .where(eq(submissions.submissionId, input.submissionId));
+
+        // Increment approvedCompletions in related task
+        await tx
+          .update(tasks)
+          .set({ approvedCompletions: sql`${tasks.approvedCompletions} + 1` })
+          .where(eq(tasks.id, submission.task.id));
+      });
+
+      // Task approved notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'TASK_APPROVED',
+        title: 'Task Approved! 🎉',
+        message: `Your submission for ${submission.task.title} has been approved. Reward: ${submission.task.rewardAmount} ETH`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
+
+      // Payment received notification
+      await createAutoNotification({
+        userId: submission.completerUserId!,
+        type: 'PAYMENT_RECEIVED',
+        title: 'Payment Received! 💰',
+        message: `You've received ${submission.task.rewardAmount} ETH for completing ${submission.task.title}`,
+        relatedTaskId: submission.task.id,
+        relatedSubmissionId: submission.submissionId,
+      });
 
       return { success: true };
     }),
@@ -701,9 +866,10 @@ export const taskRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(20).default(8),
+        offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
       // Get tasks the user has already claimed or submitted
@@ -718,9 +884,13 @@ export const taskRouter = createTRPCRouter({
           .where(eq(submissions.completerUserId, userId)),
       ]);
 
+      type UUID = string;
+
       const excludedTaskIds: UUID[] = [
         ...new Set(
-          [...claimedTasks, ...submittedTasks].map((row) => row.taskId),
+          [...claimedTasks, ...submittedTasks]
+            .map((row) => row.taskId)
+            .filter((id): id is UUID => id !== null),
         ),
       ];
 
@@ -731,7 +901,7 @@ export const taskRouter = createTRPCRouter({
         .where(
           inArray(
             tasks.id,
-            submittedTasks.map((row) => row.taskId),
+            submittedTasks.map((row) => String(row.taskId)),
           ),
         );
 
@@ -744,7 +914,7 @@ export const taskRouter = createTRPCRouter({
         ? sql.raw(`ARRAY[${categories.map((cat) => `'${cat}'`).join(',')}]`)
         : sql.raw(`ARRAY[]::text[]`);
 
-      // ✅ Safely build WHERE conditions first
+      // Safely build WHERE conditions first
       const conditions: SQLWrapper[] = [
         eq(tasks.status, 'ACTIVE'),
         gte(tasks.deadline, now),
@@ -757,6 +927,13 @@ export const taskRouter = createTRPCRouter({
         ) as SQLWrapper;
         conditions.push(exclusionCondition);
       }
+
+      // Count total matching tasks
+      const [{ count: totalRecords }] = await db
+        .select({ count: sql<number>`COUNT(DISTINCT ${tasks.id})` })
+        .from(tasks)
+        .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+        .where(and(...conditions));
 
       // Query recommended tasks
       const recommendedTasks = await db
@@ -776,40 +953,99 @@ export const taskRouter = createTRPCRouter({
           desc(tasks.rewardAmount),
           desc(tasks.createdAt),
         )
-        .limit(input.limit);
+        .limit(input.limit)
+        .offset(input.offset);
+
+      const totalRecordsNum = Number(totalRecords);
 
       return {
-        success: true,
-        tasks: recommendedTasks.map((row) => row.task),
+        pageSize: input.limit,
+        offset: input.offset,
+        totalPages: Math.ceil(totalRecords / input.limit),
+        totalRecords: totalRecordsNum,
+        data: recommendedTasks.map((row) => row.task),
       };
     }),
 
-  getActiveTasks: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
+  getTasksByStatus: protectedProcedure
+    .input(
+      z.object({
+        status: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED']),
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { status, limit, offset } = input;
+      const userId = ctx.user.id;
 
-    const activeTasks = await db
-      .select({
-        id: tasks.id,
-        title: tasks.title,
-        description: tasks.description,
-        status: tasks.status,
-        rewardAmount: tasks.rewardAmount,
-        deadline: tasks.deadline,
-        claimedAt: taskClaims.createdAt,
-      })
-      .from(taskClaims)
-      .innerJoin(tasks, eq(tasks.id, taskClaims.taskId))
-      .where(
-        and(
-          eq(taskClaims.userId, userId),
-          eq(taskClaims.status, 'IN_PROGRESS'),
-          eq(tasks.status, 'ACTIVE'),
-        ),
-      )
-      .orderBy(desc(taskClaims.createdAt));
+      if (ctx.user.role !== 'CREATOR') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only creators can view their tasks',
+        });
+      }
 
-    return activeTasks;
-  }),
+      // Count total tasks for this creator + status
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(tasks)
+        .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)));
+
+      const totalRecordsNum = Number(count);
+      let taskQuery;
+
+      if (['ACTIVE', 'COMPLETED'].includes(status)) {
+        // Include claims
+        taskQuery = db
+          .select({
+            id: tasks.id,
+            title: tasks.title,
+            description: tasks.description,
+            status: tasks.status,
+            rewardAmount: tasks.rewardAmount,
+            deadline: tasks.deadline,
+            image: tasks.image,
+            createdAt: tasks.createdAt,
+            claimedBy: taskClaims.userId,
+            claimStatus: taskClaims.status,
+            claimedAt: taskClaims.createdAt,
+          })
+          .from(tasks)
+          .leftJoin(taskClaims, eq(tasks.id, taskClaims.taskId))
+          .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)))
+          .orderBy(desc(tasks.createdAt))
+          .limit(limit)
+          .offset(offset);
+      } else {
+        // No claims
+        taskQuery = db
+          .select({
+            id: tasks.id,
+            title: tasks.title,
+            description: tasks.description,
+            status: tasks.status,
+            rewardAmount: tasks.rewardAmount,
+            deadline: tasks.deadline,
+            image: tasks.image,
+            createdAt: tasks.createdAt,
+          })
+          .from(tasks)
+          .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)))
+          .orderBy(desc(tasks.createdAt))
+          .limit(limit)
+          .offset(offset);
+      }
+
+      const data = await taskQuery;
+
+      return {
+        pageSize: limit,
+        totalPages: Math.ceil(Number(count) / limit),
+        totalRecords: totalRecordsNum,
+        data,
+      };
+    }),
 
   cancelTask: protectedProcedure
     .input(
@@ -877,4 +1113,173 @@ export const taskRouter = createTRPCRouter({
       categories,
     };
   }),
+
+  getUserClaimedTasks: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Count total claimed tasks
+      const [{ count }] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(taskClaims)
+        .where(eq(taskClaims.userId, userId));
+
+      const totalRecordNum = Number(count);
+
+      // Fetch claimed tasks with task details
+      const claimedTasks = await db
+        .select({
+          claimId: taskClaims.id,
+          claimStatus: taskClaims.status,
+          claimCreatedAt: taskClaims.createdAt,
+          claimUpdatedAt: taskClaims.updatedAt,
+          taskId: tasks.id,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          rewardAmount: tasks.rewardAmount,
+          deadline: tasks.deadline,
+          image: tasks.image,
+          createdAt: tasks.createdAt,
+        })
+        .from(taskClaims)
+        .innerJoin(tasks, eq(taskClaims.taskId, tasks.id))
+        .where(eq(taskClaims.userId, userId))
+        .orderBy(desc(taskClaims.createdAt))
+        .limit(input.limit)
+        .offset(input.offset);
+
+      return {
+        pageSize: input.limit,
+        totalPages: Math.ceil(Number(count) / input.limit),
+        totalRecords: totalRecordNum,
+        data: claimedTasks,
+      };
+    }),
+
+  editTask: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid(),
+        title: z.string().min(3).max(255).optional(),
+        description: z.string().min(10).optional(),
+        category: z.string().min(2).max(100).optional(),
+        rewardAmount: z.string().optional(),
+        requiredCompletions: z.number().min(1).optional(),
+        deadline: z.string().datetime().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const { taskId, deadline, ...updates } = input;
+
+      // Fetch task to verify ownership and status
+      const task = await ctx.db.query.tasks.findFirst({
+        where: (t, { eq }) => eq(t.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        });
+      }
+
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not the owner of this task',
+        });
+      }
+
+      if (task.status !== 'DRAFT') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only draft tasks can be edited',
+        });
+      }
+
+      const updatePayload: Record<string, unknown> = {
+        ...updates,
+        updatedAt: new Date(),
+      };
+
+      if (deadline) {
+        updatePayload.deadline = new Date(deadline);
+      }
+
+      const [updatedTask] = await ctx.db
+        .update(tasks)
+        .set(updatePayload)
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      return {
+        success: true,
+        task: updatedTask,
+      };
+    }),
+
+  updateTaskStatus: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().uuid('Invalid task ID'),
+        newStatus: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED']),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { taskId, newStatus } = input;
+      const userId = ctx.user.id;
+
+      // Get the task
+      const task = await db.query.tasks.findFirst({
+        where: eq(tasks.id, taskId),
+      });
+
+      if (!task) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Task not found' });
+      }
+
+      // Ensure user is the creator
+      if (task.creatorUserId !== userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You are not allowed to update the status of this task',
+        });
+      }
+
+      // allowed transitions
+      const validTransitions: Record<string, string> = {
+        DRAFT: 'ACTIVE',
+        ACTIVE: 'COMPLETED',
+      };
+
+      if (task.status === newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Task is already ${newStatus}`,
+        });
+      }
+
+      if (validTransitions[task.status] !== newStatus) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid status transition from ${task.status} to ${newStatus}`,
+        });
+      }
+
+      // Update status
+      await db
+        .update(tasks)
+        .set({ status: newStatus })
+        .where(eq(tasks.id, taskId));
+
+      return { success: true, message: `Task status updated to ${newStatus}` };
+    }),
 });

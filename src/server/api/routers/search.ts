@@ -23,7 +23,7 @@ export const searchRouter = createTRPCRouter({
         limit: z.number().min(1).max(50).default(20),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { query, type, limit } = input;
       const likeQuery = `%${query}%`;
       const results: SearchResult[] = [];

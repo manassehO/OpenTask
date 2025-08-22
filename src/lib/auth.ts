@@ -1,9 +1,11 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { emailOTP } from 'better-auth/plugins';
+import { createAuthMiddleware } from 'better-auth/api';
+import * as schema from '~/server/db/schema';
+import { NotificationsService } from '~/services/notifications';
 import { env } from '~/env';
 import { db } from '~/server/db';
-import * as schema from '~/server/db/schema';
 import { sendOtp } from '~/server/email';
 
 export const auth = betterAuth({
@@ -22,24 +24,29 @@ export const auth = betterAuth({
       },
     },
   },
+
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
+
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
   },
+
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
     },
   },
+
   trustedOrigins: [
     'http://localhost:3000',
     env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   ],
+
   plugins: [
     emailOTP({
       otpLength: 6,
@@ -50,6 +57,22 @@ export const auth = betterAuth({
       },
     }),
   ],
+
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith('/sign-up')) {
+        const newSession = ctx.context.newSession;
+        if (newSession) {
+          // Send welcome notification
+          await NotificationsService.sendWelcome(newSession.user.id);
+        }
+      }
+    }),
+  },
+
+  advanced: {
+    cookiePrefix: 'opentask',
+  },
 });
 
 export type Session = typeof auth.$Infer.Session.session;

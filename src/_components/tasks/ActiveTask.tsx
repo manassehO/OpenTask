@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+<<<<<<< HEAD
 import { useEffect } from 'react';
 import { useTaskActions, useActiveTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
@@ -25,6 +26,9 @@ function convertApiTaskToUITask(apiTask: TaskDetail): Task {
     creator: apiTask.creatorDisplayName,
   };
 }
+=======
+import { getTaskById } from '~/app/api/task';
+>>>>>>> origin/develop
 
 export const ActiveTask = () => {
   const router = useRouter();
@@ -45,6 +49,7 @@ export const ActiveTask = () => {
     router.push(`/task/${taskId}`);
   };
 
+<<<<<<< HEAD
   const handleRemoveFromActive = (taskId: string) => {
     const confirmed = window.confirm(
       'Remove this task from your active tasks?',
@@ -143,6 +148,15 @@ export const ActiveTask = () => {
   }
 
   // Success state with tasks
+=======
+  const { data, isLoading, error } = getTaskById(
+    'e146ae52-0d8e-4760-b5d8-3d5b38b412d4',
+  );
+  console.log(data);
+  console.log(error);
+  console.log(isLoading);
+
+>>>>>>> origin/develop
   return (
     <>
       <div className="space-y-4">

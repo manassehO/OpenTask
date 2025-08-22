@@ -14,7 +14,10 @@ export const getTaskByIdSchema = z.object({
 });
 
 export const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(60, 'Title must be at most 60 characters'),
   description: z.string().min(1, 'Description is required'),
   instructions: z.string().min(1, 'Instructions are required'),
   category: z.string().min(1, 'Category is required'),
@@ -45,19 +48,11 @@ export const createTaskSchema = z.object({
   requiredCompletions: z
     .number()
     .int()
-    .min(1, 'Required completions must be at least 1'),
-  deadline: z.string().transform((val) => new Date(val)),
-  image: z
-    .string()
-    .max(255, 'Image URL must be at most 255 characters')
-    .optional(),
-  status: z.enum(allowedStatus), // assumed taskStatusEnum is mapped to allowedStatus
-  fundingTxHash: z
-    .string()
-    .max(255, 'Funding transaction hash must be at most 255 characters')
-    .refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-      message: 'Invalid fundingTxHash format',
-    }),
+    .min(1, 'requiredCompletions must be at least 1'),
+  status: z.enum(allowedStatus),
+  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+    message: 'Invalid fundingTxHash format',
+  }),
 });
 
 export const findTaskSchema = z.object({
