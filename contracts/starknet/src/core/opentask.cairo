@@ -4,7 +4,7 @@ pub mod OpenTask {
 
     // Component imports
     use OwnableComponent::InternalTrait;
-    use core::num::traits::Zero;
+    use core::num::traits::{Zero, OverflowingAdd};
     use opentask::errors::Errors;
 
     // OpenTask specific imports
@@ -475,7 +475,9 @@ pub mod OpenTask {
             assert(transfer_success, Errors::TRANSFER_FAILED);
 
             // Storage Updates: Increase total_funded_amount by amount
-            task.total_funded_amount += amount;
+            let (new_total_funded, has_overflow) = task.total_funded_amount.overflowing_add(amount);
+            assert(!has_overflow, Errors::OVERFLOWS_U256);
+            task.total_funded_amount = new_total_funded;
             task.status = TaskStatus::Active;
 
             self.tasks.write(task_id, task);
@@ -745,7 +747,7 @@ pub mod OpenTask {
 
             //Verify task is active
             assert(task.status == TaskStatus::Active, 'Task is not active');
-            assert(task.token_address ==token_address, 'Token mismatch');
+            assert(task.token_address == token_address, 'Token mismatch');
             assert(required_completions >= task.completed_count, 'Cannot reduce below completed');
             
             //Handle funding/refund logic

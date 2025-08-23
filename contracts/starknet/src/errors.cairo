@@ -5,6 +5,8 @@ pub mod Errors {
     pub const ZERO_ADDRESS: felt252 = 'Zero address not allowed';
     pub const NOT_AUTHORIZED: felt252 = 'Not authorized';
     pub const INVALID_AMOUNT: felt252 = 'Invalid amount';
+    pub const OVERFLOWS_U256: felt252 = 'Amount overflows U256';
+    pub const OVERFLOWS_U128: felt252 = 'Amount overflows U128';
 
     // Tasks
     pub const NOT_CREATOR: felt252 = 'Caller is not the creator';
