@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import { signIn } from '~/lib/auth-client';
+import { toast } from '~/_components/ui/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -35,8 +36,17 @@ function EmailLogin() {
       await signIn.email({
         email: data.email,
         password: data.password,
+        fetchOptions: {
+          onError: () => {
+            console.log('Login error');
+            toast({
+              title: 'Login error',
+              description: 'Please check your email and password',
+              variant: 'destructive',
+            });
+          },
+        },
       });
-      router.push('/home');
     } catch (error) {
       console.error('Login error:', error);
     }

@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { emailOTP } from 'better-auth/plugins';
 import { createAuthMiddleware } from 'better-auth/api';
-// import * as schema from '~/server/db/schema';
+import * as schema from '~/server/db/schema';
 import { NotificationsService } from '~/services/notifications';
 import { env } from '~/env';
 import { db } from '~/server/db';
@@ -11,22 +11,8 @@ import { sendOtp } from '~/server/email';
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
-    schema: {
-      user: {
-        id: 'uuid',
-        email: 'string',
-        password: 'string',
-        name: 'string',
-        role: 'string',
-      },
-      session: {
-        id: 'uuid',
-        userId: 'uuid',
-        expires: 'date',
-      },
-    },
+    schema,
   }),
-
   secret: env.BETTER_AUTH_SECRET,
   basePath: '/api/auth',
   user: {
@@ -65,6 +51,8 @@ export const auth = betterAuth({
     emailOTP({
       otpLength: 6,
       expiresIn: 60,
+      sendVerificationOnSignUp: true,
+      overrideDefaultEmailVerification: true,
       async sendVerificationOTP({ email, otp }) {
         console.log('Sending verification OTP to', email, otp);
         await sendOtp(email, otp);
@@ -82,6 +70,10 @@ export const auth = betterAuth({
         }
       }
     }),
+  },
+
+  advanced: {
+    cookiePrefix: 'opentask',
   },
 });
 
