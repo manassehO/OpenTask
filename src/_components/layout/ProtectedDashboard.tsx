@@ -31,7 +31,7 @@ export function ProtectedDashboard({ children }: ProtectedDashboardProps) {
   }
 
   if (!session) {
-    return null; // Will redirect to login
+    return null;
   }
 
   return <>{children}</>;
