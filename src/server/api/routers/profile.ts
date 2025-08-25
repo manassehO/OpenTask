@@ -4,7 +4,7 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user, userProfiles, submissions, tasks, disputes } from '~/server/db/schema';
+import { user, userProfiles, submissions, tasks, disputes, userStats } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, count } from 'drizzle-orm';
 
@@ -69,7 +69,7 @@ export const profileRouter = createTRPCRouter({
 getUserStats: protectedProcedure.query(async ({ ctx }) => {
   const userId = ctx.user.id;
 
-  const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
+  const [createdTasks, completedTasks, raisedDisputes,] = await Promise.all([
     // Tasks created by user
     ctx.db
       .select({ count: count() })
@@ -88,7 +88,51 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
       .from(disputes)
       .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
       .where(eq(submissions.completerUserId, userId)),
+
   ]);
+
+    // First, ensure user_stats row exists
+  let userStatsRow = await ctx.db
+    .select({
+      totalEarnings: userStats.totalEarnings,
+      currentStreak: userStats.currentStreak,
+      longestStreak: userStats.longestStreak,
+      earningSummary: userStats.earningSummary, 
+    })
+    .from(userStats)
+    .where(eq(userStats.userId, userId))
+    .limit(1);
+
+  // If it doesn't exist yet, create it
+  if (!userStatsRow[0]) {
+    await ctx.db.insert(userStats).values({
+      userId,
+      totalEarnings: '0',
+      currentStreak: 0,
+      longestStreak: 0,
+      earningSummary: {},
+    });
+
+    // Re-fetch after creation
+    userStatsRow = await ctx.db
+      .select({
+        totalEarnings: userStats.totalEarnings,
+        currentStreak: userStats.currentStreak,
+        longestStreak: userStats.longestStreak,
+        earningSummary: userStats.earningSummary,
+      })
+      .from(userStats)
+      .where(eq(userStats.userId, userId))
+      .limit(1);
+  }
+
+  const stats = userStatsRow[0] ?? {
+  totalEarnings: '0',
+  currentStreak: 0,
+  longestStreak: 0,
+  earningSummary: {},
+  };
+
 
   return {
     success: true,
@@ -96,6 +140,10 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
       createdTasks: Number(createdTasks[0]?.count ?? 0),
       completedTasks: Number(completedTasks[0]?.count ?? 0),
       disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+      totalEarnings: stats.totalEarnings,
+      currentStreak: stats.currentStreak,
+      longestStreak: stats.longestStreak,
+      earningSummary: stats.earningSummary,
     },
   };
 }),
@@ -151,7 +199,7 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
         });
       }
 
-      const updatedUser: User = result[0];
+      const updatedUser: User = result[0]!;
       return {
         success: true,
         user: {
