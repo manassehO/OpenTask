@@ -5,8 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
+import { routes } from '~/lib/route';
 
-function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
+function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useAtom(sidebarAtom);
 
@@ -21,28 +22,28 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     {
       title: 'Dashboard',
       icon: '/icons/sidebar_home.svg',
-      route: '/admin/home',
+      route: routes.admin.root,
     },
     {
       title: 'Manage Users',
       icon: '/icons/users.svg',
-      route: '/admin/users',
+      route: routes.admin.users,
     },
-    { title: 'Tasks', icon: '/icons/darkTask.svg', route: '/admin/tasks' },
+    { title: 'Tasks', icon: '/icons/darkTask.svg', route: routes.admin.tasks },
     {
       title: 'Dispute',
       icon: '/icons/dispute.svg',
-      route: '/admin/dispute',
+      route: routes.admin.disputes,
     },
     {
       title: 'Settings',
       icon: '/icons/sidebar_settings.svg',
-      route: '/admin/settings',
+      route: routes.admin.settings,
     },
     {
       title: 'Contents',
       icon: '/icons/content.svg',
-      route: '/admin/contents',
+      route: routes.admin.content,
     },
   ];
 
@@ -51,45 +52,54 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'user' }) {
     {
       title: 'Dashboard',
       icon: '/icons/sidebar_home.svg',
-      route: '/creator/home',
+      route: routes.creator.root,
     },
     {
       title: 'Tasks',
       icon: '/icons/darkTask.svg',
-      route: '/creator/task',
+      route: routes.creator.tasks,
     },
     {
       title: 'Analytics',
       icon: '/icons/analytics.svg',
-      route: '/creator/analytics',
+      route: routes.creator.root,
     },
   ];
 
   // user side bar list
   const userList = [
-    { title: 'Home', icon: '/icons/sidebar_home.svg', route: '/home' },
-    { title: 'Tasks', icon: '/icons/sidebar_task.svg', route: '/task' },
+    {
+      title: 'Home',
+      icon: '/icons/sidebar_home.svg',
+      route: routes.completer.root,
+    },
+    {
+      title: 'Tasks',
+      icon: '/icons/sidebar_task.svg',
+      route: routes.completer.tasks,
+    },
     {
       title: 'Earnings & Rewards',
       icon: '/icons/sidebar_earning.svg',
-      route: '/earnings',
+      route: routes.completer.earnings,
     },
     {
       title: 'Learning Center',
       icon: '/icons/sidebar_learning.svg',
-      route: '/learning',
+      route: routes.completer.learning,
     },
     {
       title: 'Settings',
       icon: '/icons/sidebar_settings.svg',
-      route: '/settings',
+      route: routes.completer.settings,
     },
   ];
 
   let sidebar_list;
   if (role === 'admin') sidebar_list = adminList;
   else if (role === 'creator') sidebar_list = creatorList;
-  else sidebar_list = userList;
+  else if (role === 'completer') sidebar_list = userList;
+  else return;
 
   return (
     <>

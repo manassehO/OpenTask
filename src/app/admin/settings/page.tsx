@@ -132,7 +132,7 @@ const Page = () => {
               },
               {
                 header: 'Action',
-                accessor: (row) => (
+                accessor: () => (
                   <div className="flex gap-4">
                     <Image
                       src={editIcon}
