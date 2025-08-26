@@ -14,6 +14,7 @@ import {
   timestamp,
   uuid,
   varchar,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `opentask_${name}`);
@@ -528,6 +529,7 @@ export const userStats = createTable('user_stats', {
     .references(() => user.id, { onDelete: 'cascade' })
     .unique(),
   totalEarnings: numeric('total_earnings').default('0').notNull(),
+  earningSummary: jsonb('earning_summary').default(sql`'{}'::jsonb`).notNull(),
   totalTasksCompleted: integer('total_tasks_completed').default(0).notNull(),
   currentStreak: integer('current_streak').default(0).notNull(),
   longestStreak: integer('longest_streak').default(0).notNull(),
