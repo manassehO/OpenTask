@@ -45,3 +45,25 @@ pub struct DisputeInfo {
     // Whether the dispute has been resolved
     pub resolved: bool,
 }
+
+/// Structure used to persist submission data
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
+pub struct SubmissionInfo {
+    // Address that submitted the completion
+    pub completer: ContractAddress,
+    // Opaque submission payload reference (e.g., CID/URL/hash)
+    pub submission_data: felt252,
+    // Whether the submission has been approved
+    pub approved: bool,
+}
+
+/// Structure used for updating task details
+#[derive(Copy, Drop, Serde, PartialEq, starknet::Store)]
+pub struct TaskUpdate {
+    pub task_id: felt252,
+    pub creator: ContractAddress,
+    pub old_required_completions: u32,
+    pub new_required_completions: u32,
+    pub old_reward_per_completion: u256,
+    pub new_reward_per_completion: u256,
+}
