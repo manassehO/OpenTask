@@ -294,6 +294,10 @@ pub mod OpenTask {
         // Uniques tracking (bool flags)
         is_creator_seen: Map<ContractAddress, bool>,
         is_worker_seen: Map<ContractAddress, bool>,
+        task_submissions: Map<felt252, Vec<felt252>>, // Tracks submission IDs per task
+        task_disputes: Map<felt252, Vec<felt252>>, // Tracks dispute submission IDs per task
+
+
     }
     ///////////////  CONSTRUCTOR  ///////////////
     #[constructor]
@@ -579,6 +583,9 @@ pub mod OpenTask {
                 task_id, completer_address: caller, submission_id, resolved: false,
             };
             self.disputes.entry((task_id, submission_id)).write(dispute_info);
+
+            // Store the submission ID in the `task_disputes` mapping for iteration
+            self.task_disputes.entry(task_id).push(submission_id);
 
             // Update task status to Disputed
             let mut updated_task = task;
@@ -948,11 +955,23 @@ pub mod OpenTask {
         fn cancel_task_application(
             ref self: ContractState, task_id: felt252, application_id: felt252,
         ) -> bool {
-            let mut task = self.tasks.read(task_id);
+            // Validate that the task exists before attempting to cancel an application for it.
             let caller = get_caller_address();
-            let mut user_stats = self.user_stats.read(caller);
-            // TODO: Implement cancel task application logic
+            let mut task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
 
+            let applicant = self.task_applications.read((task_id, application_id));
+            assert(!applicant.is_zero(), 'APPLICATION_NOT_FOUND');
+
+            // Cancel task application , let claim == false
+            self.task_worker_claimed.write((task_id, caller), false);
+
+            // Reduce the task_claimed_count by 1 after cancellation
+            let claimed = self.task_claimed_count.read(task_id);
+            self.task_claimed_count.write(task_id, claimed - 1_u32);
+
+            let mut user_stats = self.user_stats.read(caller);
             user_stats.active_tasks -= 1;
             self.user_stats.write(caller, user_stats);
 
@@ -960,8 +979,6 @@ pub mod OpenTask {
             self
                 .total_funds_refunded
                 .write(self.total_funds_refunded.read() + task.total_funded_amount);
-
-            self.total_tasks_active.write(self.total_tasks_active.read() - 1);
 
             // Emit TaskApplicationCancelled event
             self
@@ -973,13 +990,24 @@ pub mod OpenTask {
         }
 
         fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get submissions logic
-            ArrayTrait::new()
+            let submissions_vec = self.task_submissions.entry(task_id);
+            let mut all_submissions = ArrayTrait::new();
+            let len = submissions_vec.len();
+            for i in 0..len {
+                all_submissions.append(submissions_vec.at(i).read());
+            };
+            all_submissions
+            
         }
 
         fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // To do: Implement dispute retrieval logic
-            array![]
+            let disputes_vec = self.task_disputes.entry(task_id);
+            let mut all_disputes = ArrayTrait::new();
+            let len = disputes_vec.len();
+            for i in 0..len {
+                all_disputes.append(disputes_vec.at(i).read());
+            };
+            all_disputes
         }
 
         fn get_protocol_stats(self: @ContractState) -> ProtocolStats {
@@ -1071,6 +1099,9 @@ pub mod OpenTask {
 
             let info = SubmissionInfo { completer: caller, submission_data, approved: false };
             self.submissions.write((task_id, submission_id), info);
+
+            // Update task_submissions
+            self.task_submissions.entry(task_id).push(submission_id);
 
             self.emit(SubmissionReceived { task_id, submission_id, completer: caller });
             true
