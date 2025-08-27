@@ -4,10 +4,7 @@ import { useRecommendedTasksStore } from '../store/recommendedTaskStore';
 export function useRecommendedTasks() {
   const { limit, offset } = useRecommendedTasksStore();
 
-  const query = api.task.getRecommendedTasks.useQuery(
-    { limit, offset },
-    { keepPreviousData: true },
-  );
+  const query = api.task.getRecommendedTasks.useQuery({ limit, offset });
 
   return query;
 }

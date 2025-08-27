@@ -27,15 +27,16 @@ const greetings = [
 
 function GreetingCard() {
   const { user, isLoading } = useProfile();
+  console.log('user from greeting card', user);
 
   if (isLoading) {
     return (
       <div className="flex flex-col">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-56 animate-pulse rounded-full bg-gray-400"></div>
-          <div className="size-4 animate-pulse rounded-full bg-gray-400"></div>
+          <div className="h-2 w-56 animate-pulse rounded-full bg-gray-200"></div>
+          <div className="size-4 animate-pulse rounded-full bg-gray-200"></div>
         </div>
-        <div className="h-2 w-52 animate-pulse rounded-full bg-gray-400"></div>
+        <div className="h-2 w-52 animate-pulse rounded-full bg-gray-200"></div>
       </div>
     );
   }
