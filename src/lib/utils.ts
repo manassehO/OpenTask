@@ -21,3 +21,9 @@ export function parseAmountToBigInt(amount: string, decimals = 18): bigint {
  * and prevents issues with displaying progress in the UI. */
 export const clampProgress = (value: number) =>
   Math.min(100, Math.max(0, value));
+
+export const UserType = {
+  admin: 'ADMIN',
+  completer: 'COMPLETER',
+  creator: 'CREATOR',
+};
