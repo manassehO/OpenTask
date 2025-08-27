@@ -4,7 +4,8 @@ pub mod OpenTask {
 
     // Component imports
     use OwnableComponent::InternalTrait;
-    use core::num::traits::Zero;
+    use core::num::traits::{Zero, OverflowingAdd};
+    use opentask::errors::Errors;
 
     // OpenTask specific imports
     use opentask::interfaces::Iopentask::IOpenTask;
@@ -255,6 +256,8 @@ pub mod OpenTask {
     struct Storage {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        paused: bool,
+        reentrant_locked: bool,
         tasks: Map<felt252, TaskDetails>,
         disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
         submissions: Map<
@@ -316,9 +319,16 @@ pub mod OpenTask {
             reward_per_completion: u256,
             required_completions: u32,
         ) -> bool {
+            // Paused guard
+            assert(!self.paused.read(), Errors::PAUSED);
+
             // Caller identity must match provided creator for consistency
             let caller = get_caller_address();
-            assert(caller == creator, 'NOT_CREATOR');
+            assert(caller == creator, Errors::NOT_CREATOR);
+            assert(!creator.is_zero(), Errors::ZERO_ADDRESS);
+            assert(!token_address.is_zero(), Errors::ZERO_ADDRESS);
+            assert(reward_per_completion > 0, Errors::INVALID_AMOUNT);
+            assert(required_completions > 0, Errors::INVALID_AMOUNT);
 
             let prev_total_tasks = self.total_tasks_created.read();
             let prev_active_tasks = self.total_tasks_active.read();
@@ -369,9 +379,11 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
-            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
+            assert(task.status == TaskStatus::Active, Errors::TASK_NOT_ACTIVE);
 
             task.status = TaskStatus::Paused;
 
@@ -386,9 +398,11 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
-            assert(task.status == TaskStatus::Paused, 'TASK_NOT_PAUSED');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
+            assert(task.status == TaskStatus::Paused, Errors::TASK_NOT_PAUSED);
 
             task.status = TaskStatus::Active;
 
@@ -403,15 +417,17 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
 
             let refund = task.total_funded_amount
                 - (task.completed_count.try_into().unwrap() * task.reward_per_completion);
 
             let token = IERC20Dispatcher { contract_address: task.token_address };
             let transfer_success = token.transfer(task.creator, refund);
-            assert(transfer_success, 'TRANSFER_FAILED');
+            assert(transfer_success, Errors::TRANSFER_FAILED);
 
             task.status = TaskStatus::Cancelled;
 
@@ -438,15 +454,20 @@ pub mod OpenTask {
         fn fund_task(
             ref self: ContractState, task_id: felt252, token_address: ContractAddress, amount: u256,
         ) -> bool {
+            // Paused + Reentrancy guards
+            assert(!self.paused.read(), Errors::PAUSED);
+            assert(!self.reentrant_locked.read(), Errors::REENTRANT);
+            self.reentrant_locked.write(true);
+
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
 
             // Verify token_address matches task's token
-            assert(task.token_address == token_address, 'TOKEN_MISMATCH');
+            assert(task.token_address == token_address, Errors::TOKEN_MISMATCH);
 
             // Validate amount > 0
-            assert(amount > 0, 'INVALID_AMOUNT');
+            assert(amount > 0, Errors::INVALID_AMOUNT);
 
             let prev_total_funds_escrowed = self.total_funds_escrowed.read();
 
@@ -455,8 +476,8 @@ pub mod OpenTask {
             // so that rewards can be fairly distributed to all expected participants.
             let total_required_amount = task.reward_per_completion
                 * task.required_completions.into();
-            assert(amount == total_required_amount, 'MISMATCHED_TOTAL_REWARD');
-            assert(task.total_funded_amount == 0_u256, 'ALREADY_FUNDED');
+            assert(amount == total_required_amount, Errors::MISMATCHED_TOTAL_REWARD);
+            assert(task.total_funded_amount == 0_u256, Errors::ALREADY_FUNDED);
 
             // Get caller address for token transfer
             let caller = get_caller_address();
@@ -465,12 +486,14 @@ pub mod OpenTask {
             // Token Transfer: Transfer tokens from caller to contract
             let token = IERC20Dispatcher { contract_address: token_address };
             let allowance = token.allowance(caller, contract_address);
-            assert(allowance < amount, 'INSUFFICIENT_ALLOWANCE');
+            assert(allowance < amount, Errors::INSUFFICIENT_ALLOWANCE);
             let transfer_success = token.transfer_from(caller, contract_address, amount);
-            assert(transfer_success, 'TRANSFER_FAILED');
+            assert(transfer_success, Errors::TRANSFER_FAILED);
 
             // Storage Updates: Increase total_funded_amount by amount
-            task.total_funded_amount += amount;
+            let (new_total_funded, has_overflow) = task.total_funded_amount.overflowing_add(amount);
+            assert(!has_overflow, Errors::OVERFLOWS_U256);
+            task.total_funded_amount = new_total_funded;
             task.status = TaskStatus::Active;
 
             self.tasks.write(task_id, task);
@@ -494,6 +517,7 @@ pub mod OpenTask {
                         task_id: task_id, funder: caller, amount: amount, token: token_address,
                     },
                 );
+            self.reentrant_locked.write(false);
 
             self.emit(FundsEscrowed { task_id: task_id, token: token_address, amount: amount });
             true
@@ -575,8 +599,8 @@ pub mod OpenTask {
             let caller = get_caller_address();
 
             let task: TaskDetails = self.tasks.read(task_id);
-            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
-            assert(task.status != TaskStatus::Disputed, 'TASK_ALREADY_DISPUTED');
+            assert(!task.creator.is_zero(), Errors::TASK_NOT_FOUND);
+            assert(task.status != TaskStatus::Disputed, Errors::TASK_ALREADY_DISPUTED);
 
             // Create dispute record
             let dispute_info = DisputeInfo {
@@ -611,8 +635,8 @@ pub mod OpenTask {
 
             let mut dispute = self.disputes.read((task_id, submission_id));
 
-            assert(!dispute.completer_address.is_zero(), 'DISPUTE_NOT_FOUND');
-            assert(!dispute.resolved, 'DISPUTE_ALREADY_RESOLVED');
+            assert(!dispute.completer_address.is_zero(), Errors::DISPUTE_NOT_FOUND);
+            assert(!dispute.resolved, Errors::DISPUTE_ALREADY_RESOLVED);
 
             dispute.resolved = true;
             self.disputes.write((task_id, submission_id), dispute);
@@ -676,8 +700,11 @@ pub mod OpenTask {
 
 
         fn withdraw_earnings(ref self: ContractState, user_address: ContractAddress) -> bool {
+            assert(!self.paused.read(), Errors::PAUSED);
+            assert(!self.reentrant_locked.read(), Errors::REENTRANT);
+            self.reentrant_locked.write(true);
             let caller = get_caller_address();
-            assert(caller == user_address, 'NOT_OWNER_OF_FUNDS');
+            assert(caller == user_address, Errors::NOT_OWNER_OF_FUNDS);
 
             let tokens = self.user_tokens.entry(user_address);
 
@@ -716,8 +743,8 @@ pub mod OpenTask {
                 i += 1;
             }
 
-            assert(any_funds, 'NO_FUNDS');
-
+            assert(any_funds, Errors::NO_FUNDS);
+            self.reentrant_locked.write(false);
             true
         }
 
