@@ -40,7 +40,7 @@ export default function WhereYouBelongCard() {
 
         <GetStarted
           component={
-            <button className="my-3 z-50 h-[53px] w-[182px] rounded-[4px] bg-white text-center text-[#3B82F6] lg:my-6">
+            <button className="z-50 my-3 h-[53px] w-[182px] rounded-[4px] bg-white text-center text-[#3B82F6] lg:my-6">
               Register Now
             </button>
           }

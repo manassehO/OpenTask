@@ -4,7 +4,8 @@ pub mod OpenTask {
 
     // Component imports
     use OwnableComponent::InternalTrait;
-    use core::num::traits::Zero;
+    use core::num::traits::{Zero, OverflowingAdd};
+    use opentask::errors::Errors;
 
     // OpenTask specific imports
     use opentask::interfaces::Iopentask::IOpenTask;
@@ -255,6 +256,8 @@ pub mod OpenTask {
     struct Storage {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        paused: bool,
+        reentrant_locked: bool,
         tasks: Map<felt252, TaskDetails>,
         disputes: Map<(felt252, felt252), DisputeInfo>, // (task_id, submission_id) → DisputeInfo
         submissions: Map<
@@ -294,6 +297,10 @@ pub mod OpenTask {
         // Uniques tracking (bool flags)
         is_creator_seen: Map<ContractAddress, bool>,
         is_worker_seen: Map<ContractAddress, bool>,
+        task_submissions: Map<felt252, Vec<felt252>>, // Tracks submission IDs per task
+        task_disputes: Map<felt252, Vec<felt252>>, // Tracks dispute submission IDs per task
+
+
     }
     ///////////////  CONSTRUCTOR  ///////////////
     #[constructor]
@@ -312,9 +319,16 @@ pub mod OpenTask {
             reward_per_completion: u256,
             required_completions: u32,
         ) -> bool {
+            // Paused guard
+            assert(!self.paused.read(), Errors::PAUSED);
+
             // Caller identity must match provided creator for consistency
             let caller = get_caller_address();
-            assert(caller == creator, 'NOT_CREATOR');
+            assert(caller == creator, Errors::NOT_CREATOR);
+            assert(!creator.is_zero(), Errors::ZERO_ADDRESS);
+            assert(!token_address.is_zero(), Errors::ZERO_ADDRESS);
+            assert(reward_per_completion > 0, Errors::INVALID_AMOUNT);
+            assert(required_completions > 0, Errors::INVALID_AMOUNT);
 
             let prev_total_tasks = self.total_tasks_created.read();
             let prev_active_tasks = self.total_tasks_active.read();
@@ -365,9 +379,11 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
-            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
+            assert(task.status == TaskStatus::Active, Errors::TASK_NOT_ACTIVE);
 
             task.status = TaskStatus::Paused;
 
@@ -382,9 +398,11 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
-            assert(task.status == TaskStatus::Paused, 'TASK_NOT_PAUSED');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
+            assert(task.status == TaskStatus::Paused, Errors::TASK_NOT_PAUSED);
 
             task.status = TaskStatus::Active;
 
@@ -399,15 +417,17 @@ pub mod OpenTask {
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
             let caller = get_caller_address();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
-            assert(caller == self.ownable.owner() || caller == task.creator, 'INVALID_CALLER');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
+            assert(
+                caller == self.ownable.owner() || caller == task.creator, Errors::NOT_AUTHORIZED,
+            );
 
             let refund = task.total_funded_amount
                 - (task.completed_count.try_into().unwrap() * task.reward_per_completion);
 
             let token = IERC20Dispatcher { contract_address: task.token_address };
             let transfer_success = token.transfer(task.creator, refund);
-            assert(transfer_success, 'TRANSFER_FAILED');
+            assert(transfer_success, Errors::TRANSFER_FAILED);
 
             task.status = TaskStatus::Cancelled;
 
@@ -434,15 +454,20 @@ pub mod OpenTask {
         fn fund_task(
             ref self: ContractState, task_id: felt252, token_address: ContractAddress, amount: u256,
         ) -> bool {
+            // Paused + Reentrancy guards
+            assert(!self.paused.read(), Errors::PAUSED);
+            assert(!self.reentrant_locked.read(), Errors::REENTRANT);
+            self.reentrant_locked.write(true);
+
             // Validation: Check task exists
             let mut task = self.tasks.entry(task_id).read();
-            assert(task.creator.is_non_zero(), 'TASK_NOT_EXISTS');
+            assert(task.creator.is_non_zero(), Errors::TASK_NOT_EXISTS);
 
             // Verify token_address matches task's token
-            assert(task.token_address == token_address, 'TOKEN_MISMATCH');
+            assert(task.token_address == token_address, Errors::TOKEN_MISMATCH);
 
             // Validate amount > 0
-            assert(amount > 0, 'INVALID_AMOUNT');
+            assert(amount > 0, Errors::INVALID_AMOUNT);
 
             let prev_total_funds_escrowed = self.total_funds_escrowed.read();
 
@@ -451,8 +476,8 @@ pub mod OpenTask {
             // so that rewards can be fairly distributed to all expected participants.
             let total_required_amount = task.reward_per_completion
                 * task.required_completions.into();
-            assert(amount == total_required_amount, 'MISMATCHED_TOTAL_REWARD');
-            assert(task.total_funded_amount == 0_u256, 'ALREADY_FUNDED');
+            assert(amount == total_required_amount, Errors::MISMATCHED_TOTAL_REWARD);
+            assert(task.total_funded_amount == 0_u256, Errors::ALREADY_FUNDED);
 
             // Get caller address for token transfer
             let caller = get_caller_address();
@@ -461,12 +486,14 @@ pub mod OpenTask {
             // Token Transfer: Transfer tokens from caller to contract
             let token = IERC20Dispatcher { contract_address: token_address };
             let allowance = token.allowance(caller, contract_address);
-            assert(allowance < amount, 'INSUFFICIENT_ALLOWANCE');
+            assert(allowance < amount, Errors::INSUFFICIENT_ALLOWANCE);
             let transfer_success = token.transfer_from(caller, contract_address, amount);
-            assert(transfer_success, 'TRANSFER_FAILED');
+            assert(transfer_success, Errors::TRANSFER_FAILED);
 
             // Storage Updates: Increase total_funded_amount by amount
-            task.total_funded_amount += amount;
+            let (new_total_funded, has_overflow) = task.total_funded_amount.overflowing_add(amount);
+            assert(!has_overflow, Errors::OVERFLOWS_U256);
+            task.total_funded_amount = new_total_funded;
             task.status = TaskStatus::Active;
 
             self.tasks.write(task_id, task);
@@ -490,6 +517,7 @@ pub mod OpenTask {
                         task_id: task_id, funder: caller, amount: amount, token: token_address,
                     },
                 );
+            self.reentrant_locked.write(false);
 
             self.emit(FundsEscrowed { task_id: task_id, token: token_address, amount: amount });
             true
@@ -571,14 +599,17 @@ pub mod OpenTask {
             let caller = get_caller_address();
 
             let task: TaskDetails = self.tasks.read(task_id);
-            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
-            assert(task.status != TaskStatus::Disputed, 'TASK_ALREADY_DISPUTED');
+            assert(!task.creator.is_zero(), Errors::TASK_NOT_FOUND);
+            assert(task.status != TaskStatus::Disputed, Errors::TASK_ALREADY_DISPUTED);
 
             // Create dispute record
             let dispute_info = DisputeInfo {
                 task_id, completer_address: caller, submission_id, resolved: false,
             };
             self.disputes.entry((task_id, submission_id)).write(dispute_info);
+
+            // Store the submission ID in the `task_disputes` mapping for iteration
+            self.task_disputes.entry(task_id).push(submission_id);
 
             // Update task status to Disputed
             let mut updated_task = task;
@@ -604,8 +635,8 @@ pub mod OpenTask {
 
             let mut dispute = self.disputes.read((task_id, submission_id));
 
-            assert(!dispute.completer_address.is_zero(), 'DISPUTE_NOT_FOUND');
-            assert(!dispute.resolved, 'DISPUTE_ALREADY_RESOLVED');
+            assert(!dispute.completer_address.is_zero(), Errors::DISPUTE_NOT_FOUND);
+            assert(!dispute.resolved, Errors::DISPUTE_ALREADY_RESOLVED);
 
             dispute.resolved = true;
             self.disputes.write((task_id, submission_id), dispute);
@@ -669,8 +700,11 @@ pub mod OpenTask {
 
 
         fn withdraw_earnings(ref self: ContractState, user_address: ContractAddress) -> bool {
+            assert(!self.paused.read(), Errors::PAUSED);
+            assert(!self.reentrant_locked.read(), Errors::REENTRANT);
+            self.reentrant_locked.write(true);
             let caller = get_caller_address();
-            assert(caller == user_address, 'NOT_OWNER_OF_FUNDS');
+            assert(caller == user_address, Errors::NOT_OWNER_OF_FUNDS);
 
             let tokens = self.user_tokens.entry(user_address);
 
@@ -709,8 +743,8 @@ pub mod OpenTask {
                 i += 1;
             }
 
-            assert(any_funds, 'NO_FUNDS');
-
+            assert(any_funds, Errors::NO_FUNDS);
+            self.reentrant_locked.write(false);
             true
         }
 
@@ -948,11 +982,23 @@ pub mod OpenTask {
         fn cancel_task_application(
             ref self: ContractState, task_id: felt252, application_id: felt252,
         ) -> bool {
-            let mut task = self.tasks.read(task_id);
+            // Validate that the task exists before attempting to cancel an application for it.
             let caller = get_caller_address();
-            let mut user_stats = self.user_stats.read(caller);
-            // TODO: Implement cancel task application logic
+            let mut task = self.tasks.read(task_id);
+            assert(!task.creator.is_zero(), 'TASK_NOT_FOUND');
+            assert(task.status == TaskStatus::Active, 'TASK_NOT_ACTIVE');
 
+            let applicant = self.task_applications.read((task_id, application_id));
+            assert(!applicant.is_zero(), 'APPLICATION_NOT_FOUND');
+
+            // Cancel task application , let claim == false
+            self.task_worker_claimed.write((task_id, caller), false);
+
+            // Reduce the task_claimed_count by 1 after cancellation
+            let claimed = self.task_claimed_count.read(task_id);
+            self.task_claimed_count.write(task_id, claimed - 1_u32);
+
+            let mut user_stats = self.user_stats.read(caller);
             user_stats.active_tasks -= 1;
             self.user_stats.write(caller, user_stats);
 
@@ -960,8 +1006,6 @@ pub mod OpenTask {
             self
                 .total_funds_refunded
                 .write(self.total_funds_refunded.read() + task.total_funded_amount);
-
-            self.total_tasks_active.write(self.total_tasks_active.read() - 1);
 
             // Emit TaskApplicationCancelled event
             self
@@ -973,13 +1017,24 @@ pub mod OpenTask {
         }
 
         fn get_submissions(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // TODO: Implement get submissions logic
-            ArrayTrait::new()
+            let submissions_vec = self.task_submissions.entry(task_id);
+            let mut all_submissions = ArrayTrait::new();
+            let len = submissions_vec.len();
+            for i in 0..len {
+                all_submissions.append(submissions_vec.at(i).read());
+            };
+            all_submissions
+            
         }
 
         fn get_disputes(self: @ContractState, task_id: felt252) -> Array<felt252> {
-            // To do: Implement dispute retrieval logic
-            array![]
+            let disputes_vec = self.task_disputes.entry(task_id);
+            let mut all_disputes = ArrayTrait::new();
+            let len = disputes_vec.len();
+            for i in 0..len {
+                all_disputes.append(disputes_vec.at(i).read());
+            };
+            all_disputes
         }
 
         fn get_protocol_stats(self: @ContractState) -> ProtocolStats {
@@ -1071,6 +1126,9 @@ pub mod OpenTask {
 
             let info = SubmissionInfo { completer: caller, submission_data, approved: false };
             self.submissions.write((task_id, submission_id), info);
+
+            // Update task_submissions
+            self.task_submissions.entry(task_id).push(submission_id);
 
             self.emit(SubmissionReceived { task_id, submission_id, completer: caller });
             true

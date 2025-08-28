@@ -1,13 +1,24 @@
+'use client';
 import { useMemo } from 'react';
 
-type Props = {
-  value: number | undefined;
-  onChange: (value: number | undefined) => void;
+// type Props = {
+//   value: string; // Changed from number | undefined to string
+//   onChange: (value: string) => void; // Changed to accept string
+//   maxLength: number;
+//   label: string;
+//   placeholder?: string;
+//   error?: boolean;
+// } & React.InputHTMLAttributes<HTMLInputElement>;
+
+interface OTPInputProps {
+  value: string;
+  onChange: (value: string) => void;
   maxLength: number;
   label: string;
   placeholder?: string;
   error?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  className?: string;
+}
 
 export default function OTPInput({
   value,
@@ -16,18 +27,17 @@ export default function OTPInput({
   label,
   placeholder,
   error,
+  className,
   ...props
-}: Props) {
+}: OTPInputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value.replace(/\D/g, ''); // remove non-digits
     if (input.length > maxLength) return;
-    const parsed = parseInt(input, 10);
-    onChange(isNaN(parsed) ? undefined : parsed);
+    onChange(input); // Directly pass the string
   };
 
   const errorText = useMemo(() => {
-    const valueStr = value?.toString();
-    if (valueStr && valueStr.length !== maxLength)
+    if (value && value.length !== maxLength)
       return `OTP must be ${maxLength} digits`;
     return '-';
   }, [value, maxLength]);
@@ -40,12 +50,13 @@ export default function OTPInput({
         type="text"
         inputMode="numeric"
         pattern="\d*"
-        value={typeof value === 'number' ? value.toString() : ''}
+        value={value}
         onChange={handleChange}
         maxLength={maxLength}
         placeholder={placeholder ?? 'Enter OTP'}
         required
-        className={`w-full rounded border px-6 py-5 font-semibold ${error && 'border-red-500'} focus:outline-none focus:ring-2 focus:ring-black ${error && 'focus:ring-red-500'} ${props.className ?? ''}`}
+        className={`w-full rounded border px-6 py-5 font-semibold ${error ? 'border-red-500' : ''} focus:outline-none focus:ring-2 focus:ring-black ${error ? 'focus:ring-red-500' : ''} ${className ?? ''}`} // Use the extracted className
+        // className={`w-full rounded border px-6 py-5 font-semibold ${error && 'border-red-500'} focus:outline-none focus:ring-2 focus:ring-black ${error && 'focus:ring-red-500'} ${className ?? ''}`}
       />
       <span
         className={`text-red-500 opacity-0 transition-opacity duration-300 ${error && 'opacity-100'}`}

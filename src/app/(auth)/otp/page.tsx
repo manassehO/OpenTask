@@ -20,7 +20,7 @@ function Otp() {
   const resetEmail = searchParams.get('reset_email');
   const email = searchParams.get('email')!;
   const {
-    register,
+    // register,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -36,11 +36,13 @@ function Otp() {
   const otpValue = watch('otp');
   const otpLength = 6;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const handleOtpInputChange = (value: number | undefined) => {
-    setValue('otp', value?.toString() ?? '');
+
+  const handleOtpInputChange = (value: string) => {
+    setValue('otp', value);
   };
 
   const onSubmit = async (data: OtpFormData) => {
+<<<<<<< HEAD
     console.log('data', data);
 
     if (resetEmail) {
@@ -49,27 +51,58 @@ function Otp() {
         'reset_password',
         JSON.stringify({ ...data, email: resetEmail }),
       );
+=======
+    setIsSubmitting(true);
+
+    try {
+      // Determine which email to use
+      const targetEmail = resetEmail ?? email;
+
+      if (!targetEmail) {
+        toast.error('Email not found');
+        setIsSubmitting(false);
+        return;
+      }
+
+>>>>>>> 5b0b55894bec81bc6da9e62921d39fb5503f5deb
       await authClient.emailOtp.verifyEmail(
         {
           otp: data.otp,
-          email: email,
+          email: targetEmail,
         },
         {
-          onRequest: () => {
-            setIsSubmitting(true);
-          },
           onSuccess: () => {
-            router.push('/home');
-            setIsSubmitting(false);
+            toast.success('OTP verified successfully!');
+            if (resetEmail) {
+              // Handle password reset flow
+              localStorage.setItem(
+                'reset_password',
+                JSON.stringify({ otp: data.otp, email: targetEmail }),
+              );
+              router.push('/reset-password'); // Redirect to password reset page
+            } else {
+              // Handle regular login flow
+              router.push('/home');
+            }
           },
           onError: (err) => {
-            toast.error('Error: OTP verification failed');
-            setIsSubmitting(false);
+            console.error('OTP verification error:', err);
+            toast.error('Invalid OTP. Please try again.');
           },
         },
       );
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Add console logs for debugging
+  console.log('Current OTP value:', otpValue);
+  console.log('Email from params:', email);
+  console.log('Reset email from params:', resetEmail);
 
   return (
     <div className="flex h-svh w-full items-center justify-center">
@@ -82,8 +115,7 @@ function Otp() {
           className="flex w-96 flex-col gap-4"
         >
           <OTPInput
-            value={otpValue ? parseInt(otpValue) : undefined}
-            // @ts-expect-error - OTPInput has complex type definition
+            value={otpValue}
             onChange={handleOtpInputChange}
             maxLength={otpLength}
             label="OTP"
@@ -96,7 +128,7 @@ function Otp() {
           <button
             type="submit"
             className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB] disabled:opacity-50"
-            disabled={isSubmitting}
+            disabled={isSubmitting || otpValue.length !== 6}
           >
             {isSubmitting ? 'Verifying...' : 'Proceed'}
           </button>

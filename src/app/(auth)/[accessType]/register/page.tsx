@@ -38,7 +38,7 @@ function EmailSignup() {
         email: data.email,
         name: data.email.split('@')[0]!,
         password: data.password,
-        roles: UserType[param?.accessType as keyof typeof UserType],
+        role: UserType[param?.accessType as keyof typeof UserType],
       },
       {
         onRequest: () => {
@@ -49,7 +49,7 @@ function EmailSignup() {
           toast.success('Registration successful');
           setIsSubmitting(false);
         },
-        onError: (err) => {
+        onError: () => {
           toast.error('Error: Registration failed');
           setIsSubmitting(false);
         },

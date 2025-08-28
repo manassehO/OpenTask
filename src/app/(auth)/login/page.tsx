@@ -55,11 +55,11 @@ function EmailLogin() {
               router.push(`/otp?email=${data?.user?.email}`);
               return;
             }
-            if (data?.user?.roles === 'ADMIN') {
+            if (data?.user?.role === 'ADMIN') {
               router.push(`/admin`);
               return;
             }
-            const rootRoute = getKeyByValue(UserType, data?.user?.roles);
+            const rootRoute = getKeyByValue(UserType, data?.user?.role);
             if (rootRoute)
               router.push(
                 routes?.[rootRoute?.toLowerCase() as keyof typeof routes]?.root,
@@ -68,7 +68,7 @@ function EmailLogin() {
           toast.success('Login Successful');
           setIsSubmitting(false);
         },
-        onError: (err) => {
+        onError: () => {
           toast.error('Error: Login failed');
           setIsSubmitting(false);
         },

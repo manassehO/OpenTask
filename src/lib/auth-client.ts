@@ -13,7 +13,7 @@ export const authClient = createAuthClient({
   plugins: [
     inferAdditionalFields({
       user: {
-        roles: {
+        role: {
           type: 'string',
         },
       },
