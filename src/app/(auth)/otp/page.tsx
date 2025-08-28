@@ -42,16 +42,6 @@ function Otp() {
   };
 
   const onSubmit = async (data: OtpFormData) => {
-<<<<<<< HEAD
-    console.log('data', data);
-
-    if (resetEmail) {
-      console.log({ ...data, resetEmail });
-      localStorage.setItem(
-        'reset_password',
-        JSON.stringify({ ...data, email: resetEmail }),
-      );
-=======
     setIsSubmitting(true);
 
     try {
@@ -64,7 +54,6 @@ function Otp() {
         return;
       }
 
->>>>>>> 5b0b55894bec81bc6da9e62921d39fb5503f5deb
       await authClient.emailOtp.verifyEmail(
         {
           otp: data.otp,
