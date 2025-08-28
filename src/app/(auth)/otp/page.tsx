@@ -41,6 +41,8 @@ function Otp() {
   };
 
   const onSubmit = async (data: OtpFormData) => {
+    console.log('data', data);
+
     if (resetEmail) {
       console.log({ ...data, resetEmail });
       localStorage.setItem(

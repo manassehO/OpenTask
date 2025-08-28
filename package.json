@@ -61,6 +61,7 @@
     "postgres": "^3.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropdown-menu": "^0.0.2",
     "react-hook-form": "^7.56.2",
     "react-icons": "^5.5.0",
     "react-spinners": "^0.17.0",
