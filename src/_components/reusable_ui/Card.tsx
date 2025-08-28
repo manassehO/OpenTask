@@ -1,8 +1,8 @@
-// src/components/ContentCard.tsx
 'use client';
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Clock, Calendar } from 'lucide-react';
 
 import {
   Card,
@@ -13,6 +13,7 @@ import {
 } from '~/_components/ui/card';
 
 import Button from '~/_components/ui/button';
+
 interface ContentCardProps {
   item: {
     id: string | number;
@@ -33,6 +34,28 @@ interface ContentCardProps {
   onAction: (id: string | number) => void;
 }
 
+// Helper function to convert duration text to a numerical value for visualization
+const parseDurationToValue = (duration: string): number => {
+  if (!duration) return 0;
+
+  const lowerDuration = duration.toLowerCase();
+
+  if (lowerDuration.includes('min') || lowerDuration.includes('minute')) {
+    const match = /\d+/.exec(duration);
+    return match ? parseInt(match[0]) / 60 : 0.1; // Convert minutes to fraction of hour
+  }
+
+  if (lowerDuration.includes('hour')) {
+    const match = /\d+/.exec(duration);
+    return match ? parseInt(match[0]) : 1;
+  }
+
+  if (lowerDuration.includes('half day')) return 4; // Approximate half day as 4 hours
+  if (lowerDuration.includes('day')) return 8; // Approximate day as 8 hours
+
+  return 1; // Default to 1 hour
+};
+
 const ContentCard: React.FC<ContentCardProps> = ({
   item,
   onAction: _onAction,
@@ -41,27 +64,16 @@ const ContentCard: React.FC<ContentCardProps> = ({
   const router = useRouter();
   const [isPlaying, setIsPlaying] = React.useState(false);
 
+  // Calculate a visual indicator value based on duration
+  const durationValue = item.duration ? parseDurationToValue(item.duration) : 0;
+  const maxDurationValue = 8; // Maximum value for normalization (8 hours)
+  const durationPercentage = Math.min(
+    (durationValue / maxDurationValue) * 100,
+    100,
+  );
+
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
-      {/* {item.image && (
-        <div className="group relative hidden cursor-pointer overflow-hidden rounded-t-lg">
-          <CardImage
-            src={item.image || '/placeholder.png'}
-            alt={item.title}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/10 transition duration-200 group-hover:bg-black/40">
-            <Image
-              width={32}
-              height={32}
-              src="/icons/play.svg"
-              alt="Play"
-              className="h-12 w-12"
-            />
-          </div>
-        </div>
-      )} */}
-
       {!isPlaying ? (
         // Thumbnail with play button
         <div
@@ -99,56 +111,75 @@ const ContentCard: React.FC<ContentCardProps> = ({
           </p>
         </CardHeader>
 
-        <CardContent className="flex-1 space-y-2 py-4">
-          {typeof item.progress === 'number' && (
-            <div className="w-full">
-              <div className="mb-1 flex items-center justify-between text-sm text-gray-500">
-                <span>Progress</span>
-                <span>{item.progress ?? 0}%</span>
-              </div>
-
-              {/* Progress bar background */}
-              <div className="h-2.5 w-full rounded-full bg-main-50">
-                {/* Progress fill bar */}
-                <div
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    (item.progress ?? 0) === 0 ? 'bg-gray-300' : 'bg-primary'
-                  }`}
-                  style={{ width: `${item.progress ?? 0}%` }}
-                />
-              </div>
+        {/* Progress Bar - Show only if progress exists */}
+        {typeof item.progress === 'number' && item.progress > 0 ? (
+          <div className="mb-4 mt-2 w-full">
+            <div className="mb-1 flex items-center justify-between text-sm text-gray-500">
+              <span>Progress</span>
+              <span>{item.progress}%</span>
             </div>
-          )}
-        </CardContent>
+
+            {/* Progress bar container with white background */}
+            <div className="h-2 w-full rounded-full border border-gray-200 bg-white">
+              {/* Progress fill with blue indicator */}
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${item.progress}%` }}
+              />
+            </div>
+          </div>
+        ) : (
+          // Show duration as a visual indicator when no progress
+          <div className="mb-4 mt-2 w-full">
+            <div className="mb-1 flex items-center justify-between text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <Clock size={14} />
+                Duration
+              </span>
+              <span>{item.duration ?? 'Not specified'}</span>
+            </div>
+
+            {/* Duration visualization bar */}
+            <div className="h-2 w-full rounded-full border border-gray-200 bg-gray-100">
+              <div
+                className="h-full rounded-full bg-purple-200 transition-all duration-300"
+                style={{ width: `${durationPercentage}%` }}
+              />
+            </div>
+
+            {/* Duration scale markers */}
+            <div className="mt-1 flex justify-between text-xs text-gray-400">
+              <span>Short</span>
+              <span>Medium</span>
+              <span>Long</span>
+            </div>
+          </div>
+        )}
 
         <CardContent className="flex-1">
           <div className="flex h-full flex-row items-center justify-between">
             {item.deadline && (
-              <div>
-                <div className="text-base text-[#414141]">Deadline</div>
-                <div className="font-semibold">{item.deadline}</div>
+              <div className="flex items-center gap-1">
+                <Calendar size={16} className="text-gray-500" />
+                <div>
+                  <div className="text-sm text-[#414141]">Deadline</div>
+                  <div className="text-sm font-semibold">{item.deadline}</div>
+                </div>
               </div>
             )}
 
             {item.modules && (
               <div>
                 <div className="font-semibold">{item.modules}</div>
-                <div className="font-semibold">{item.duration}</div>
-              </div>
-            )}
-
-            {item.duration && (
-              <div>
-                <div className="font-semibold">{item.duration}</div>
               </div>
             )}
 
             {item.rewardInUsd && (
-              <div className="flex items-center text-right">
+              <div className="flex flex-col items-end">
                 <div className="text-sm font-semibold">
                   {item.rewardInEth} ETH
                 </div>
-                <div className="font-semibold text-[#3B82F6]">
+                <div className="text-sm font-semibold text-[#3B82F6]">
                   ≈ ${item.rewardInUsd.toLocaleString()}
                 </div>
               </div>
@@ -157,10 +188,14 @@ const ContentCard: React.FC<ContentCardProps> = ({
         </CardContent>
         <CardFooter>
           <Button
-            onClick={() => router.push(`/learning/${item.id}`)}
-            className="flex w-full bg-primary text-[14px]"
+            onClick={() => router.push(`/completer/learning/${item.id}`)}
+            className="flex w-full items-center justify-center gap-2 bg-primary text-[14px]"
           >
-            {buttonLabel}
+            {typeof item.progress === 'number' && item.progress > 0 ? (
+              <>Continue learning</>
+            ) : (
+              <>Start Course</>
+            )}
           </Button>
         </CardFooter>
       </div>
