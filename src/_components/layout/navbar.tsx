@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
+import GetStarted from './GetStarted';
 const sections = ['home', 'features', 'contact us'];
 
 export function Navbar() {
@@ -68,12 +69,13 @@ export function Navbar() {
             </li>
           ))}
           <li>
-            <Link
-              href="/register"
-              className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-            >
-              Register
-            </Link>
+            <GetStarted
+              component={
+                <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                  Register
+                </button>
+              }
+            />
           </li>
         </ul>
 

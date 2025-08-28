@@ -65,6 +65,22 @@ pub trait IOpenTask<TContractState> {
         ref self: TContractState, task_id: felt252, token_address: ContractAddress, amount: u256,
     ) -> bool;
 
+    /// Create and fund a task in a single flow.
+    ///
+    /// create and fund a task in a single flow.
+    /// - Transfers/escrows total amount equivalent to `reward_per_completion *
+    /// required_completions`.
+    /// - Emits: TaskCreated, TaskFunded(task_id, amount)
+    fn create_and_fund_task(
+        ref self: TContractState,
+        task_id: felt252,
+        creator: ContractAddress,
+        token_address: ContractAddress,
+        description: felt252,
+        reward_per_completion: u256,
+        required_completions: u32,
+    ) -> bool;
+
     /// Get full task details from on-chain storage.
     ///
     /// Mirrors backend `task.getTaskById` enriched with on-chain funding and status.

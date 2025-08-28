@@ -1,8 +1,8 @@
 // File: contracts/starknet/src/core/tests/opentask_tests.cairo
 
-use crate::core::opentask::IOpenTaskImpl;
-use starknet::ContractAddress;
 use snforge_std::{start_cheat_caller_address_global, stop_cheat_caller_address_global};
+use starknet::ContractAddress;
+use crate::core::opentask::IOpenTaskImpl;
 
 #[cfg(test)]
 mod create_task_tests {
@@ -26,14 +26,10 @@ mod create_task_tests {
         let reward: u256 = 10.into();
         let required_completions: u32 = 5;
 
-        let result = contract.create_task(
-            task_id,
-            creator,
-            token_address,
-            description,
-            reward,
-            required_completions
-        );
+        let result = contract
+            .create_task(
+                task_id, creator, token_address, description, reward, required_completions,
+            );
 
         assert_eq!(result, true);
 
@@ -61,14 +57,10 @@ mod create_task_tests {
         let required_completions: u32 = 5;
 
         // Should panic because caller is not creator
-        contract.create_task(
-            task_id,
-            creator,
-            token_address,
-            description,
-            reward,
-            required_completions
-        );
+        contract
+            .create_task(
+                task_id, creator, token_address, description, reward, required_completions,
+            );
 
         stop_cheat_caller_address_global();
     }
@@ -118,7 +110,8 @@ mod create_task_tests {
         let reward: u256 = 10.into();
         let required_completions: u32 = 3;
 
-        contract.create_task(task_id, creator, token_address, 11.into(), reward, required_completions);
+        contract
+            .create_task(task_id, creator, token_address, 11.into(), reward, required_completions);
 
         // Example event check
         // (depending on your testing framework)
@@ -129,11 +122,10 @@ mod create_task_tests {
                 creator: creator,
                 token: token_address,
                 reward_per_completion: reward,
-                required_completions: required_completions
-            }
+                required_completions: required_completions,
+            },
         );
 
         stop_cheat_caller_address_global();
     }
-
 }

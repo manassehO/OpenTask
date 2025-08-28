@@ -8,7 +8,7 @@ import Distribution from '~/_components/ui/form/createTask/distribution';
 import Review from '~/_components/ui/form/createTask/review';
 
 function CreateTask() {
-  const { currentStep, setCurrentStep, goToPreviousStep } = useTaskStore();
+  const { currentStep } = useTaskStore();
 
   return (
     <div className="space-y-6">
