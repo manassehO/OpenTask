@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { db } from '~/server/db';
 import { submissions } from '~/server/db/schema';
 import { userBalances } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-const WEBHOOK_SECRET = process.env.APIBARA_WEBHOOK_SECRET as string;
+const WEBHOOK_SECRET = process.env.APIBARA_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
   try {

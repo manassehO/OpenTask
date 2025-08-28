@@ -1,9 +1,9 @@
 'use client';
-import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { easeOut } from 'framer-motion';
+import { easeOut, motion } from 'framer-motion';
 import Image from 'next/image';
 import { containerVariants } from '~/lib/animations';
+import GetStarted from '../layout/GetStarted';
 
 const imageVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -51,9 +51,14 @@ function HeroPage() {
         <button className="rounded-[4px] bg-[#FAFAFA] px-[20px] py-[8px] text-base font-semibold text-[#3B82F6] lg:px-[40px] lg:py-[16px]">
           Learn More
         </button>
-        <button className="rounded-[4px] bg-[#3B82F6] px-[20px] py-[8px] text-base font-semibold text-white lg:px-[40px] lg:py-[16px]">
-          Register
-        </button>
+
+        <GetStarted
+          component={
+            <button className="rounded-[4px] bg-[#3B82F6] px-[20px] py-[8px] text-base font-semibold text-white lg:px-[40px] lg:py-[16px]">
+              Register
+            </button>
+          }
+        />
       </div>
 
       <motion.div

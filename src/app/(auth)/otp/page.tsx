@@ -1,11 +1,13 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import OTPInput from '~/_components/ui/form/OTPInput';
-import { verifyEmail } from '~/lib/auth-client';
+import { authClient } from '~/lib/auth-client';
 
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be exactly 6 digits'),
@@ -14,10 +16,13 @@ const otpSchema = z.object({
 type OtpFormData = z.infer<typeof otpSchema>;
 
 function Otp() {
+  const searchParams = useSearchParams();
+  const resetEmail = searchParams.get('reset_email');
+  const email = searchParams.get('email')!;
   const {
-    register,
+    // register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
     watch,
   } = useForm<OtpFormData>({
@@ -26,28 +31,67 @@ function Otp() {
       otp: '',
     },
   });
+
   const router = useRouter();
   const otpValue = watch('otp');
   const otpLength = 6;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleOtpInputChange = (value: number | undefined) => {
-    setValue('otp', value?.toString() ?? '');
+  const handleOtpInputChange = (value: string) => {
+    setValue('otp', value);
   };
 
   const onSubmit = async (data: OtpFormData) => {
+    setIsSubmitting(true);
+
     try {
-      console.log('OTP submitted:', data.otp);
-      await verifyEmail({
-        query: {
-          token: data.otp,
-          callbackURL: '/home',
+      // Determine which email to use
+      const targetEmail = resetEmail ?? email;
+
+      if (!targetEmail) {
+        toast.error('Email not found');
+        setIsSubmitting(false);
+        return;
+      }
+
+      await authClient.emailOtp.verifyEmail(
+        {
+          otp: data.otp,
+          email: targetEmail,
         },
-      });
-      router.push('/home');
+        {
+          onSuccess: () => {
+            toast.success('OTP verified successfully!');
+            if (resetEmail) {
+              // Handle password reset flow
+              localStorage.setItem(
+                'reset_password',
+                JSON.stringify({ otp: data.otp, email: targetEmail }),
+              );
+              router.push('/reset-password'); // Redirect to password reset page
+            } else {
+              // Handle regular login flow
+              router.push('/home');
+            }
+          },
+          onError: (err) => {
+            console.error('OTP verification error:', err);
+            toast.error('Invalid OTP. Please try again.');
+          },
+        },
+      );
     } catch (error) {
-      console.error('OTP verification error:', error);
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Add console logs for debugging
+  console.log('Current OTP value:', otpValue);
+  console.log('Email from params:', email);
+  console.log('Reset email from params:', resetEmail);
 
   return (
     <div className="flex h-svh w-full items-center justify-center">
@@ -60,8 +104,7 @@ function Otp() {
           className="flex w-96 flex-col gap-4"
         >
           <OTPInput
-            value={otpValue ? parseInt(otpValue) : undefined}
-            // @ts-expect-error - OTPInput has complex type definition
+            value={otpValue}
             onChange={handleOtpInputChange}
             maxLength={otpLength}
             label="OTP"
@@ -74,7 +117,7 @@ function Otp() {
           <button
             type="submit"
             className="rounded-md bg-[#3B82F6] p-4 text-white hover:bg-[#2563EB] disabled:opacity-50"
-            disabled={isSubmitting}
+            disabled={isSubmitting || otpValue.length !== 6}
           >
             {isSubmitting ? 'Verifying...' : 'Proceed'}
           </button>

@@ -8,7 +8,7 @@ import RightBar from '~/_components/layout/RightBar';
 function Dashboardage() {
   const name = 'Bartholomew Favour';
   const task = api.task.getTaskById.useQuery({ taskId: '1' });
-  const { data: tasks, isPending: pending } = api.task.findTasks.useQuery({
+  const { data: tasks } = api.task.findTasks.useQuery({
     limit: 10,
     page: 1,
     sort_by: 'created_at',
