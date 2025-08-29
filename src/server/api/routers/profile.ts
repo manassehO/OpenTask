@@ -13,11 +13,28 @@ import {
   userStats,
 } from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, sql } from 'drizzle-orm';
 
 // import { type InferModel } from "drizzle-orm";
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
+
+import axios from "axios";
+
+export async function convertToFiat(amount: number, tokenId = "ethereum"): Promise<number> {
+  if (amount === 0) return 0;
+
+  try {
+    const { data } = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`
+    );
+    const usdRate = data[tokenId]?.usd ?? 0;
+    return amount * usdRate;
+  } catch (error) {
+    console.error("CoinGecko conversion failed:", error);
+    return 0;
+  }
+}
 
 const updateProfileSelfSchema = z
   .object({
@@ -106,7 +123,6 @@ export const profileRouter = createTRPCRouter({
         totalEarnings: userStats.totalEarnings,
         currentStreak: userStats.currentStreak,
         longestStreak: userStats.longestStreak,
-        earningSummary: userStats.earningSummary,
       })
       .from(userStats)
       .where(eq(userStats.userId, userId))
@@ -119,7 +135,6 @@ export const profileRouter = createTRPCRouter({
         totalEarnings: '0',
         currentStreak: 0,
         longestStreak: 0,
-        earningSummary: {},
       });
 
       // Re-fetch after creation
@@ -128,7 +143,6 @@ export const profileRouter = createTRPCRouter({
           totalEarnings: userStats.totalEarnings,
           currentStreak: userStats.currentStreak,
           longestStreak: userStats.longestStreak,
-          earningSummary: userStats.earningSummary,
         })
         .from(userStats)
         .where(eq(userStats.userId, userId))
@@ -139,8 +153,17 @@ export const profileRouter = createTRPCRouter({
       totalEarnings: '0',
       currentStreak: 0,
       longestStreak: 0,
-      earningSummary: {},
     };
+
+    // --- Platform-wide earning summary ---
+    const [totalEarnedRow, totalTasksRow] = await Promise.all([
+      ctx.db.select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` }).from(userStats),
+      ctx.db.select({ totalTasks: count() }).from(submissions),
+    ]);
+
+    const totalEarned = Number(totalEarnedRow[0]?.totalEarned ?? 0);
+    const fiatValue = await convertToFiat(totalEarned);
+    const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
 
     return {
       success: true,
@@ -151,7 +174,11 @@ export const profileRouter = createTRPCRouter({
         totalEarnings: stats.totalEarnings,
         currentStreak: stats.currentStreak,
         longestStreak: stats.longestStreak,
-        earningSummary: stats.earningSummary,
+        earningSummary: {
+          totalEarned,
+          fiatValue, 
+          tasksCompleted: totalTasksCompleted,
+        },
       },
     };
   }),
