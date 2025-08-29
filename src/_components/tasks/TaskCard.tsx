@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { TaskCardProps } from '@/types/task';
 import {
   Card,
@@ -10,6 +10,9 @@ import {
 import Button from '~/_components/ui/button';
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
+  useEffect(() => {
+    console.log(task.deadline);
+  }, []);
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardImage src={'/tasks/task_image.png'} alt={task.title} />
@@ -20,10 +23,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
               {task.title}
             </h3>
           </div>
-          <div className="text-muted-foreground text-base text-[#414141]">
-            {task.description.length > 100
-              ? `${task.description.substring(0, 100)}...`
-              : task.description}
+          <div className="text-muted-foreground line-clamp-3 text-base text-[#414141]">
+            {task.description}
           </div>
         </CardHeader>
         <CardContent className="flex-1">
@@ -33,7 +34,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
                 <span className="text-[#414141]">Deadline</span>
               </div>
               <div className="text-base">
-                <span className="font-semibold">{task.deadline} </span>
+                <span className="font-semibold">
+                  {task.deadline.toString().slice(0, 15)}
+                </span>
               </div>
             </div>
             <div className="flex flex-col items-end justify-between gap-y-2">
@@ -52,7 +55,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
         </CardContent>
         <CardFooter>
           <Button
-            onClick={() => onAction(task.id)}
+            onClick={() => onAction?.(task.id)}
             className={`flex w-full text-[14px] ${task.status === 'active' ? 'bg-primary' : 'bg-secondary'}`}
           >
             View Task

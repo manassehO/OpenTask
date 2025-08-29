@@ -1,5 +1,14 @@
 export type TaskStatus = 'active' | 'completed' | 'disputed' | 'cancelled';
 
+export interface TaskFilters {
+  limit?: number;
+  page?: number;
+  sort_by?: 'created_at';
+  order?: 'asc' | 'desc';
+  category?: string;
+  min_reward?: number;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -7,14 +16,11 @@ export interface Task {
   status: TaskStatus;
   image: string;
   deadline: string;
-  rewardInEth: number;
-  rewardInUsd: number;
+  rewardInEth: string | number;
+  rewardInUsd: string | number;
   isFlagged?: boolean;
   creator?: string;
-  category: string;
-  tags: string[];
-  example?: string;
-  specialRequirements?: string;
+  category?: string;
 }
 
 export type TaskType = {
@@ -44,7 +50,8 @@ export type TaskType = {
 
 export interface TaskCardProps {
   task: Task;
-  onAction: (taskId: string) => void;
+  onAction?: (taskId: string) => void;
+  isLoading?: boolean;
 }
 
 export type BasicInformationValues = {
