@@ -2,53 +2,18 @@
 import React from 'react';
 import Image from 'next/image';
 import Button from '../ui/button';
-import { useCreateTask, useRecommendedTasks } from '~/app/api/task';
+import { useRecommendedTasks } from '~/app/api/task';
 import Link from 'next/link';
 import { useRecommendedTasksStore } from '~/app/store/recommendedTaskStore';
 import { CustomPagination } from '../custom/CustomPagination';
+import { useRouter } from 'next/navigation';
 
 const RecomendedTasks = () => {
   const { data, isLoading } = useRecommendedTasks();
   const { nextPage, prevPage, offset, limit } = useRecommendedTasksStore();
-
+  const router = useRouter();
   const recommendedTasks = data?.data ?? [];
   console.log('rec', recommendedTasks);
-
-  const createTask = useCreateTask();
-
-  const handleCreateTask = async () => {
-    try {
-      const dummyTask = {
-        title: 'Share our new product on Twitter',
-        description:
-          'Help spread the word about our product by tweeting about it.',
-        instructions:
-          '1. Write a tweet about our product.\n2. Include the hashtag #MyProduct.\n3. Share a screenshot as proof.',
-        category: 'Social Media',
-        maxCompletions: 100,
-        rewardAmount: '10',
-        rewardTokenAddress: '0x1234567890abcdef1234567890abcdef12345678',
-        requiredCompletions: 50,
-        deadline: '2025-12-31T23:59:59Z',
-        status: 'ACTIVE' as const,
-        fundingTxHash:
-          '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        tags: ['twitter', 'marketing', 'awareness'],
-        platformFee: '5',
-        image:
-          'https://plus.unsplash.com/premium_photo-1682436362503-c2097e4ddb9b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDR8fHxlbnwwfHx8fHw%3D',
-        example: 'https://twitter.com/example/status/1234567890',
-        specialRequirements: 'Must have at least 100 followers on Twitter.',
-      };
-
-      const res = await createTask.mutateAsync(dummyTask);
-      if (res.success) {
-        alert('Task created successfully!');
-      }
-    } catch (error) {
-      console.error('Error creating task:', error);
-    }
-  };
 
   return (
     <div>
@@ -58,14 +23,7 @@ const RecomendedTasks = () => {
         </h1>
 
         <Button
-          backgroundColor="transparent"
-          textColor="text-[#3B82F6]"
-          className="mt-2 text-[#3B82F6]"
-          onClick={handleCreateTask}
-        >
-          Create Task
-        </Button>
-        <Button
+          onClick={() => router.push('/creator/task')}
           backgroundColor="transparent"
           textColor="text-[#3B82F6]"
           className="mt-2 text-[#3B82F6]"

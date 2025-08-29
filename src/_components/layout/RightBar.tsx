@@ -14,17 +14,18 @@ const RightBar = () => {
   const rightBarSummary = [
     {
       title: 'Total Earned',
-      amount: userStats?.totalEarnings ?? '$0',
+      amount: `${userStats?.earningSummary.totalEarned ?? '0'} ETH`,
+
       icon: '/icons/streak.svg',
     },
     {
       title: 'Fiat Value',
-      amount: userStats?.totalEarnings ?? '$0',
+      amount: `$${(userStats?.earningSummary?.fiatValue ?? 0).toFixed(2)}`,
       icon: '/icons/streak.svg',
     },
     {
       title: 'Task Completed',
-      amount: userStats?.completedTasks ?? 0,
+      amount: userStats?.earningSummary.tasksCompleted ?? 0,
       icon: '/icons/streak.svg',
     },
     {

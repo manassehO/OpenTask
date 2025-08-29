@@ -9,7 +9,7 @@ const Summary = () => {
   const summaryData = [
     {
       title: 'Total Earnings',
-      amount: userStats?.totalEarnings ?? 0,
+      amount: `$${userStats?.totalEarnings ?? 0}`,
       // cryptoAmount: '1,000 BTC',
       icon: '/icons/payments.svg',
       bgColor: 'bg-[#F59E0B]/15',
@@ -23,7 +23,9 @@ const Summary = () => {
     },
     {
       title: 'Streak',
-      amount: userStats?.currentStreak ?? 0,
+      amount: userStats?.currentStreak
+        ? `${userStats.currentStreak} Days`
+        : '0',
       // cryptoAmount: '0.5 BTC',
       icon: '/icons/streak.svg',
       bgColor: 'bg-[#06B6D41A]/15',
