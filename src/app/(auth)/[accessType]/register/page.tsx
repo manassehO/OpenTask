@@ -2,12 +2,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import { signUp } from '~/lib/auth-client';
+import { UserType } from '~/lib/utils';
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -17,32 +19,42 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 function EmailSignup() {
+  const param = useParams();
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   // 1. Use useRouter to navigate after successful registration
   const router = useRouter();
   const onSubmit = async (data: RegisterFormData) => {
-    try {
-      console.log('Form submitted with data:', data);
-      await signUp.email({
+    console.log('Form submitted with data:', data);
+    await signUp.email(
+      {
         email: data.email,
         name: data.email.split('@')[0]!,
         password: data.password,
-      });
-      //   await emailOtp.sendVerificationOtp({
-      //     email: data.email,
-      //     type: 'email-verification',
-      //   });
-      router.push('/otp');
-    } catch (error) {
-      console.error('Registration error:', error);
-    }
+        role: UserType[param?.accessType as keyof typeof UserType],
+      },
+      {
+        onRequest: () => {
+          setIsSubmitting(true);
+        },
+        onSuccess: () => {
+          router.push(`/otp?email=${data?.email}`);
+          toast.success('Registration successful');
+          setIsSubmitting(false);
+        },
+        onError: () => {
+          toast.error('Error: Registration failed');
+          setIsSubmitting(false);
+        },
+      },
+    );
   };
 
   return (

@@ -4,7 +4,14 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user, userProfiles, submissions, tasks, disputes, userStats, } from '~/server/db/schema';
+import {
+  user,
+  userProfiles,
+  submissions,
+  tasks,
+  disputes,
+  userStats,
+} from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, count, sql } from 'drizzle-orm';
 
@@ -83,52 +90,35 @@ export const profileRouter = createTRPCRouter({
     };
   }),
 
-getUserStats: protectedProcedure.query(async ({ ctx }) => {
-  const userId = ctx.user.id;
+  getUserStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
 
-  const [createdTasks, completedTasks, raisedDisputes,] = await Promise.all([
-    // Tasks created by user
-    ctx.db
-      .select({ count: count() })
-      .from(tasks)
-      .where(eq(tasks.creatorUserId, userId)),
+    const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
+      // Tasks created by user
+      ctx.db
+        .select({ count: count() })
+        .from(tasks)
+        .where(eq(tasks.creatorUserId, userId)),
 
-    // Submissions completed by user
-    ctx.db
-      .select({ count: count() })
-      .from(submissions)
-      .where(eq(submissions.completerUserId, userId)),
+      // Submissions completed by user
+      ctx.db
+        .select({ count: count() })
+        .from(submissions)
+        .where(eq(submissions.completerUserId, userId)),
 
-    // Disputes raised by user
-    ctx.db
-      .select({ count: count() })
-      .from(disputes)
-      .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
-      .where(eq(submissions.completerUserId, userId)),
-
-  ]);
+      // Disputes raised by user
+      ctx.db
+        .select({ count: count() })
+        .from(disputes)
+        .leftJoin(
+          submissions,
+          eq(disputes.submissionId, submissions.submissionId),
+        )
+        .where(eq(submissions.completerUserId, userId)),
+    ]);
 
     // First, ensure user_stats row exists
-  let userStatsRow = await ctx.db
-    .select({
-      totalEarnings: userStats.totalEarnings,
-      currentStreak: userStats.currentStreak,
-      longestStreak: userStats.longestStreak,    })
-    .from(userStats)
-    .where(eq(userStats.userId, userId))
-    .limit(1);
-
-  // If it doesn't exist yet, create it
-  if (!userStatsRow[0]) {
-    await ctx.db.insert(userStats).values({
-      userId,
-      totalEarnings: '0',
-      currentStreak: 0,
-      longestStreak: 0,
-    });
-
-    // Re-fetch after creation
-    userStatsRow = await ctx.db
+    let userStatsRow = await ctx.db
       .select({
         totalEarnings: userStats.totalEarnings,
         currentStreak: userStats.currentStreak,
@@ -137,44 +127,61 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
       .from(userStats)
       .where(eq(userStats.userId, userId))
       .limit(1);
-  }
 
-  const stats = userStatsRow[0] ?? {
-  totalEarnings: '0',
-  currentStreak: 0,
-  longestStreak: 0,
-  };
+    // If it doesn't exist yet, create it
+    if (!userStatsRow[0]) {
+      await ctx.db.insert(userStats).values({
+        userId,
+        totalEarnings: '0',
+        currentStreak: 0,
+        longestStreak: 0,
+      });
 
-// --- Platform-wide earning summary ---
-  const [totalEarnedRow, totalTasksRow] = await Promise.all([
-  ctx.db.select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` }).from(userStats),
-  ctx.db.select({ totalTasks: count() }).from(submissions),
-]);
+      // Re-fetch after creation
+      userStatsRow = await ctx.db
+        .select({
+          totalEarnings: userStats.totalEarnings,
+          currentStreak: userStats.currentStreak,
+          longestStreak: userStats.longestStreak,
+        })
+        .from(userStats)
+        .where(eq(userStats.userId, userId))
+        .limit(1);
+    }
 
-const totalEarned = Number(totalEarnedRow[0]?.totalEarned ?? 0);
-const fiatValue = await convertToFiat(totalEarned);
-const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
+    const stats = userStatsRow[0] ?? {
+      totalEarnings: '0',
+      currentStreak: 0,
+      longestStreak: 0,
+    };
 
+    // --- Platform-wide earning summary ---
+    const [totalEarnedRow, totalTasksRow] = await Promise.all([
+      ctx.db.select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` }).from(userStats),
+      ctx.db.select({ totalTasks: count() }).from(submissions),
+    ]);
 
-  return {
-    success: true,
-    stats: {
-      createdTasks: Number(createdTasks[0]?.count ?? 0),
-      completedTasks: Number(completedTasks[0]?.count ?? 0),
-      disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
-      totalEarnings: stats.totalEarnings,
-      currentStreak: stats.currentStreak,
-      longestStreak: stats.longestStreak,
-      earningSummary: {
-        totalEarned,
-        fiatValue, 
-        tasksCompleted: totalTasksCompleted,
-       
-    },
-  },
-  };
-}),
+    const totalEarned = Number(totalEarnedRow[0]?.totalEarned ?? 0);
+    const fiatValue = await convertToFiat(totalEarned);
+    const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
 
+    return {
+      success: true,
+      stats: {
+        createdTasks: Number(createdTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+        disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+        totalEarnings: stats.totalEarnings,
+        currentStreak: stats.currentStreak,
+        longestStreak: stats.longestStreak,
+        earningSummary: {
+          totalEarned,
+          fiatValue, 
+          tasksCompleted: totalTasksCompleted,
+        },
+      },
+    };
+  }),
 
   updateProfile: protectedProcedure
     .input(updateProfileSelfSchema)
@@ -370,7 +377,7 @@ const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
         socialLinks: z.record(z.string().url()).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
@@ -437,7 +444,5 @@ const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
           cause: error,
         });
       }
-
-    }), 
-
+    }),
 });

@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 import type { Variants } from 'framer-motion';
 import { easeOut } from 'framer-motion';
+import GetStarted from '../layout/GetStarted';
 
 const imageVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -36,9 +37,14 @@ export default function WhereYouBelongCard() {
             Where You Belong, Where You’ll Thrive. Together, We Rise.
           </p>
         </div>
-        <button className="my-3 h-[53px] w-[182px] rounded-[4px] bg-white text-center text-[#3B82F6] lg:my-6">
-          Register Now
-        </button>
+
+        <GetStarted
+          component={
+            <button className="z-50 my-3 h-[53px] w-[182px] rounded-[4px] bg-white text-center text-[#3B82F6] lg:my-6">
+              Register Now
+            </button>
+          }
+        />
 
         <Image
           src="/icons/leftFlowe.svg"
