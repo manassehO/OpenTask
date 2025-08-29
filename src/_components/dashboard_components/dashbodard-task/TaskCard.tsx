@@ -1,217 +1,160 @@
-import Image from 'next/image';
+'use client';
 
-type Task = {
-  id: string;
-  title: string;
-  status: 'Active task' | 'Draft task' | 'Completed task';
-  type:
-    | 'testing'
-    | 'survey'
-    | 'pending'
-    | 'review'
-    | 'draft'
-    | 'research'
-    | 'completed';
-  progress: number;
-  submissions: number;
-  eth: string;
-  deadline: string;
-  substatus: 'testing' | 'survey';
-};
+import React from 'react';
+import type { TaskCardProps } from '@/types/task';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardImage,
+} from '~/_components/ui/card';
+import Button from '~/_components/ui/button';
+import { ClientDate } from '~/_components/ui/ClientDate';
 
-type Props = {
-  task: Task;
-};
+// Helper function to convert reward amount to USD (mock conversion)
+function convertToUSD(ethAmount: number): number {
+  // Mock ETH to USD conversion rate (in real app, this would come from an API)
+  const ETH_TO_USD = 2400;
+  return Math.round(ethAmount * ETH_TO_USD);
+}
 
-export default function TaskCard({ task }: Props) {
-  // top button
-  const renderTopButtons = () => {
-    //  Active top button
-    if (task.status === 'Active task') {
-      const typeLabel =
-        task.type === 'testing'
-          ? 'Testing'
-          : task.type === 'survey'
-            ? 'Survey'
-            : 'Unknown';
+// Helper function to get status badge styling
+function getStatusBadge(status: string) {
+  switch (status.toUpperCase()) {
+    case 'ACTIVE':
+      return 'bg-green-100 text-green-800';
+    case 'DRAFT':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'PUBLISHED':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+}
 
-      return (
-        <div className="flex gap-2">
-          {/* Type Label */}
-          <button className="w-[112px] rounded-full border border-neutral-300 py-1 text-sm capitalize text-neutral-700">
-            {typeLabel}
-          </button>
+// Helper function to format reward amount for display
+// function formatRewardAmount(task: any): { eth: number; usd: number } {
+//   // Use rewardAmount from API as primary source
+//   const ethAmount = task.rewardAmount ?? task.rewardInEth ?? 0;
+//   const usdAmount = task.rewardInUsd ?? convertToUSD(ethAmount);
 
-          {/* Conditional Status Button */}
-          {task.type === 'testing' && (
-            <button className="w-[112px] rounded-full border border-yellow-400 bg-yellow-50 py-1 text-sm text-yellow-600">
-              Pending
-            </button>
-          )}
+//   return {
+//     eth: ethAmount,
+//     usd: usdAmount,
+//   };
+// }
 
-          {task.type === 'survey' && (
-            <button className="w-[112px] rounded-full border border-green-400 bg-green-100 py-1 text-sm text-green-700">
-              Active
-            </button>
-          )}
-        </div>
-      );
-    }
-
-    //   draft top button
-    if (task.status === 'Draft task') {
-      const typeLabel =
-        task.type === 'research'
-          ? 'Research'
-          : task.type === 'review'
-            ? 'Review'
-            : 'Draft';
-
-      return (
-        <div className="flex gap-2">
-          <button className="w-[112px] rounded-full border border-neutral-300 py-1 text-sm text-neutral-700">
-            {typeLabel}
-          </button>
-          <button className="w-[112px] rounded-full border border-warning-400 bg-warning-50 py-1 text-sm text-warning-400">
-            Draft
-          </button>
-        </div>
-      );
-    }
-
-    //   completed top button
-    if (task.status === 'Completed task') {
-      const typeLabel =
-        task.type === 'testing'
-          ? 'Testing'
-          : task.type === 'review'
-            ? 'Completed'
-            : 'Review';
-
-      return (
-        <div className="flex gap-2">
-          <button className="w-[112px] rounded-full border border-neutral-300 py-1 text-sm text-neutral-700">
-            {typeLabel}
-          </button>
-          <button className="w-[112px] rounded-full border border-green-400 bg-green-100 py-1 text-sm text-green-700">
-            Completed
-          </button>
-        </div>
-      );
-    }
-  };
-
-  // bottom button for the card
-  const renderBottomButtons = () => {
-    if (task.status === 'Draft task') {
-      return (
-        <div className="flex flex-col gap-2 py-4 md:flex-row">
-          <button className="w-full rounded border border-primary py-2.5 text-sm font-bold text-primary transition">
-            Edit
-          </button>
-          <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
-            Publish
-          </button>
-        </div>
-      );
-    }
-
-    if (task.status === 'Completed task') {
-      return (
-        <div className="flex flex-col gap-2 py-4 md:flex-row">
-          <button className="w-full rounded border border-primary py-2.5 text-sm font-bold text-primary transition">
-            Export Report
-          </button>
-          <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
-            View Details
-          </button>
-        </div>
-      );
-    }
-
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onAction,
+  isLoading = false,
+}) => {
+  // Handle loading state
+  if (isLoading) {
     return (
-      <div className="py-4">
-        <button className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white transition">
-          View Details
-        </button>
-      </div>
+      <Card className="flex h-full w-full flex-col bg-white shadow-sm">
+        <div className="h-48 w-full animate-pulse bg-gray-200" />
+        <div className="flex flex-1 flex-col p-4">
+          <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-gray-200" />
+          <div className="mb-4 h-4 w-full animate-pulse rounded bg-gray-200" />
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+            <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />
+          </div>
+          <div className="mt-4 h-10 w-full animate-pulse rounded bg-gray-200" />
+        </div>
+      </Card>
     );
-  };
+  }
+
+  // Use fallback image if none provided
+  const taskImage = task.image || '/tasks/task_image.png';
+
+  // Get formatted reward amounts
+  // const { eth: rewardInEth, usd: rewardInUsd } = formatRewardAmount(task);
 
   return (
-    <div className="h-full w-full space-y-4 rounded-lg border bg-white p-4 shadow md:w-[578px]">
-      {/* Top Buttons */}
-      <div className="flex items-center justify-between pt-2">
-        {renderTopButtons()}
-      </div>
-
-      {/* Task Info */}
-      <div className="pt-4">
-        <h2 className="text-sm font-semibold md:text-xl">{task.title}</h2>
-        <div
-          className={`flex py-2 font-medium text-neutral-900 ${
-            task.status === 'Active task' || task.status === 'Completed task'
-              ? 'justify-between text-xs md:text-sm'
-              : 'gap-4'
-          }`}
-        >
-          {(task.status === 'Active task' ||
-            task.status === 'Completed task') && (
-            <div className="flex items-center gap-1 text-xs md:text-sm">
-              <Image
-                src="/icons/submitIcon.svg"
-                alt="submission icon"
-                width={20}
-                height={20}
-              />
-              <p className="flex gap-1 text-xs md:text-base">
-                {task.submissions}
-                <span className="hidden md:block">submissions</span>
-              </p>
+    <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <CardImage src={taskImage} alt={task.title} />
+      <div className="flex flex-1 flex-col">
+        <CardHeader className="flex flex-col items-start justify-between space-y-0 pb-2">
+          <div className="flex w-full items-start justify-between">
+            <div className="flex-1 space-y-1">
+              <h3 className="tracking-1 line-clamp-2 text-lg font-semibold capitalize">
+                {task.title}
+              </h3>
+            </div>
+            <span
+              className={`ml-2 rounded px-2 py-1 text-xs font-medium ${getStatusBadge(task.status)}`}
+            >
+              {task.status}
+            </span>
+          </div>
+          <div className="text-muted-foreground mt-2 text-base text-[#414141]">
+            {task.description.length > 100
+              ? `${task.description.substring(0, 100)}...`
+              : task.description}
+          </div>
+          {task.category && (
+            <div className="mt-1 text-xs font-medium text-blue-600">
+              {task.category.toUpperCase()}
             </div>
           )}
+        </CardHeader>
 
-          <div className="flex items-center gap-1 text-xs md:text-sm">
-            <Image
-              src="/icons/etheriumIcon.svg"
-              alt="eth"
-              width={20}
-              height={20}
-            />
-            <p className="text-xs md:text-base">{task.eth}</p>
+        <CardContent className="flex-1">
+          <div className="flex h-full flex-row items-center justify-between">
+            <div className="flex flex-col items-start justify-between gap-y-1">
+              <div className="text-base">
+                <span className="text-[#414141]">Deadline</span>
+              </div>
+              <div className="text-base">
+                {task.deadline ? (
+                  <ClientDate
+                    isoString={task.deadline}
+                    format="date"
+                    className="font-semibold"
+                    fallback="Loading..."
+                  />
+                ) : (
+                  <span className="font-semibold text-gray-500">
+                    No deadline
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col items-end justify-between gap-y-2">
+              <div className="text-sm">
+                <span className="text-base font-semibold">
+                  {/* {rewardInEth.toFixed(3)}ETH */}
+                </span>
+              </div>
+              <div className="text-sm">
+                <span className="text-[24px] font-semibold text-[#3B82F6]">
+                  {/* ${rewardInUsd.toLocaleString()} */}
+                </span>
+              </div>
+            </div>
           </div>
+        </CardContent>
 
-          <div className="flex items-center gap-1">
-            <Image
-              src="/icons/timeLineIcon.svg"
-              alt="deadline"
-              width={20}
-              height={20}
-            />
-            <p className="text-xs md:text-base">Ends: {task.deadline}</p>
-          </div>
-        </div>
+        <CardFooter>
+          <Button
+            onClick={() => onAction?.(task.id)}
+            className={`flex w-full text-[14px] ${
+              task.status === 'active' ? 'bg-primary' : 'bg-secondary'
+            }`}
+            disabled={task.status !== 'active'}
+          >
+            {task.status === 'active'
+              ? 'View Task'
+              : `View Task (${task.status})`}
+          </Button>
+        </CardFooter>
       </div>
-
-      {/* Progress Bar */}
-      {(task.status === 'Active task' || task.status === 'Completed task') &&
-        task.progress !== undefined && (
-          <div className="space-y-2 md:py-4">
-            <div className="flex items-center justify-between py-3 font-medium">
-              <h1 className="text-sm text-grey">Progress</h1>
-              <h1 className="text-sm text-primary">{task.progress}%</h1>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-main-50">
-              <div
-                className="h-2.5 rounded-full bg-primary"
-                style={{ width: `${task.progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-      {/* Bottom Buttons */}
-      {renderBottomButtons()}
-    </div>
+    </Card>
   );
-}
+};
+
+export default TaskCard;

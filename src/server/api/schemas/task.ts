@@ -49,23 +49,10 @@ export const createTaskSchema = z.object({
     .number()
     .int()
     .min(1, 'requiredCompletions must be at least 1'),
-  deadline: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Invalid deadline date format',
+  status: z.enum(allowedStatus),
+  fundingTxHash: z.string().refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
+    message: 'Invalid fundingTxHash format',
   }),
-  image: z
-    .string()
-    .max(255, 'Image URL must be at most 255 characters')
-    .optional(),
-  status: z.enum(allowedStatus), // assumed taskStatusEnum is mapped to allowedStatus
-  fundingTxHash: z
-    .string()
-    .max(255, 'Funding transaction hash must be at most 255 characters')
-    .refine((val) => /^0x[a-fA-F0-9]{64}$/.test(val), {
-      message: 'Invalid fundingTxHash format',
-    }),
-  tags: z.array(z.string().min(1)).min(1, 'At least one tag is required'),
-  example: z.string().optional(),
-  specialRequirements: z.string().optional(),
 });
 
 export const findTaskSchema = z.object({
