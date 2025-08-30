@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { getUserStats } from '~/app/api/profile';
+import { convertCurrency } from '~/lib/utils/coinGecko';
 
 const Summary = () => {
   const { userStats, isLoading } = getUserStats();
-  console.log('stats', userStats);
+  const [btcValue, setBtcValue] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (userStats?.totalEarnings) {
+      // Convert USD earnings → BTC
+      convertCurrency('usd', 'bitcoin', +userStats.totalEarnings).then(
+        (btc) => {
+          setBtcValue(btc);
+        },
+      );
+    }
+  }, [userStats?.totalEarnings]);
 
   const summaryData = [
     {
@@ -12,6 +24,7 @@ const Summary = () => {
       amount: `$${userStats?.totalEarnings ?? 0}`,
       // cryptoAmount: '1,000 BTC',
       icon: '/icons/payments.svg',
+      cryptoAmount: `${btcValue?.toFixed(5)} BTC`,
       bgColor: 'bg-[#F59E0B]/15',
     },
     {
@@ -57,9 +70,9 @@ const Summary = () => {
                 </div>
                 <h3 className="text-gray-600">{item.title}</h3>
                 <p className="text-lg font-semibold">{item.amount}</p>
-                {/* <span className="text-sm font-semibold text-[#3B82F6]">
+                <span className="text-sm font-semibold text-[#3B82F6]">
                   {item.cryptoAmount}
-                </span> */}
+                </span>
                 <div></div>
               </div>
             </div>
