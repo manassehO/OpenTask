@@ -66,6 +66,7 @@ function Otp() {
           onSuccess: (res) => {
             toast.success('OTP verified successfully!');
             const { data } = res;
+
             if (resetEmail) {
               // Handle password reset flow
               localStorage.setItem(

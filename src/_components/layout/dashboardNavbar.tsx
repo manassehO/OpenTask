@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import { useGetRoleBase } from '~/hooks/useTasks';
 import { NotificationBell } from '../notifications/notification-bell';
+import { useGetRoleBase } from '~/hooks/useTasks';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
