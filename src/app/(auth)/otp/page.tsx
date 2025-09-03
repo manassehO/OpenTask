@@ -8,6 +8,9 @@ import { z } from 'zod';
 import AuthWrapper from '~/_components/layout/authWrapper';
 import OTPInput from '~/_components/ui/form/OTPInput';
 import { authClient } from '~/lib/auth-client';
+import { getKeyByValue } from '~/lib/fns';
+import { routes } from '~/lib/route';
+import { UserType } from '~/lib/utils';
 
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be exactly 6 digits'),
@@ -60,8 +63,9 @@ function Otp() {
           email: targetEmail,
         },
         {
-          onSuccess: () => {
+          onSuccess: (res) => {
             toast.success('OTP verified successfully!');
+            const { data } = res;
             if (resetEmail) {
               // Handle password reset flow
               localStorage.setItem(
@@ -71,7 +75,15 @@ function Otp() {
               router.push('/reset-password'); // Redirect to password reset page
             } else {
               // Handle regular login flow
-              router.push('/home');
+              const rootRoute = getKeyByValue(
+                UserType,
+                data?.user?.role as string,
+              );
+              if (rootRoute)
+                router.push(
+                  routes?.[rootRoute?.toLowerCase() as keyof typeof routes]
+                    ?.root,
+                );
             }
           },
           onError: (err) => {

@@ -21,6 +21,9 @@ const AuthenticatedLayout = ({
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
+  const rootRoute = session?.user?.role
+    ? getKeyByValue(UserType, session.user.role)
+    : undefined;
 
   const checkAccess = async () => {
     // Early return if no session (still loading)
@@ -28,10 +31,6 @@ const AuthenticatedLayout = ({
       setLoading(true);
       return;
     }
-
-    const rootRoute = session?.user?.role
-      ? getKeyByValue(UserType, session.user.role)
-      : undefined;
 
     console.log({ session, rootRoute, params });
 
@@ -80,7 +79,7 @@ const AuthenticatedLayout = ({
     <div className="[--header-height:calc(--spacing(14))]">
       <div className="flex flex-col">
         <DashboardNavbar />
-        <SidebarWrapper role={session?.user?.role as AccessType}>
+        <SidebarWrapper role={rootRoute as AccessType}>
           <div className="flex flex-1 flex-col gap-4 p-4">
             <div className="min-h-[100vh] flex-1 rounded-xl bg-white md:min-h-min">
               {children}

@@ -1,16 +1,13 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
+import { CircleHelp, Menu, PanelLeft, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
-import { NotificationBell } from '../notifications/notification-bell';
-<<<<<<< HEAD
 import { useGetRoleBase } from '~/hooks/useTasks';
-=======
->>>>>>> origin/develop
+import { NotificationBell } from '../notifications/notification-bell';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);

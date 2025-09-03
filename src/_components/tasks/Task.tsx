@@ -1,16 +1,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useFindTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import { ToastContainer } from '~/_components/ui/Toast';
-import TaskCard from './TaskCard';
-import { EnhancedTaskFilterTabs, type TaskFilterTab } from './TaskFilterTabs';
+// import { ToastContainer } from '~/_components/ui/Toast';
 import type { TaskSummary } from '~/types/api';
 import type { Task, TaskFilters } from '~/types/task';
+import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
-function convertApiTaskToUITask(apiTask: TaskSummary): Task {
+import { EnhancedTaskFilterTabs, type TaskFilterTab } from './TaskFilterTabs';
+
+export function convertApiTaskToUITask(apiTask: TaskSummary): Task {
   // Mock ETH to USD conversion rate
   const ETH_TO_USD = 2400;
 
@@ -80,7 +81,7 @@ const AllTasks = () => {
       const tasks: Task[] = fetchTask.map(convertApiTaskToUITask);
 
       setTasks(tasks);
-      setTotalCount(findTasksMutation.data.totalCount);
+      setTotalCount(findTasksMutation.data.totalCount as number);
     }
   }, [findTasksMutation.data]);
 
@@ -206,7 +207,7 @@ const AllTasks = () => {
         <div className="mt-4 rounded border border-red-300 bg-red-50 p-4">
           <h3 className="font-medium text-red-800">Error loading tasks</h3>
           <p className="text-red-600">
-            {findTasksMutation.error.message || 'Failed to load tasks'}
+            {findTasksMutation.error.message ?? 'Failed to load tasks'}
           </p>
           <button
             // onClick={() => findTasksMutation.mutate(buildFilters())}
@@ -310,7 +311,9 @@ const RecommendedTasks = () => {
 
   useEffect(() => {
     if (findTasksMutation.data?.success) {
-      setTasks(findTasksMutation.data.tasks.map(convertApiTaskToUITask));
+      setTasks(
+        findTasksMutation.data.tasks.map(convertApiTaskToUITask) as Task[],
+      );
     }
   }, [findTasksMutation.data]);
 
@@ -358,7 +361,7 @@ export default function Task() {
         <RecommendedTasks />
         <AllTasks />
       </div>
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      {/* <ToastContainer toasts={toasts} onClose={removeToast} /> */}
     </>
   );
 }
