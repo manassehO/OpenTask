@@ -162,7 +162,7 @@ export const adminRouter = createTRPCRouter({
       }
 
       // Call Starknet contract
-      await resolveDispute({
+      resolveDispute({
         taskId: dispute.taskId!,
         completerUserId: dispute.completerUserId!,
         resolution: outcome,

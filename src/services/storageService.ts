@@ -20,6 +20,9 @@ class StorageService {
 
   constructor() {
 <<<<<<< HEAD
+    this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
+=======
+<<<<<<< HEAD
 <<<<<<< HEAD
     this.defaultBucket = process.env.MINIO_BUCKET ?? 'opentask-dev';
 =======
@@ -32,6 +35,7 @@ class StorageService {
 =======
     this.defaultBucket = env.MINIO_BUCKET ?? 'opentask-dev';
 >>>>>>> 7885bb9721738fa4d63015d57940d910db482bbb
+>>>>>>> origin/develop
   }
 
   async initialize(): Promise<void> {
@@ -85,6 +89,9 @@ class StorageService {
 <<<<<<< HEAD
       // For MinIO, we'll construct the direct URL since existing service returns direct URLs
 <<<<<<< HEAD
+      const endpoint = env.MINIO_ENDPOINT ?? 'http://localhost:9000';
+=======
+<<<<<<< HEAD
       const endpoint = process.env.MINIO_ENDPOINT ?? 'http://localhost:9000';
 =======
 =======
@@ -92,6 +99,7 @@ class StorageService {
 >>>>>>> 7885bb9721738fa4d63015d57940d910db482bbb
       const endpoint = env.MINIO_ENDPOINT ?? 'http://localhost:9000';
 >>>>>>> 082d35cd282ffce9fa75cf98886a0d0ccf458ffa
+>>>>>>> origin/develop
       const bucket = bucketName ?? this.defaultBucket;
       return `${endpoint}/${bucket}/${key}`;
     } catch (error) {
@@ -103,10 +111,14 @@ class StorageService {
   async deleteFile(key: string, bucketName?: string): Promise<void> {
     try {
 <<<<<<< HEAD
+      console.log(key, bucketName);
+=======
+<<<<<<< HEAD
       console.log(key, bucketName) 
 =======
       console.log(key, bucketName);
 >>>>>>> 082d35cd282ffce9fa75cf98886a0d0ccf458ffa
+>>>>>>> origin/develop
       // Note: Existing MinIO service doesn't expose delete function
       // This would need to be implemented if file deletion is required
       console.warn('File deletion not implemented with existing MinIO service');

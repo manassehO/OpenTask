@@ -956,7 +956,7 @@ export const taskRouter = createTRPCRouter({
         .limit(input.limit)
         .offset(input.offset);
 
-      const totalRecordsNum = Number(totalRecords)
+      const totalRecordsNum = Number(totalRecords);
 
       return {
         pageSize: input.limit,
