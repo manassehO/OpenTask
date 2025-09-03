@@ -1,14 +1,13 @@
 'use client';
 
-import { Task } from '@/types/task';
+import type { Task } from '@/types/task';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useTaskActions, useActiveTasks } from '~/hooks/useTasks';
+import { toast } from 'sonner';
+import { useActiveTasks, useTaskActions } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import { ToastContainer } from '~/_components/ui/Toast';
-import TaskCard from './TaskCard';
-import type { Task } from '@/types/task';
 import type { TaskDetail } from '~/types/api';
+import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
 // Helper function to convert API task detail to UI task format
@@ -64,7 +63,7 @@ export const ActiveTask = () => {
             <TaskCardSkeleton key={`loading-${index}`} />
           ))}
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -93,7 +92,7 @@ export const ActiveTask = () => {
             </div>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -138,7 +137,7 @@ export const ActiveTask = () => {
             </button>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -244,7 +243,7 @@ export const ActiveTask = () => {
         </div>
       </div>
 
-      {/* <ToastContainer toasts={toasts} onClose={removeToast} /> */}
+      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 };

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useFindTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-// import { ToastContainer } from '~/_components/ui/Toast';
+import { toast } from 'sonner';
 import type { TaskSummary } from '~/types/api';
 import type { Task, TaskFilters } from '~/types/task';
 import TaskCard from './TaskCard';
@@ -361,7 +361,7 @@ export default function Task() {
         <RecommendedTasks />
         <AllTasks />
       </div>
-      {/* <ToastContainer toasts={toasts} onClose={removeToast} /> */}
+      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }

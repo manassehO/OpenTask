@@ -1,13 +1,13 @@
 'use client';
 
+import type { Task } from '@/types/task';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 import { useCompletedTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import { ToastContainer } from '~/_components/ui/Toast';
-import TaskCard from './TaskCard';
-import type { Task } from '@/types/task';
 import type { TaskSummary } from '~/types/api';
+import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
 // Helper function to convert API task summary to UI task format
@@ -39,7 +39,7 @@ export default function CompletedTask() {
     fetchCompletedTasks,
     refetchCompletedTasks,
   } = useCompletedTasks();
-  const { toasts, removeToast, showInfo } = useToast();
+  const { toasts, showInfo } = useToast();
 
   // Fetch completed tasks on component mount
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function CompletedTask() {
             ))}
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -133,7 +133,7 @@ export default function CompletedTask() {
             </div>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -178,7 +178,7 @@ export default function CompletedTask() {
             </button>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -246,7 +246,7 @@ export default function CompletedTask() {
         </div>
       </div>
 
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }
