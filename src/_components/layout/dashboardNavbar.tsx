@@ -7,10 +7,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import { NotificationBell } from '../notifications/notification-bell';
-<<<<<<< HEAD
 import { useGetRoleBase } from '~/hooks/useTasks';
-=======
->>>>>>> origin/develop
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
