@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext } from 'react';
 import { useToast } from '~/hooks/useToast';
-import { ToastContainer } from '~/_components/ui/Toast';
+import { ToastContainer } from '~/_components/ui/toast';
 
 
 const ToastContext = createContext<ReturnType<typeof useToast> | null>(null);
@@ -15,7 +15,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ToastContext.Provider value={toastApi}>
       {children}
-      <ToastContaner toasts={toastApi.toasts} onClose={toastApi.removeToast} />
+      <ToastContainer toasts={toastApi.toasts} onClose={toastApi.removeToast} />
     </ToastContext.Provider>
   );
 };

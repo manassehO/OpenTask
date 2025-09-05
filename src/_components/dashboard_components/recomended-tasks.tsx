@@ -1,20 +1,23 @@
 'use client';
-import React from 'react';
 import Image from 'next/image';
-import Button from '../ui/button';
-import { useRecommendedTasks } from '~/app/api/task';
 import Link from 'next/link';
-import { useRecommendedTasksStore } from '~/app/store/recommendedTaskStore';
-import { CustomPagination } from '../custom/CustomPagination';
 import { useRouter } from 'next/navigation';
+import { useRecommendedTasks } from '~/app/api/task';
+import { useRecommendedTasksStore } from '~/app/store/recommendedTaskStore';
+import { useSession } from '~/lib/auth-client';
+import { getKeyByValue } from '~/lib/fns';
+import { UserType } from '~/lib/utils';
+import { CustomPagination } from '../custom/CustomPagination';
+import Button from '../ui/button';
 
 const RecomendedTasks = () => {
   const { data, isLoading } = useRecommendedTasks();
+  const { data: session } = useSession();
   const { nextPage, prevPage, offset, limit } = useRecommendedTasksStore();
   const router = useRouter();
   const recommendedTasks = data?.data ?? [];
   console.log('rec', recommendedTasks);
-
+  const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
     <div>
       <div className="flex w-full items-center justify-between px-4 py-2">
@@ -58,13 +61,15 @@ const RecomendedTasks = () => {
               </div>
               <div className="flex justify-between">
                 <p className="text-sm text-black">
-                  {new Date(task.deadline).toLocaleDateString()}
+                  {new Date(
+                    task.deadline as unknown as string,
+                  ).toLocaleDateString()}
                 </p>
                 <p className="text-sm font-bold text-[#3B82F6]">
                   {`$${task.rewardAmount}`}
                 </p>
               </div>
-              <Link href={`/task/${task.id}`}>
+              <Link href={`/${rootRoute}/task/${task.id}`}>
                 <Button className="mt-2 w-full text-[#3B82F6]">
                   View Task
                 </Button>

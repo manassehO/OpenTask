@@ -1,21 +1,20 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import CancelTaskModal from '~/_components/tasks/CancelTaskModal';
+import TaskSubmissionModal from '~/_components/tasks/TaskSubmissionModal';
+import Button from '~/_components/ui/button';
 import {
-  useGetTaskById,
   useClaimTask,
-  useTaskActions,
   useGetRoleBase,
+  useGetTaskById,
+  useTaskActions,
 } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import { ToastContainer } from '~/_components/ui/Toast';
-import Button from '~/_components/ui/button';
-import TaskSubmissionModal from '~/_components/tasks/TaskSubmissionModal';
-import Image from 'next/image';
-import dummyImage from '../../../../../../public/images/banner.webp';
-import CancelTaskModal from '~/_components/tasks/CancelTaskModal';
 interface TaskDetailProps {
   taskId: string;
 }
@@ -98,7 +97,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
             </div>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -111,7 +110,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
 
         <div className="relative mt-6 h-[300px] w-full max-w-6xl md:h-[500px]">
           <Image
-            src={'../../../../../public/images/banner.webp'}
+            src={'/images/banner.webp'}
             alt={task.title ?? 'Task Banner'}
             fill
             className="object-cover opacity-70"
@@ -210,7 +209,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
                   width={60}
                   height={60}
                   className="h-[60px] w-[60px]"
-                />{' '}
+                />
                 <div>
                   {' '}
                   <div className="text-sm font-semibold">PRICE</div>{' '}
@@ -273,7 +272,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
         setIsOpen={setShowCancelModal}
       />
 
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }

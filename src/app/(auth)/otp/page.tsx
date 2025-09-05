@@ -63,9 +63,10 @@ function Otp() {
           email: targetEmail,
         },
         {
-          onSuccess: (res) => {
+          onSuccess: async (res) => {
             toast.success('OTP verified successfully!');
             const { data } = res;
+            const userRole = await authClient.getSession();
 
             if (resetEmail) {
               // Handle password reset flow
@@ -78,7 +79,7 @@ function Otp() {
               // Handle regular login flow
               const rootRoute = getKeyByValue(
                 UserType,
-                data?.user?.role as string,
+                userRole?.data?.user?.role ?? '',
               );
               if (rootRoute)
                 router.push(

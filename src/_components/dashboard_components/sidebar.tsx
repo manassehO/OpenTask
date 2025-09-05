@@ -62,7 +62,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
     {
       title: 'Analytics',
       icon: '/icons/analytics.svg',
-      route: routes.creator.root,
+      route: routes.creator.analytics,
     },
   ];
 

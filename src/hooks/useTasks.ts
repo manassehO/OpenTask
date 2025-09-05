@@ -4,7 +4,7 @@ import { useToast } from '~/hooks/useToast';
 import { useEffect, useState } from 'react';
 import { useToastContext } from '~/store/ToastProvider';
 import { useTaskStore } from '~/store';
- 
+
 
 // Helper function to safely extract error message
 function getErrorMessage(error: unknown): string {
