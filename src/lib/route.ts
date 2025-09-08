@@ -1,8 +1,9 @@
 export const routes = {
   creator: {
-    root: '/creator/analytics',
+    root: '/creator/home',
     createTask: '/creator/create-task',
     tasks: '/creator/create-task',
+    analytics: '/creator/analytics',
   },
   completer: {
     root: '/completer/home',

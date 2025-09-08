@@ -1,11 +1,11 @@
 import '~/styles/globals.css';
 
 import { GeistSans } from 'geist/font/sans';
-import { type Metadata } from 'next';
-import { TRPCReactProvider } from '~/trpc/react';
 import { Provider } from 'jotai';
+import { type Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
-import { Toaster } from '~/_components/ui/toaster';
+import { ToastProvider } from '~/store/ToastProvider';
+import { TRPCReactProvider } from '~/trpc/react';
 
 // import Footer from "./_components/layout/Footer";
 
@@ -28,8 +28,7 @@ export default function RootLayout({
       <body className={dmSans.className}>
         <Provider>
           <TRPCReactProvider>
-            {children}
-            <Toaster />
+            <ToastProvider>{children}</ToastProvider>
           </TRPCReactProvider>
         </Provider>
       </body>

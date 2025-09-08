@@ -24,6 +24,7 @@ function Password() {
   return (
     <div className="flex h-svh w-full items-center justify-center">
       <AuthWrapper
+        google={false}
         text="Welcome to open task. Sign in with your email or connect a wallet to get started"
         title="Welcome"
       >
