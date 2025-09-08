@@ -10,6 +10,7 @@ import type { Task, TaskFilters } from '~/types/task';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 import { EnhancedTaskFilterTabs, type TaskFilterTab } from './TaskFilterTabs';
+import RecomendedTasks from '../dashboard_components/recomended-tasks';
 
 export function convertApiTaskToUITask(apiTask: TaskSummary): Task {
   // Mock ETH to USD conversion rate
@@ -295,62 +296,62 @@ const AllTasks = () => {
   );
 };
 
-const RecommendedTasks = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const router = useRouter();
-  const findTasksMutation = useFindTasks();
+// const RecommendedTasks = () => {
+//   const [tasks, setTasks] = useState<Task[]>([]);
+//   const router = useRouter();
+//   const findTasksMutation = useFindTasks();
 
-  useEffect(() => {
-    const filters: TaskFilters = {
-      limit: 3,
-      sort_by: 'created_at',
-      order: 'desc',
-    };
-    findTasksMutation.mutate(filters);
-  }, []);
+//   useEffect(() => {
+//     const filters: TaskFilters = {
+//       limit: 3,
+//       sort_by: 'created_at',
+//       order: 'desc',
+//     };
+//     findTasksMutation.mutate(filters);
+//   }, []);
 
-  useEffect(() => {
-    if (findTasksMutation.data?.success) {
-      setTasks(
-        findTasksMutation.data.tasks.map(convertApiTaskToUITask) as Task[],
-      );
-    }
-  }, [findTasksMutation.data]);
+//   useEffect(() => {
+//     if (findTasksMutation.data?.success) {
+//       setTasks(
+//         findTasksMutation.data.tasks.map(convertApiTaskToUITask) as Task[],
+//       );
+//     }
+//   }, [findTasksMutation.data]);
 
-  const onClick = (taskId: string) => router.push(`/task/${taskId}`);
+//   const onClick = (taskId: string) => router.push(`/task/${taskId}`);
 
-  return (
-    <div className="flex flex-col">
-      <h1 className="mb-4 font-bold">Recommended For You</h1>
+//   return (
+//     <div className="flex flex-col">
+//       <h1 className="mb-4 font-bold">Recommended For You</h1>
 
-      {findTasksMutation.isPending ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <TaskCardSkeleton key={`loading-${index}`} />
-          ))}
-        </div>
-      ) : findTasksMutation.error ? (
-        <div className="rounded border border-red-300 bg-red-50 p-4">
-          <h3 className="font-medium text-red-800">
-            Error loading recommendations
-          </h3>
-          <p className="text-red-600">Unable to load recommended tasks</p>
-        </div>
-      ) : tasks.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onAction={onClick} />
-          ))}
-        </div>
-      ) : (
-        <div className="py-8 text-center text-gray-500">
-          <p>No recommended tasks available at the moment</p>
-          <p className="mt-1 text-sm">Check back later for new opportunities</p>
-        </div>
-      )}
-    </div>
-  );
-};
+//       {findTasksMutation.isPending ? (
+//         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+//           {Array.from({ length: 3 }).map((_, index) => (
+//             <TaskCardSkeleton key={`loading-${index}`} />
+//           ))}
+//         </div>
+//       ) : findTasksMutation.error ? (
+//         <div className="rounded border border-red-300 bg-red-50 p-4">
+//           <h3 className="font-medium text-red-800">
+//             Error loading recommendations
+//           </h3>
+//           <p className="text-red-600">Unable to load recommended tasks</p>
+//         </div>
+//       ) : tasks.length > 0 ? (
+//         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+//           {tasks.map((task) => (
+//             <TaskCard key={task.id} task={task} onAction={onClick} />
+//           ))}
+//         </div>
+//       ) : (
+//         <div className="py-8 text-center text-gray-500">
+//           <p>No recommended tasks available at the moment</p>
+//           <p className="mt-1 text-sm">Check back later for new opportunities</p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
 export default function Task() {
   const { toasts, removeToast } = useToast();
@@ -358,7 +359,8 @@ export default function Task() {
   return (
     <>
       <div>
-        <RecommendedTasks />
+        {/* <RecommendedTasks key='' /> */}
+        <RecomendedTasks storeKey="recommended-tasks" showSeeAll={false} />
         <AllTasks />
       </div>
       {toast.success(toasts.map((toast) => toast.message).join('\n'))}
