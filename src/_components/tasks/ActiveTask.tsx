@@ -1,61 +1,34 @@
 'use client';
 
-import type { Task } from '@/types/task';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { useActiveTasks, useTaskActions } from '~/hooks/useTasks';
+import { useActiveTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import type { TaskDetail } from '~/types/api';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
-
-// Helper function to convert API task detail to UI task format
-function convertApiTaskToUITask(apiTask: TaskDetail): Task {
-  return {
-    id: apiTask.id,
-    title: apiTask.title,
-    description: apiTask.description,
-    status: apiTask.status,
-    image: apiTask.image ?? '',
-    deadline: apiTask.deadline ?? '',
-    category: apiTask.category ?? 'General',
-    rewardInEth: 2300,
-    rewardInUsd: 500,
-    creator: apiTask.creatorDisplayName,
-  };
-}
 
 export const ActiveTask = () => {
   const router = useRouter();
 
-  const { claimedTasks: claimedTaskIds, markTaskAsUnclaimed } =
-    useTaskActions();
-
-  const { activeTasks, isLoading, error, refetchActiveTask } = useActiveTasks();
-  const { toasts, removeToast } = useToast();
+  const {
+    data: activeTasks,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useActiveTasks();
+  const { toasts } = useToast();
   useEffect(() => {
-    // fetchActiveTasks();
-    refetchActiveTask();
+    console.log(activeTasks?.data, 'active task');
   }, []);
-  // Convert API tasks to UI format
-  const tasks: Task[] = (activeTasks ?? []).map(convertApiTaskToUITask);
 
   const onClick = (taskId: string) => {
-    router.push(`/task/${taskId}`);
-  };
-
-  const handleRemoveFromActive = (taskId: string) => {
-    const confirmed = window.confirm(
-      'Remove this task from your active tasks?',
-    );
-    if (confirmed) {
-      markTaskAsUnclaimed(taskId);
-    }
+    router.push(`/${taskId}`);
   };
 
   // Loading state
-  if (isLoading && claimedTaskIds.length > 0) {
+  if (isLoading) {
     return (
       <>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -69,7 +42,7 @@ export const ActiveTask = () => {
   }
 
   // Error state
-  if (error) {
+  if (isError) {
     return (
       <>
         <div className="space-y-4">
@@ -81,10 +54,10 @@ export const ActiveTask = () => {
             <h3 className="font-medium text-red-800">
               Failed to load active tasks
             </h3>
-            <p className="mt-2 text-red-600">{error}</p>
+            <p className="mt-2 text-red-600">{error?.message}</p>
             <div className="mt-4 space-x-2">
               <button
-                onClick={() => refetchActiveTask()}
+                onClick={() => refetch()}
                 className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600"
               >
                 Retry
@@ -98,7 +71,7 @@ export const ActiveTask = () => {
   }
 
   // Empty state
-  if (claimedTaskIds.length === 0) {
+  if (activeTasks?.data.length === 0) {
     return (
       <>
         <div className="space-y-4">
@@ -130,7 +103,7 @@ export const ActiveTask = () => {
               click &quot;Take Task&quot; to get started.
             </p>
             <button
-              onClick={() => router.push('/task')}
+              onClick={() => router.push('/tasks')}
               className="mt-4 rounded bg-blue-500 px-6 py-2 text-white hover:bg-blue-600"
             >
               Browse Tasks
@@ -149,7 +122,8 @@ export const ActiveTask = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Your Active Tasks</h2>
           <span className="text-sm text-gray-500">
-            {tasks.length} active task{tasks.length !== 1 ? 's' : ''}
+            {activeTasks?.data.length} active task
+            {activeTasks?.data.length !== 1 ? 's' : ''}
           </span>
         </div>
 
@@ -180,7 +154,7 @@ export const ActiveTask = () => {
 
         {/* Tasks grid */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {tasks.map((task) => (
+          {activeTasks?.data.map((task) => (
             <div key={task.id} className="relative">
               <TaskCard task={task} onAction={onClick} />
 

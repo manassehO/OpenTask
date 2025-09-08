@@ -16,7 +16,6 @@ const RecomendedTasks = () => {
   const { nextPage, prevPage, offset, limit } = useRecommendedTasksStore();
   const router = useRouter();
   const recommendedTasks = data?.data ?? [];
-  console.log('rec', recommendedTasks);
   const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
     <div>
@@ -26,7 +25,7 @@ const RecomendedTasks = () => {
         </h1>
 
         <Button
-          onClick={() => router.push('/creator/task')}
+          onClick={() => router.push('tasks')}
           backgroundColor="transparent"
           textColor="text-[#3B82F6]"
           className="mt-2 text-[#3B82F6]"
@@ -69,7 +68,7 @@ const RecomendedTasks = () => {
                   {`$${task.rewardAmount}`}
                 </p>
               </div>
-              <Link href={`/${rootRoute}/task/${task.id}`}>
+              <Link href={`/${rootRoute}/tasks/${task.id}`}>
                 <Button className="mt-2 w-full text-[#3B82F6]">
                   View Task
                 </Button>

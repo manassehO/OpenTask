@@ -1,4 +1,4 @@
-import { TaskStatus } from './task';
+import { type TaskStatus } from './task';
 
 export type FindTasksInput = {
   category?: string;
@@ -18,17 +18,20 @@ export type TaskSummary = {
   category: string;
   rewardAmount: string | number;
   rewardTokenAddress: string;
-  platformFee?: number;
+  platformFee?: string | null;
   approvedCompletions: number;
   inProgressCompletions: number;
   requiredCompletions: number;
-  deadline: string;
+  deadline: Date;
   image: string | null;
   status: TaskStatus;
   fundingTxHash: string | null;
   createdAt: string;
   updatedAt: string | null;
   maxCompletions: number;
+  example?: string;
+  tags?: string;
+  specialRequirements?: string;
 };
 
 export type FindTasksOutput = {
