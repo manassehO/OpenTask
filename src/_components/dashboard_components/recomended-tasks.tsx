@@ -22,6 +22,8 @@ const RecomendedTasks = ({
 
   const { data, isLoading, error } = useRecommendedTasks({ limit, offset });
   const recommendedTasks = data?.data ?? [];
+  console.log('rec', recommendedTasks);
+
   const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
     <div>
@@ -30,7 +32,7 @@ const RecomendedTasks = ({
           Recommended For You
         </h1>
         {showSeeAll && (
-          <Link href="task" className="mt-2 text-[#3B82F6]">
+          <Link href="tasks" className="mt-2 text-[#3B82F6]">
             See All Tasks
           </Link>
         )}
@@ -54,7 +56,7 @@ const RecomendedTasks = ({
           recommendedTasks.map((task, index) => (
             <div
               key={index}
-              className="flex flex-col gap-2 rounded-lg bg-white p-1"
+              className="flex max-w-sm flex-col gap-2 rounded-lg bg-white p-1"
             >
               <Image
                 src={task.image ?? ''}
@@ -64,9 +66,10 @@ const RecomendedTasks = ({
                 className="h-full w-full rounded-md object-cover"
               />
               <h1 className="text-lg font-semibold">{task.title}</h1>
-              <p className="line-clamp-2 text-sm text-gray-500">
+              <p className="line-clamp-2 h-full text-sm text-gray-500">
                 {task.description}
               </p>
+
               <div className="flex justify-between">
                 <p className="text-gray-500">Deadline</p>
                 <p className="text-sm text-black">{`${task.platformFee} ETH`}</p>
@@ -81,7 +84,7 @@ const RecomendedTasks = ({
                   {`$${task.rewardAmount}`}
                 </p>
               </div>
-              <Link href={`/${rootRoute}/task/${task.id}`}>
+              <Link href={`/${rootRoute}/tasks/${task.id}`}>
                 <Button className="mt-2 w-full text-[#3B82F6]">
                   View Task
                 </Button>

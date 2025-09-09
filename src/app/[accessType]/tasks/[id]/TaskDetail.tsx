@@ -26,9 +26,9 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
   const { data: task, isLoading, error, refetch } = useGetTaskById(taskId);
   const { isTaskClaimed, markTaskAsClaimed } = useTaskActions();
   const { data: role, isLoading: loadingRole } = useGetRoleBase();
-
+  const steps = task?.instructions?.split(/\d+\.\s*/).filter(Boolean);
   const claimMutation = useClaimTask();
-  const { toasts, removeToast } = useToast();
+  const { toasts } = useToast();
 
   const claimed = task ? isTaskClaimed(taskId) : false;
 
@@ -67,7 +67,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
     );
   }
 
-  if (error || !task) {
+  if (error) {
     return (
       <>
         <div className="mx-auto max-w-4xl py-8">
@@ -106,12 +106,14 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
     <>
       <div className="mx-auto max-w-6xl py-8">
         <BackButton />
-        <h1 className="p-6 pb-0 text-4xl font-bold capitalize">{task.title}</h1>
+        <h1 className="p-6 pb-0 text-4xl font-bold capitalize">
+          {task?.title}
+        </h1>
 
         <div className="relative mt-6 h-[300px] w-full max-w-6xl md:h-[500px]">
           <Image
             src={'/images/banner.webp'}
-            alt={task.title ?? 'Task Banner'}
+            alt={task?.title ?? 'Task Banner'}
             fill
             className="object-cover opacity-70"
           />
@@ -123,7 +125,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
           <div className="grid w-full max-w-6xl grid-cols-1 gap-y-8 p-6">
             <div className="rounded-md bg-white p-6">
               <h2 className="mb-3 text-xl font-bold">Description</h2>
-              <p className="mb-6 text-[#414141]">{task.description}</p>
+              <p className="mb-6 text-[#414141]">{task?.description}</p>
               <div className="flex items-center gap-4 rounded-lg p-4">
                 <Image
                   src="/icons/spot.svg"
@@ -142,50 +144,25 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
 
           <div className="max-w-6xl rounded-md bg-white p-6">
             <h2 className="mb-3 text-xl font-bold">Instructions</h2>{' '}
-            <p className="mb-4 text-[#414141]">
-              Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
-              tincidunt ut nunc, dictum non fermentum proin sed etiam. Ipsum
-              turpis neque eros quisque aliquot vulputate sed venenatis lectus,
-              malesuada in aliquam interdum pellentesque.{' '}
-            </p>{' '}
             <ul className="mb-6 list-disc space-y-4 pl-6 marker:text-[#414141]">
-              {' '}
-              {[
-                'Dolor justo diam amet tincidunt ut nunc, dictum non fermentum proin sed etiam.',
-                'Ipsum turpis neque eros quisque aliquot vulputate sed venenatis lectus.',
-                'Malesuada in aliquam interdum pellentesque.',
-                'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-                'Consectetur adipiscing elit, sed do eiusmod tempor incididunt.',
-              ].map((step, index) => (
+              {steps?.map((step, index) => (
                 <li key={index} className="pl-2 font-semibold">
-                  {' '}
-                  {step}{' '}
+                  {step}
                 </li>
-              ))}{' '}
-            </ul>{' '}
-            <p className="mb-8 text-[#414141]">
-              {' '}
-              Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
-              tincidunt ut nunc, dictum non fermentum proin sed etiam. Ipsum
-              turpis neque eros quisque aliquot vulputate sed venenatis lectus,
-              malesuada in aliquam interdum pellentesque.{' '}
-            </p>{' '}
+              ))}
+            </ul>
           </div>
 
-          <div className="max-w-6xl rounded-md bg-white p-6">
-            {' '}
+          <div className="max-w-6xl rounded-md bg-white p-2">
             <h2 className="mb-3 text-xl font-bold">Reward & Deadline</h2>{' '}
             <p className="mb-4 leading-[32px] text-[#414141]">
-              {' '}
               Lorem ipsum dolor sit amet consectetur. Dolor justo diam amet
               tincidunt ut nunc, dictum non fermentum proin sed etiam. Ipsum
               turpis neque eros quisque aliquot vulputate sed venenatis lectus,
               malesuada in aliquam interdum pellentesque.{' '}
-            </p>{' '}
+            </p>
             <div className="mb-8 flex flex-wrap gap-8">
-              {' '}
               <div className="flex items-center gap-2">
-                {' '}
                 <Image
                   src="/icons/calendar.svg"
                   alt="Task icon"
@@ -197,7 +174,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
                   {' '}
                   <div className="text-sm font-semibold">DEADLINE</div>{' '}
                   <div className="text-xl font-bold">
-                    {'monday, 12th october,2025'}
+                    {task?.deadline?.toDateString()}
                   </div>{' '}
                 </div>{' '}
               </div>{' '}
@@ -214,10 +191,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
                   {' '}
                   <div className="text-sm font-semibold">PRICE</div>{' '}
                   <div className="text-xl font-bold">
-                    {12000} ETH{' '}
-                    <span className="text-base text-blue-500">
-                      &asymp;{Math.round(12000 * 2400).toLocaleString()}
-                    </span>
+                    $ {task?.rewardAmount}
                   </div>{' '}
                 </div>{' '}
               </div>{' '}
@@ -227,7 +201,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
           {/* Actions */}
           {role?.user?.role === 'COMPLETER' && (
             <div className="space-y-3">
-              {!claimed && task.status === 'ACTIVE' && (
+              {!claimed && task?.status === 'ACTIVE' && (
                 <div className="flex w-full items-end justify-end gap-4">
                   <Button
                     onClick={handleTakeTask}
@@ -238,7 +212,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
                   </Button>
                 </div>
               )}
-              {claimed && task.status === 'ACTIVE' && (
+              {claimed && task?.status === 'ACTIVE' && (
                 <div className="flex w-full items-center justify-between gap-4">
                   {/* <Button
                     onClick={() => setShowCancelModal(true)}
@@ -263,7 +237,7 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
         isOpen={showSubmitModal}
         onClose={() => setShowSubmitModal(false)}
         taskId={taskId}
-        taskTitle={task.title}
+        taskTitle={task?.title}
       />
       <CancelTaskModal
         taskId={taskId}
