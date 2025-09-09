@@ -295,7 +295,8 @@ export default function Task() {
   return (
     <>
       <div>
-        <RecomendedTasks />
+        {/* <RecommendedTasks key='' /> */}
+        <RecomendedTasks storeKey="recommended-tasks" showSeeAll={false} />
         <AllTasks />
       </div>
       {toast.success(toasts.map((toast) => toast.message).join('\n'))}
