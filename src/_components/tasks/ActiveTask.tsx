@@ -2,9 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import { useActiveTasks } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
+// import { useToast } from '~/hooks/useToast';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
@@ -18,9 +17,11 @@ export const ActiveTask = () => {
     error,
     refetch,
   } = useActiveTasks();
-  const { toasts } = useToast();
+  // const { toasts } = useToast();
   useEffect(() => {
-    console.log(activeTasks?.data, 'active task');
+    //  void refetch?.();
+    console.log(activeTasks, 'active task');
+    void refetch?.();
   }, []);
 
   const onClick = (taskId: string) => {
@@ -36,7 +37,7 @@ export const ActiveTask = () => {
             <TaskCardSkeleton key={`loading-${index}`} />
           ))}
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
+        {/* {toast.success(toasts.map((toast) => toast.message).join('\n'))} */}
       </>
     );
   }
@@ -57,7 +58,7 @@ export const ActiveTask = () => {
             <p className="mt-2 text-red-600">{error?.message}</p>
             <div className="mt-4 space-x-2">
               <button
-                onClick={() => refetch()}
+                onClick={() => void refetch?.()}
                 className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600"
               >
                 Retry
@@ -65,7 +66,7 @@ export const ActiveTask = () => {
             </div>
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
+        {/* {toast.success(toasts.map((toast) => toast.message).join('\n'))} */}
       </>
     );
   }
@@ -110,7 +111,7 @@ export const ActiveTask = () => {
             </button>
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
+        {/* {toast.success(toasts.map((toast) => toast.message).join('\n'))} */}
       </>
     );
   }
@@ -163,7 +164,7 @@ export const ActiveTask = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onClick(task.id);
+                    onClick(task?.id);
                   }}
                   className="rounded bg-blue-500 p-1 text-white shadow-lg hover:bg-blue-600"
                   title="View Details"
@@ -217,7 +218,7 @@ export const ActiveTask = () => {
         </div>
       </div>
 
-      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
+      {/* {toast.success(toasts.map((toast) => toast.message).join('\n'))} */}
     </>
   );
 };

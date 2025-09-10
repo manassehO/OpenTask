@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { api } from '~/trpc/react';
-import { useToast } from '~/hooks/useToast';
 import { useEffect, useState } from 'react';
-import { useToastContext } from '~/store/ToastProvider';
 import { useTaskStore } from '~/store';
-import { ToastType } from '~/_components/ui/toast';
+import { useToastContext } from '~/store/ToastProvider';
+import { api } from '~/trpc/react';
 // Helper function to safely extract error message
 function getErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
