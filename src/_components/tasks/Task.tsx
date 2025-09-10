@@ -3,14 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useFindTasks } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
-import { toast } from 'sonner';
-import type { TaskSummary } from '~/types/api';
-import type { Task, TaskFilters } from '~/types/task';
+import type { Task } from '~/types/task';
+import RecomendedTasks from '../dashboard_components/recomended-tasks';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 import { EnhancedTaskFilterTabs, type TaskFilterTab } from './TaskFilterTabs';
-import RecomendedTasks from '../dashboard_components/recomended-tasks';
 {
   /*
       tasks: {
@@ -290,16 +287,12 @@ const AllTasks = () => {
 };
 
 export default function Task() {
-  const { toasts } = useToast();
-
   return (
     <>
       <div>
-        {/* <RecommendedTasks key='' /> */}
         <RecomendedTasks storeKey="recommended-tasks" showSeeAll={false} />
         <AllTasks />
       </div>
-      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }

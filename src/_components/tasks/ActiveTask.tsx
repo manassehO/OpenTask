@@ -1,14 +1,19 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
+import { UserType } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useActiveTasks } from '~/hooks/useTasks';
+import { getKeyByValue } from '~/lib/fns';
+import { routes } from '~/lib/route';
 // import { useToast } from '~/hooks/useToast';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
 export const ActiveTask = () => {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const {
     data: activeTasks,
@@ -104,7 +109,15 @@ export const ActiveTask = () => {
               click &quot;Take Task&quot; to get started.
             </p>
             <button
-              onClick={() => router.push('/tasks')}
+              onClick={() => {
+                const rootRoute = session?.user?.role
+                  ? getKeyByValue(UserType, session.user.role)
+                  : 'completer';
+                const tasksRoute =
+                  routes?.[rootRoute?.toLowerCase() as keyof typeof routes]
+                    ?.tasks || '/tasks';
+                router.push(tasksRoute);
+              }}
               className="mt-4 rounded bg-blue-500 px-6 py-2 text-white hover:bg-blue-600"
             >
               Browse Tasks

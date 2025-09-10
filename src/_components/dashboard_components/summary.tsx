@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { getUserStats } from '~/app/api/profile';
 import { convertCurrency } from '~/lib/utils/coinGecko';
 
@@ -23,7 +23,7 @@ const Summary = () => {
       };
 
       if (!btcValue) {
-        fetchConversion();
+        void fetchConversion();
       }
     }
   }, [userStats?.totalEarnings]);

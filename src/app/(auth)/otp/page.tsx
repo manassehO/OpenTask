@@ -112,6 +112,7 @@ function Otp() {
       <AuthWrapper
         text="Welcome to open task. Sign in with your email or connect a wallet to get started"
         title="Welcome"
+        google={false}
       >
         <form
           onSubmit={handleSubmit(onSubmit)}

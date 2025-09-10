@@ -27,7 +27,7 @@ const greetings = [
 
 function GreetingCard() {
   const { user, isLoading } = useProfile();
-  console.log('user from greeting card', user);
+  // console.log('user from greeting card', user);
 
   if (isLoading) {
     return (

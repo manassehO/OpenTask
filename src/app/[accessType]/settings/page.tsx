@@ -31,7 +31,6 @@ export default function SettingPage() {
     profile?.image ?? null,
   );
 
-  console.log({ profile });
   const {
     register,
     handleSubmit,
