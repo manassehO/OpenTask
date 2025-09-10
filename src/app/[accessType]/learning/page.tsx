@@ -192,7 +192,7 @@ export default function LearningPage() {
                   buttonLabel={
                     tutorial.progress > 0
                       ? 'Continue learning'
-                      : 'Start Tutorial'
+                      : 'watch Tutorial'
                   }
                   onAction={() =>
                     handleViewTask(tutorial.tutorialId, 'tutorial')
@@ -242,7 +242,7 @@ export default function LearningPage() {
                     rewardInUsd: tutorial.rewardInUsd,
                     rewardInEth: tutorial.rewardAmount,
                   }}
-                  buttonLabel="Start Tutorial"
+                  buttonLabel="watch Tutorial"
                   onAction={() =>
                     handleViewTask(tutorial.tutorialId, 'tutorial')
                   }
@@ -288,9 +288,8 @@ export default function LearningPage() {
         (!coursesData?.courses || coursesData.courses.length === 0) && (
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
-              No courses available
+              loading courses...
             </h3>
-            <p className="text-gray-500">Check back later for new courses.</p>
           </div>
         )}
 
@@ -298,9 +297,8 @@ export default function LearningPage() {
         (!tutorialsData?.tutorials || tutorialsData.tutorials.length === 0) && (
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
-              No tutorials available
+              loading tutorials...
             </h3>
-            <p className="text-gray-500">Check back later for new tutorials.</p>
           </div>
         )}
     </div>
