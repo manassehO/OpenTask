@@ -15,7 +15,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
   }, []);
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <CardImage src={'/tasks/task_image.png'} alt={task.title} />
+      <CardImage
+        src={task?.image ?? '/tasks/task_image.png'}
+        alt={task.title}
+      />
       <div className="flex flex-1 flex-col">
         <CardHeader className="flex flex-col items-start justify-between space-y-0 pb-2">
           <div className="space-y-1">

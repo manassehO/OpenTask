@@ -22,7 +22,7 @@ const RecomendedTasks = ({
 
   const { data, isLoading, error } = useRecommendedTasks({ limit, offset });
   const recommendedTasks = data?.data ?? [];
-  // console.log('rec', recommendedTasks);
+  console.log('rec', recommendedTasks);
 
   const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
