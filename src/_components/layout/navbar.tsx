@@ -66,7 +66,7 @@ export function Navbar() {
               </a>
             </li>
           ))}
-          {session ? (
+          {user.isLoading ? null : session ? (
             // logged in
             <li>
               <Link
@@ -78,15 +78,25 @@ export function Navbar() {
             </li>
           ) : (
             // not logged in
-            <li>
-              <GetStarted
-                component={
-                  <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
-                    Register
-                  </button>
-                }
-              />
-            </li>
+            <>
+              <li>
+                <GetStarted
+                  component={
+                    <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                      Register
+                    </button>
+                  }
+                />
+              </li>
+              <li>
+                <Link
+                  className="bg-primary px-6 py-2.5 font-medium capitalize text-white"
+                  href={`/login`}
+                >
+                  login
+                </Link>
+              </li>
+            </>
           )}
         </ul>
 
