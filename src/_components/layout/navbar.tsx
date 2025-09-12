@@ -7,11 +7,15 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import GetStarted from './GetStarted';
+import { api } from '~/hooks/queryClient';
+import Button from '../ui/button';
 const sections = ['home', 'features', 'contact us'];
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('home');
+  const user = api.auth.getSessionStatus.useQuery();
+  const session = user.data?.session;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,12 +53,6 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <ul className="hidden items-center gap-6 md:flex">
-          {/* <button
-            className=""
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
-          >
-            <PanelLeft className="h-[20px] w-[20px] text-black" />
-          </button> */}
           {sections.map((section) => (
             <li key={section}>
               <a
@@ -68,15 +66,28 @@ export function Navbar() {
               </a>
             </li>
           ))}
-          <li>
-            <GetStarted
-              component={
-                <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
-                  Register
-                </button>
-              }
-            />
-          </li>
+          {session ? (
+            // logged in
+            <li>
+              <Link
+                className="rounded-lg bg-primary px-6 py-2.5 font-medium capitalize text-white"
+                href={`${user.data?.user?.role.toLowerCase()}/home`}
+              >
+                view dashboard
+              </Link>
+            </li>
+          ) : (
+            // not logged in
+            <li>
+              <GetStarted
+                component={
+                  <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                    Register
+                  </button>
+                }
+              />
+            </li>
+          )}
         </ul>
 
         {/* Hamburger */}
