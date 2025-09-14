@@ -1,12 +1,15 @@
 import { api } from '~/hooks/queryClient';
-import { useRecommendedTasksStore } from '../store/recommendedTaskStore';
 
-export function useRecommendedTasks() {
-  const { limit, offset } = useRecommendedTasksStore();
+interface UseRecommendedTasksProps {
+  limit: number;
+  offset: number;
+}
 
-  const query = api.task.getRecommendedTasks.useQuery({ limit, offset });
-
-  return query;
+export function useRecommendedTasks({
+  limit,
+  offset,
+}: UseRecommendedTasksProps) {
+  return api.task.getRecommendedTasks.useQuery({ limit, offset });
 }
 
 export function useCreateTask() {

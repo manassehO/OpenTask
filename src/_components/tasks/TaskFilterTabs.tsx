@@ -158,7 +158,7 @@ function AdvancedFilters({
 export default function TaskFilterTabs({
   tabs,
   onTabChange,
-  activeTab,
+  activeTab = '',
   isLoading = false,
   showCounts = false,
 }: TaskFilterTabsProps) {
@@ -169,16 +169,16 @@ export default function TaskFilterTabs({
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => onTabChange(tab.label)}
             disabled={isLoading}
             className={cn(
               'flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 disabled:opacity-50',
-              activeTab === tab.id
+              activeTab === tab.label
                 ? 'bg-blue-500 text-white shadow-sm'
                 : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-100',
             )}
           >
-            <span>{tab.label}</span>
+            <span>{tab.id}</span>
             {showCounts && tab.count !== undefined && (
               <span
                 className={cn(

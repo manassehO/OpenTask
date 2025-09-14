@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { getUserStats } from '~/app/api/profile';
 import { convertCurrency } from '~/lib/utils/coinGecko';
 
@@ -9,12 +9,22 @@ const Summary = () => {
 
   useEffect(() => {
     if (userStats?.totalEarnings) {
-      // Convert USD earnings → BTC
-      convertCurrency('usd', 'bitcoin', +userStats.totalEarnings).then(
-        (btc) => {
+      const fetchConversion = async () => {
+        try {
+          const btc = await convertCurrency(
+            'usd',
+            'bitcoin',
+            +userStats.totalEarnings,
+          );
           setBtcValue(btc);
-        },
-      );
+        } catch (err) {
+          console.error('Conversion failed', err);
+        }
+      };
+
+      if (!btcValue) {
+        void fetchConversion();
+      }
     }
   }, [userStats?.totalEarnings]);
 

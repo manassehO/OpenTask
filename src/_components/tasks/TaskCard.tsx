@@ -35,19 +35,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
               </div>
               <div className="text-base">
                 <span className="font-semibold">
-                  {task.deadline.toString().slice(0, 15)}
+                  {task.deadline?.toString().slice(0, 15) ?? ''}
                 </span>
               </div>
             </div>
             <div className="flex flex-col items-end justify-between gap-y-2">
               <div className="text-sm">
                 <span className="text-base font-semibold">
-                  {task.rewardInEth}ETH
+                  {task.rewardAmount ?? 0}ETH
                 </span>
               </div>
               <div className="text-sm">
                 <span className="text-[24px] font-semibold text-[#3B82F6]">
-                  ${task.rewardInUsd.toLocaleString()}{' '}
+                  ${task.rewardAmount?.toLocaleString()}{' '}
                 </span>
               </div>
             </div>
@@ -56,7 +56,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
         <CardFooter>
           <Button
             onClick={() => onAction?.(task.id)}
-            className={`flex w-full text-[14px] ${task.status === 'active' ? 'bg-primary' : 'bg-secondary'}`}
+            className={`flex w-full text-[14px] ${task.status === 'ACTIVE' ? 'bg-primary' : 'bg-secondary'}`}
           >
             View Task
           </Button>

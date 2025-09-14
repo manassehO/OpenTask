@@ -1,7 +1,6 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useRecommendedTasks } from '~/app/api/task';
 import { useRecommendedTasksStore } from '~/app/store/recommendedTaskStore';
 import { useSession } from '~/lib/auth-client';
@@ -10,13 +9,21 @@ import { UserType } from '~/lib/utils';
 import { CustomPagination } from '../custom/CustomPagination';
 import Button from '../ui/button';
 
-const RecomendedTasks = () => {
-  const { data, isLoading } = useRecommendedTasks();
+const RecomendedTasks = ({
+  storeKey = 'recommended-home',
+  showSeeAll = true,
+}: {
+  storeKey?: string;
+  showSeeAll?: boolean;
+}) => {
   const { data: session } = useSession();
-  const { nextPage, prevPage, offset, limit } = useRecommendedTasksStore();
-  const router = useRouter();
+  const { paginations, nextPage, prevPage } = useRecommendedTasksStore();
+  const { limit, offset } = paginations[storeKey] ?? { limit: 8, offset: 0 };
+
+  const { data, isLoading, error } = useRecommendedTasks({ limit, offset });
   const recommendedTasks = data?.data ?? [];
-  console.log('rec', recommendedTasks);
+  // console.log('rec', recommendedTasks);
+
   const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
     <div>
@@ -24,25 +31,32 @@ const RecomendedTasks = () => {
         <h1 className="text-lg font-semibold lg:text-2xl">
           Recommended For You
         </h1>
-
-        <Button
-          onClick={() => router.push('/creator/task')}
-          backgroundColor="transparent"
-          textColor="text-[#3B82F6]"
-          className="mt-2 text-[#3B82F6]"
-        >
-          See All Tasks
-        </Button>
+        {showSeeAll && (
+          <Link href="tasks" className="mt-2 text-[#3B82F6]">
+            See All Tasks
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <TaskSkeleton count={6} />
+        ) : error ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-4 text-center">
+            <h3 className="font-medium text-red-800">
+              Error loading recommendations
+            </h3>
+            <p className="text-red-600">Unable to load recommended tasks</p>
+          </div>
+        ) : recommendedTasks.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-4 text-center">
+            <p className="text-gray-500">No recommended tasks available</p>
+          </div>
         ) : (
           recommendedTasks.map((task, index) => (
             <div
               key={index}
-              className="flex flex-col gap-2 rounded-lg bg-white p-1"
+              className="flex max-w-sm flex-col gap-2 rounded-lg bg-white p-1"
             >
               <Image
                 src={task.image ?? ''}
@@ -52,9 +66,10 @@ const RecomendedTasks = () => {
                 className="h-full w-full rounded-md object-cover"
               />
               <h1 className="text-lg font-semibold">{task.title}</h1>
-              <p className="line-clamp-2 text-sm text-gray-500">
+              <p className="line-clamp-2 h-full text-sm text-gray-500">
                 {task.description}
               </p>
+
               <div className="flex justify-between">
                 <p className="text-gray-500">Deadline</p>
                 <p className="text-sm text-black">{`${task.platformFee} ETH`}</p>
@@ -69,7 +84,7 @@ const RecomendedTasks = () => {
                   {`$${task.rewardAmount}`}
                 </p>
               </div>
-              <Link href={`/${rootRoute}/task/${task.id}`}>
+              <Link href={`/${rootRoute}/tasks/${task.id}`}>
                 <Button className="mt-2 w-full text-[#3B82F6]">
                   View Task
                 </Button>
@@ -78,14 +93,15 @@ const RecomendedTasks = () => {
           ))
         )}
       </div>
+
       {recommendedTasks.length > 0 && (
         <div className="my-8">
           <CustomPagination
             offset={offset}
             limit={limit}
             totalRecords={data?.totalRecords ?? 0}
-            onPrev={prevPage}
-            onNext={nextPage}
+            onPrev={() => prevPage(storeKey)}
+            onNext={() => nextPage(storeKey)}
           />
         </div>
       )}

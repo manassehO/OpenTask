@@ -1,34 +1,80 @@
 'use client';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { useGetProfile, useUpdateProfile } from '~/hooks/useUpdateProfile';
+
+// Form validation schema
+const profileSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
+  gender: z.enum(['male', 'female'], {
+    message: 'Please select a gender',
+  }),
+  niche: z.string().min(1, 'Please select a preferred niche'),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingPage() {
   const [activeTab, setActiveTab] = useState<'Profile' | 'Notifications'>(
     'Profile',
   );
-  const [profileStep, setProfileStep] = useState<
-    'initial' | 'form' | 'summary'
-  >('initial');
+  const [updateProfileForm, setUpdateProfileForm] = useState<boolean>(false);
 
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    gender: '',
-    niche: '',
+  const { updateProfile, isPending } = useUpdateProfile();
+  const { profile, isLoading: profileLoading } = useGetProfile();
+  const [profileImage, setProfileImage] = useState<string | null>(
+    profile?.image ?? null,
+  );
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      fullName: profile?.name ?? '',
+      gender: (profile?.profile?.gender as 'male' | 'female') ?? undefined,
+      niche: profile?.profile?.niche ?? '',
+    },
   });
 
-  const handleInput = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  watch();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setProfileImage(URL.createObjectURL(file));
     }
+  };
+
+  // Form submission handler
+  const onSubmit = (data: ProfileFormData) => {
+    updateProfile(
+      {
+        name: data.fullName,
+        displayName: data.fullName,
+        gender: data.gender,
+        niche: data.niche,
+        image: profileImage ?? undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Profile updated successfully');
+          setUpdateProfileForm(false);
+        },
+        onError: (error) => {
+          console.error('Failed to update profile:', error);
+          toast.error('Failed to update profile');
+        },
+      },
+    );
   };
 
   // loop of taks
@@ -80,40 +126,53 @@ export default function SettingPage() {
       </div>
 
       <div className="h-full w-[680px] max-w-full rounded-lg border bg-white p-4 shadow-sm md:p-6">
-        {/* <ProfileForm /> */}
-        {activeTab === 'Profile' && profileStep === 'initial' && (
-          <div className="mx-auto h-full w-full items-center justify-center py-4 text-center md:w-[440px]">
-            <div className="flex flex-col items-center justify-center">
-              <Image
-                className="mb-4 rounded-full bg-main pt-8 md:h-[200px] md:w-[200px]"
-                width={100}
-                height={100}
-                src={profileImage ?? '/icons/emptyProfile.svg'}
-                alt="Profile"
-              />
-            </div>
-
-            <h1 className="text-xl font-bold capitalize md:text-[32px]">
-              complete profile
-            </h1>
-            <p className="p-4 text-sm md:text-base">
-              Finish setting up your profile—it only takes a minute and helps us
-              match you with better tasks.
-            </p>
-
-            <div className="w-full pt-4 md:py-8">
-              <button
-                onClick={() => setProfileStep('form')}
-                className="w-full rounded bg-primary p-4 text-sm font-bold capitalize text-white"
-              >
-                complete profile
-              </button>
+        {/* Loading state */}
+        {profileLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+              <p className="text-sm text-gray-600">Loading profile...</p>
             </div>
           </div>
         )}
 
+        {/* <ProfileForm /> */}
+        {!profileLoading &&
+          activeTab === 'Profile' &&
+          !profile?.profile?.isProfileComplete &&
+          !updateProfileForm && (
+            <div className="mx-auto h-full w-full items-center justify-center py-4 text-center md:w-[440px]">
+              <div className="flex flex-col items-center justify-center">
+                <Image
+                  className="mb-4 rounded-full bg-main pt-8 md:h-[200px] md:w-[200px]"
+                  width={100}
+                  height={100}
+                  src={profileImage ?? '/icons/emptyProfile.svg'}
+                  alt="Profile"
+                />
+              </div>
+
+              <h1 className="text-xl font-bold capitalize md:text-[32px]">
+                complete profile
+              </h1>
+              <p className="p-4 text-sm md:text-base">
+                Finish setting up your profile—it only takes a minute and helps
+                us match you with better tasks.
+              </p>
+
+              <div className="w-full pt-4 md:py-8">
+                <button
+                  onClick={() => setUpdateProfileForm(true)}
+                  className="w-full rounded bg-primary p-4 text-sm font-bold capitalize text-white"
+                >
+                  complete profile
+                </button>
+              </div>
+            </div>
+          )}
+
         {/* profile form deatils  */}
-        {activeTab === 'Profile' && profileStep === 'form' && (
+        {activeTab === 'Profile' && updateProfileForm && (
           <div className="py-4">
             <div className="flex flex-col items-center md:flex-row">
               {/* Profile Image */}
@@ -121,7 +180,9 @@ export default function SettingPage() {
                 className="mb-4 h-[120px] w-[120px] rounded-full bg-main object-cover"
                 width={120}
                 height={120}
-                src="/icons/emptyProfile.svg"
+                src={
+                  profileImage ?? profile?.image ?? '/icons/emptyProfile.svg'
+                }
                 alt="Profile"
               />
 
@@ -151,116 +212,188 @@ export default function SettingPage() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-4 md:space-y-6">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="mt-4 space-y-4 md:space-y-6"
+            >
               <div className="flex flex-col gap-1 pt-4 text-sm md:text-base">
-                <label htmlFor="" className="text-sm font-medium capitalize">
+                <label
+                  htmlFor="fullName"
+                  className="text-sm font-medium capitalize"
+                >
                   full name
                 </label>
                 <input
-                  onChange={handleInput}
+                  {...register('fullName')}
                   type="text"
-                  className="w-full rounded border p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className={`w-full rounded border p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                    errors.fullName ? 'border-red-500' : ''
+                  }`}
                   placeholder="enter full name"
                 />
+                {errors.fullName && (
+                  <p className="text-sm text-red-500">
+                    {errors.fullName.message}
+                  </p>
+                )}
               </div>
+
               <div className="flex flex-col gap-1 text-sm md:text-base">
-                <label htmlFor="" className="text-sm font-medium capitalize">
+                <label
+                  htmlFor="phoneNumber"
+                  className="text-sm font-medium capitalize"
+                >
                   phone number
                 </label>
                 <input
-                  onChange={handleInput}
-                  type="text"
-                  className="w-full rounded border p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  {...register('phoneNumber')}
+                  type="tel"
+                  className={`w-full rounded border p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                    errors.phoneNumber ? 'border-red-500' : ''
+                  }`}
                   placeholder="enter phone number"
                 />
+                {errors.phoneNumber && (
+                  <p className="text-sm text-red-500">
+                    {errors.phoneNumber.message}
+                  </p>
+                )}
               </div>
+
               <div className="flex flex-col gap-1 text-sm md:text-base">
-                <label htmlFor="" className="text-sm font-medium capitalize">
+                <label
+                  htmlFor="gender"
+                  className="text-sm font-medium capitalize"
+                >
                   gender
                 </label>
-
                 <select
-                  name=""
-                  id=""
-                  className="rounded border bg-white p-3 capitalize"
+                  {...register('gender')}
+                  className={`rounded border bg-white p-3 capitalize ${
+                    errors.gender ? 'border-red-500' : ''
+                  }`}
                 >
                   <option value="">select gender</option>
-                  <option value="">male</option>
-                  <option value="">female</option>
+                  <option value="male">male</option>
+                  <option value="female">female</option>
                 </select>
+                {errors.gender && (
+                  <p className="text-sm text-red-500">
+                    {errors.gender.message}
+                  </p>
+                )}
               </div>
+
               <div className="flex flex-col gap-1 text-sm md:text-base">
-                <label htmlFor="" className="text-sm font-medium capitalize">
+                <label
+                  htmlFor="niche"
+                  className="text-sm font-medium capitalize"
+                >
                   preferred niche
                 </label>
-
                 <select
-                  name=""
-                  id=""
-                  className="rounded border bg-white p-3 capitalize"
+                  {...register('niche')}
+                  className={`rounded border bg-white p-3 capitalize ${
+                    errors.niche ? 'border-red-500' : ''
+                  }`}
                 >
                   <option value="">select niche</option>
-                  <option value="">...</option>
-                  <option value="">.....</option>
+                  <option value="Software Development">
+                    Software Development
+                  </option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="Mobile Development">Mobile Development</option>
+                  <option value="UI/UX Design">UI/UX Design</option>
+                  <option value="Graphic Design">Graphic Design</option>
+                  <option value="Content Writing">Content Writing</option>
+                  <option value="Copywriting">Copywriting</option>
+                  <option value="SEO">SEO</option>
+                  <option value="Digital Marketing">Digital Marketing</option>
+                  <option value="Social Media Management">
+                    Social Media Management
+                  </option>
+                  <option value="Video Editing">Video Editing</option>
+                  <option value="Audio Editing">Audio Editing</option>
+                  <option value="Animation">Animation</option>
+                  <option value="3D Modeling">3D Modeling</option>
+                  <option value="Game Development">Game Development</option>
+                  <option value="Blockchain Development">
+                    Blockchain Development
+                  </option>
                 </select>
+                {errors.niche && (
+                  <p className="text-sm text-red-500">{errors.niche.message}</p>
+                )}
               </div>
+
               <div className="flex w-full justify-end pt-4 md:pt-8">
                 <button
-                  className="w-[210px] rounded bg-primary p-4 text-sm font-bold capitalize text-white"
-                  onClick={() => setProfileStep('summary')}
+                  type="submit"
+                  disabled={isSubmitting || isPending}
+                  className="w-[210px] rounded bg-primary p-4 text-sm font-bold capitalize text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  submit
+                  {isSubmitting || isPending ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         )}
 
         {/* profile edit */}
-        {activeTab === 'Profile' && profileStep === 'summary' && (
-          <div className="py-4 text-sm font-medium capitalize">
-            <div className="flex flex-col items-center gap-4 pt-4 md:flex-row">
-              <Image
-                className="h-20 w-20 rounded-full border pt-4"
-                width={100}
-                height={100}
-                src="/icons/emptyProfile.svg"
-                alt="Profile"
-              />
+        {activeTab === 'Profile' &&
+          profile?.profile?.isProfileComplete &&
+          !updateProfileForm && (
+            <div className="py-4 text-sm font-medium capitalize">
+              <div className="flex flex-col items-center gap-4 pt-4 md:flex-row">
+                <Image
+                  className="h-20 w-20 rounded-full border pt-4"
+                  width={100}
+                  height={100}
+                  src={profile?.image ?? '/icons/emptyProfile.svg'}
+                  alt="Profile"
+                />
 
-              <div className="flex flex-col text-center md:text-start">
-                <p className="text-lg font-bold md:text-2xl">leonard victor</p>
-                <p className="text-xs font-semibold text-primary md:text-sm">
-                  leonardvictor694@gmail.com
-                </p>
+                <div className="flex flex-col text-center md:text-start">
+                  <p className="text-lg font-bold md:text-2xl">
+                    {profile?.name ?? 'No name set'}
+                  </p>
+                  <p className="text-xs font-semibold text-primary md:text-sm">
+                    {profile?.email ?? 'No email set'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6 pt-10 capitalize">
+                <div className="space-y-1 rounded bg-main p-5">
+                  <p className="text-sm">phone number</p>
+                  <p className="text-lg font-medium md:text-2xl">
+                    {'Not provided'}
+                  </p>
+                </div>
+                <div className="space-y-1 rounded bg-main p-5">
+                  <p className="text-sm">gender</p>
+                  <p className="text-lg font-medium md:text-2xl">
+                    {profile?.profile?.gender ?? 'Not specified'}
+                  </p>
+                </div>
+                <div className="space-y-1 rounded bg-main p-5">
+                  <p className="text-sm">preferred niche</p>
+                  <p className="text-lg font-medium md:text-2xl">
+                    {profile?.profile?.niche ?? 'Not specified'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex w-full justify-end pt-4 md:pt-8">
+                <button
+                  className="w-[210px] rounded bg-primary p-4 text-sm font-bold capitalize text-white"
+                  onClick={() => setUpdateProfileForm(true)}
+                >
+                  edit profile
+                </button>
               </div>
             </div>
-
-            <div className="space-y-6 pt-10 capitalize">
-              <div className="space-y-1 rounded bg-main p-5">
-                <p className="text-sm">phone number</p>
-                <p className="text-lg font-medium md:text-2xl">0801234567890</p>
-              </div>
-              <div className="space-y-1 rounded bg-main p-5">
-                <p className="text-sm">gender</p>
-                <p className="text-lg font-medium md:text-2xl">male</p>
-              </div>
-              <div className="space-y-1 rounded bg-main p-5">
-                <p className="text-sm">preferred niche </p>
-                <p className="text-lg font-medium md:text-2xl">de-fi</p>
-              </div>
-            </div>
-
-            <div className="flex w-full justify-end pt-4 md:pt-8">
-              <button
-                className="w-[210px] rounded bg-primary p-4 text-sm font-bold capitalize text-white"
-                onClick={() => setProfileStep('summary')}
-              >
-                edit profile
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
         {/* notification settings */}
         {activeTab === 'Notifications' && (

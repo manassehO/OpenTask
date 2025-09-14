@@ -4,6 +4,7 @@ import { GeistSans } from 'geist/font/sans';
 import { Provider } from 'jotai';
 import { type Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
+import { Toaster } from 'sonner';
 import { ToastProvider } from '~/store/ToastProvider';
 import { TRPCReactProvider } from '~/trpc/react';
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html className={`${GeistSans.variable} ${dmSans.variable}`}>
       <body className={dmSans.className}>
         <Provider>
+          <Toaster richColors position="top-right" />
           <TRPCReactProvider>
             <ToastProvider>{children}</ToastProvider>
           </TRPCReactProvider>
