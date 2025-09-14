@@ -288,7 +288,16 @@ export default function LearningPage() {
         (!coursesData?.courses || coursesData.courses.length === 0) && (
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
-              loading courses...
+              loading...
+            </h3>
+          </div>
+        )}
+      {activeTab === 'Course' &&
+        !coursesLoading &&
+        (!coursesData?.courses || coursesData.courses.length === 0) && (
+          <div className="py-12 text-center">
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              No courses available...
             </h3>
           </div>
         )}
@@ -298,6 +307,15 @@ export default function LearningPage() {
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
               loading tutorials...
+            </h3>
+          </div>
+        )}
+      {activeTab === 'Tutorial' &&
+        !tutorialsLoading &&
+        (!tutorialsData?.tutorials || tutorialsData.tutorials.length === 0) && (
+          <div className="py-12 text-center">
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              No tutorials available...
             </h3>
           </div>
         )}
