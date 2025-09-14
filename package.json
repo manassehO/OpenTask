@@ -38,6 +38,7 @@
     "@trpc/react-query": "^11.0.0-rc.446",
     "@trpc/server": "^11.0.0-rc.446",
     "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "better-auth": "^1.2.12",
     "chart.js": "^4.5.0",
