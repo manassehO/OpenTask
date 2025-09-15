@@ -4,6 +4,7 @@ import { useAtom } from 'jotai';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { authClient } from '~/hooks/authClient';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import { routes } from '~/lib/route';
 

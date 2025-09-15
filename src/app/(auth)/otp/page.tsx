@@ -1,7 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -22,6 +22,7 @@ function Otp() {
   const searchParams = useSearchParams();
   const resetEmail = searchParams.get('reset_email');
   const email = searchParams.get('email')!;
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const {
     // register,
     handleSubmit,
@@ -42,6 +43,48 @@ function Otp() {
 
   const handleOtpInputChange = (value: string) => {
     setValue('otp', value);
+  };
+
+  const [timer, setTimer] = useState(60); // 60 seconds (1 minute)
+
+  useEffect(() => {
+    if (timer <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // Format function: converts seconds -> mm:ss
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleResendOtp = async () => {
+    setIsSendingOtp(true);
+    try {
+      const newOtp = await authClient.emailOtp.sendVerificationOtp({
+        email: email,
+        type: 'email-verification',
+      });
+
+      if (!newOtp.data?.success) {
+        throw new Error('error while trying to send otp');
+        toast.error('Email not found');
+        return;
+      }
+
+      toast.success('OTP resent successfully!');
+      setTimer(60);
+    } catch (err: unknown) {
+      toast.error('Failed to resend OTP');
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   const onSubmit = async (data: OtpFormData) => {
@@ -102,11 +145,6 @@ function Otp() {
     }
   };
 
-  // Add console logs for debugging
-  console.log('Current OTP value:', otpValue);
-  console.log('Email from params:', email);
-  console.log('Reset email from params:', resetEmail);
-
   return (
     <div className="flex h-svh w-full items-center justify-center">
       <AuthWrapper
@@ -135,6 +173,19 @@ function Otp() {
             disabled={isSubmitting || otpValue.length !== 6}
           >
             {isSubmitting ? 'Verifying...' : 'Proceed'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResendOtp}
+            disabled={timer > 0}
+            className="rounded-md p-3 text-primary disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            {isSendingOtp
+              ? 'sending...'
+              : timer > 0
+                ? `Resend OTP in ${formatTime(timer)}`
+                : 'Resend OTP'}
           </button>
         </form>
       </AuthWrapper>
