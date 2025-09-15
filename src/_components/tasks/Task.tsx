@@ -8,6 +8,9 @@ import RecomendedTasks from '../dashboard_components/recomended-tasks';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 import { EnhancedTaskFilterTabs, type TaskFilterTab } from './TaskFilterTabs';
+import { useSession } from '~/lib/auth-client';
+import { getKeyByValue } from '~/lib/fns';
+import { UserType } from '~/lib/utils';
 {
   /*
       tasks: {
@@ -63,6 +66,8 @@ const AllTasks = () => {
     ...filterState,
     limit: 9,
   });
+
+  console.log('data', data);
 
   const hasActiveFilters =
     filterState.minReward !== undefined ||
@@ -287,10 +292,14 @@ const AllTasks = () => {
 };
 
 export default function Task() {
+  const { data: session } = useSession();
+  const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
   return (
     <>
       <div>
-        <RecomendedTasks storeKey="recommended-tasks" showSeeAll={false} />
+        {rootRoute !== 'creator' && (
+          <RecomendedTasks storeKey="recommended-tasks" showSeeAll={false} />
+        )}
         <AllTasks />
       </div>
     </>
