@@ -108,6 +108,25 @@ export const creatorRouter = createTRPCRouter({
           and(eq(tasks.creatorUserId, userId), gte(tasks.createdAt, fromDate)),
         );
 
+        
+    // Active vs Completed tasks (all-time)
+    const activeTasks = await db
+      .select({ count: count() })
+      .from(tasks)
+      .where(and(eq(tasks.creatorUserId, userId), eq(tasks.status, 'ACTIVE')));
+
+    const completedTasks = await db
+      .select({ count: count() })
+      .from(tasks)
+      .where(
+        and(eq(tasks.creatorUserId, userId), eq(tasks.status, 'COMPLETED')),
+      );
+
+    const totalTasks = Number(activeTasks[0]?.count ?? 0) + Number(completedTasks[0]?.count ?? 0);
+    const completionRate =
+      totalTasks > 0 ? (Number(completedTasks[0]?.count ?? 0) / totalTasks) * 100 : 0;
+
+
       // Submissions received in period (for creator's tasks)
 
       const creatorTaskIds = await db
@@ -137,9 +156,14 @@ export const creatorRouter = createTRPCRouter({
       const totalEarnings = stats[0]?.totalEarnings ?? 0;
 
       return {
+        creatorId: userId,
         tasksCreated: Number(tasksCreated[0]?.count ?? 0),
         submissionsReceived: submissionsCount,
         totalEarnings: Number(totalEarnings),
+        completionRate: completionRate,
+        activeTasks: Number(activeTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+
       };
     }),
 });
