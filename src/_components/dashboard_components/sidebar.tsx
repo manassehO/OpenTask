@@ -103,7 +103,7 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
       await authClient.signOut();
       // Redirect or update UI after successful sign-out
       toast.success('Signed out successfully');
-      router.push('/');
+      router.push('/login');
     } catch (error) {
       console.error('Sign-out failed:', error);
       toast.error('Error: Sign-out failed');
