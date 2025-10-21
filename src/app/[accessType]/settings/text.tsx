@@ -12,17 +12,38 @@ import {
   useMarkNotificationRead,
 } from '~/hooks/useNotifications';
 
+interface Profile {
+  name?: string;
+  email?: string;
+  image?: string;
+  profile?: {
+    phoneNumber?: string;
+    gender?: 'male' | 'female';
+    niche?: string;
+    isProfileComplete?: boolean;
+  };
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
+  type: string;
+}
+
 // Form validation schema
-const profileSchema = z.object({
+export const profileSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   gender: z.enum(['male', 'female'], {
-    message: 'Please select a gender',
+    required_error: 'Please select a gender',
   }),
   niche: z.string().min(1, 'Please select a preferred niche'),
 });
 
-type ProfileFormData = z.infer<typeof profileSchema>;
+export type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingPage() {
   const [activeTab, setActiveTab] = useState<'Profile' | 'Notifications'>(
@@ -30,16 +51,19 @@ export default function SettingPage() {
   );
   const [updateProfileForm, setUpdateProfileForm] = useState<boolean>(false);
 
+  // Use hooks - REMOVED DUPLICATE DECLARATIONS
   const { updateProfile, isPending } = useUpdateProfile();
   const { profile, isLoading: profileLoading } = useGetProfile();
   const {
-    notifications,
+    data: notificationsData,
     isLoading: notificationsLoading,
     refetch: refetchNotifications,
   } = useGetNotifications();
-  const { clearNotifications, isPending: isClearingNotifications } =
+  const { mutate: clearNotifications, isPending: isClearingNotifications } =
     useClearNotifications();
-  const { markAsRead } = useMarkNotificationRead();
+  const { mutate: markAsRead } = useMarkNotificationRead();
+
+  const notifications: Notification[] = notificationsData?.notifications ?? [];
 
   const [profileImage, setProfileImage] = useState<string | null>(
     profile?.image ?? null,
@@ -93,30 +117,33 @@ export default function SettingPage() {
     );
   };
 
-  // Handle clear all notifications
+  // Handle clear all notifications - FIXED: Use .mutate
   const handleClearAll = () => {
-    clearNotifications(undefined, {
+    clearNotifications.mutate(undefined, {
       onSuccess: () => {
         toast.success('All notifications cleared');
-        refetchNotifications();
+        void refetchNotifications();
       },
-      onError: (error) => {
+      onError: (error: unknown) => {
         console.error('Failed to clear notifications:', error);
         toast.error('Failed to clear notifications');
       },
     });
   };
 
-  // Handle marking notification as read
+  // Handle marking notification as read - FIXED: Use .mutate
   const handleNotificationClick = (notificationId: string) => {
-    markAsRead(notificationId, {
-      onSuccess: () => {
-        refetchNotifications();
+    markAsRead.mutate(
+      { notificationIds: [notificationId] },
+      {
+        onSuccess: () => {
+          void refetchNotifications();
+        },
+        onError: (error: unknown) => {
+          console.error('Failed to mark notification as read:', error);
+        },
       },
-      onError: (error) => {
-        console.error('Failed to mark notification as read:', error);
-      },
-    });
+    );
   };
 
   // Get notification icon based on type
@@ -136,7 +163,7 @@ export default function SettingPage() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col p-4 md:p-8">
       <h1 className="mb-4 font-bold capitalize md:text-[28px] md:text-xl">
         settings
       </h1>
@@ -431,8 +458,7 @@ export default function SettingPage() {
         {/* Notifications Tab */}
         {activeTab === 'Notifications' && (
           <div className="space-y-2 text-xl font-semibold capitalize">
-            {/* Loading state for notifications */}
-            {notificationsLoading && (
+            {notificationsLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
                   <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -441,13 +467,10 @@ export default function SettingPage() {
                   </p>
                 </div>
               </div>
-            )}
-
-            {/* Clear All Button */}
-            {!notificationsLoading &&
-              notifications &&
-              notifications.length > 0 && (
-                <div className="flex w-full justify-end">
+            ) : notifications.length > 0 ? (
+              <>
+                {/* Clear All Button */}
+                <div className="flex w-full justify-end pb-4">
                   <button
                     onClick={handleClearAll}
                     disabled={isClearingNotifications}
@@ -463,59 +486,57 @@ export default function SettingPage() {
                     {isClearingNotifications ? 'Clearing...' : 'clear all'}
                   </button>
                 </div>
-              )}
 
-            {/* Notifications List */}
-            {!notificationsLoading &&
-            notifications &&
-            notifications.length > 0 ? (
-              notifications.map((notification: any) => (
-                <div key={notification.id} className="space-y-4 capitalize">
-                  <div
-                    onClick={() => handleNotificationClick(notification.id)}
-                    className={`flex cursor-pointer items-center space-x-4 rounded py-4 transition-all hover:scale-[1.02] md:px-4 md:py-6 ${
-                      notification.isRead
-                        ? 'bg-white hover:bg-main'
-                        : 'bg-blue-50 hover:bg-blue-100'
-                    }`}
-                  >
-                    <div className="bg-primary-50 flex items-center justify-center rounded p-2 md:h-14 md:w-14">
-                      <Image
-                        width={30}
-                        height={30}
-                        src={getNotificationIcon(notification.type)}
-                        alt="Notification"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col gap-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold capitalize md:text-xl">
-                          {notification.title}
-                        </p>
-                        {!notification.isRead && (
-                          <span className="h-2 w-2 rounded-full bg-primary"></span>
-                        )}
+                {/* Notifications List */}
+                {notifications.map((notification) => (
+                  <div key={notification.id} className="space-y-4 capitalize">
+                    <div
+                      onClick={() => handleNotificationClick(notification.id)}
+                      className={`flex cursor-pointer items-start space-x-4 rounded py-4 transition-all hover:scale-[1.01] md:px-4 md:py-6 ${
+                        notification.isRead
+                          ? 'bg-white hover:bg-main'
+                          : 'bg-blue-50 hover:bg-blue-100'
+                      }`}
+                    >
+                      <div className="bg-primary-50 flex items-center justify-center rounded md:h-14 md:w-14">
+                        <Image
+                          width={30}
+                          height={30}
+                          src={getNotificationIcon(notification.type)}
+                          alt="Notification"
+                        />
                       </div>
-                      <p className="text-xs font-normal md:text-sm">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs font-normal text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString(
-                          'en-US',
-                          {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          },
-                        )}
-                      </p>
+
+                      <div className="flex flex-1 flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold capitalize md:text-xl">
+                            {notification.title}
+                          </p>
+                          {!notification.isRead && (
+                            <span className="h-2 w-2 rounded-full bg-primary"></span>
+                          )}
+                        </div>
+                        <p className="text-xs font-normal md:text-sm">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs font-normal text-gray-500">
+                          {new Date(notification.createdAt).toLocaleDateString(
+                            'en-US',
+                            {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            },
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : !notificationsLoading ? (
+                ))}
+              </>
+            ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Image
                   width={100}
@@ -524,14 +545,15 @@ export default function SettingPage() {
                   alt="No notifications"
                   className="mb-4 opacity-50"
                 />
+
                 <p className="text-base font-normal text-gray-500">
                   No notifications yet
                 </p>
                 <p className="text-sm font-normal text-gray-400">
-                  You'll see updates about your tasks here
+                  You&apos;ll see updates about your tasks here
                 </p>
               </div>
-            ) : null}
+            )}
           </div>
         )}
       </div>
