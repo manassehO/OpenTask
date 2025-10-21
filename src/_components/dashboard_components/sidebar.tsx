@@ -4,12 +4,14 @@ import { useAtom } from 'jotai';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { authClient } from '~/hooks/authClient';
+import { authClient } from '~/lib/auth-client';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import { routes } from '~/lib/route';
-
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useAtom(sidebarAtom);
 
   const handleLinkClick = () => {
@@ -96,6 +98,18 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
     },
   ];
 
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+      // Redirect or update UI after successful sign-out
+      toast.success('Signed out successfully');
+      router.push('/');
+    } catch (error) {
+      console.error('Sign-out failed:', error);
+      toast.error('Error: Sign-out failed');
+    }
+  };
+
   let sidebar_list;
   if (role === 'admin') sidebar_list = adminList;
   else if (role === 'creator') sidebar_list = creatorList;
@@ -142,14 +156,13 @@ function Sidebar({ role }: { role: 'admin' | 'creator' | 'completer' }) {
         })}
 
         {/* Logout */}
-        <Link
-          href="/"
-          onClick={handleLinkClick}
-          className="mt-20 flex items-center gap-3 rounded-md bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30] hover:bg-[#FFE8E7]"
+        <button
+          onClick={handleSignOut}
+          className="mt-20 flex w-full items-center gap-3 rounded-md bg-[#FFF3F2] px-6 py-4 text-base font-semibold capitalize text-[#FF3B30] hover:bg-[#FFE8E7]"
         >
           <Image src="/icons/logout.svg" alt="Log out" height={20} width={20} />
           Log out
-        </Link>
+        </button>
       </aside>
 
       {/* Backdrop for mobile */}
