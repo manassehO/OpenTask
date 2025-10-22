@@ -21,10 +21,25 @@ const RecomendedTasks = ({
   const { limit, offset } = paginations[storeKey] ?? { limit: 8, offset: 0 };
 
   const { data, isLoading, error } = useRecommendedTasks({ limit, offset });
+  // console.log('Full API Response:', { data, isLoading, error });
+  // console.log('Recommended Tasks:', data?.data);
+  // console.log('Total Records:', data?.totalRecords);
+
   const recommendedTasks = data?.data ?? [];
   // console.log('rec', recommendedTasks);
 
   const rootRoute = getKeyByValue(UserType, session?.user?.role ?? '');
+
+  const totalRecords = data?.totalRecords ?? 0; // This is now correct
+
+  console.log('🔍 Fixed Data Structure:', {
+    isLoading,
+    error: error?.message,
+    apiResponse: data,
+    recommendedTasks,
+    totalRecords,
+  });
+
   return (
     <div>
       <div className="flex w-full items-center justify-between px-4 py-2">
@@ -99,7 +114,7 @@ const RecomendedTasks = ({
           <CustomPagination
             offset={offset}
             limit={limit}
-            totalRecords={data?.totalRecords ?? 0}
+            totalRecords={totalRecords}
             onPrev={() => prevPage(storeKey)}
             onNext={() => nextPage(storeKey)}
           />
