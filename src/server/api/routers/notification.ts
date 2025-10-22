@@ -364,16 +364,115 @@ export const notificationRouter = createTRPCRouter({
     }),
 
   getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+    const result = await ctx.db
+      .select({ count: count() })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, ctx.user.id),
+          eq(notifications.status, 'UNREAD'),
+        ),
+      );
+
+    return result[0]?.count ?? 0;
+  }),
+
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+    // Ensure that user is active
+    if (ctx.user.status !== 'ACTIVE') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Your account is ${ctx.user.status}`,
+      });
+    }
+
+    // Update all unread notifications to read
+    try {
       const result = await ctx.db
-        .select({ count: count() })
-        .from(notifications)
+        .update(notifications)
+        .set({ status: 'READ', updatedAt: new Date() })
         .where(
           and(
             eq(notifications.userId, ctx.user.id),
             eq(notifications.status, 'UNREAD'),
           ),
+        )
+        .returning();
+
+      return {
+        success: true,
+        updatedCount: result.length,
+        message: `${result.length} notifications marked as read`,
+      };
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Could not update notifications',
+      });
+    }
+  }),
+
+  deleteNotification: protectedProcedure
+    .input(
+      z.object({
+        notificationId: z.string().uuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { notificationId } = input;
+
+      // Ensure that user is active
+      if (ctx.user.status !== 'ACTIVE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: `Your account is ${ctx.user.status}`,
+        });
+      }
+
+      // Delete the notification
+      const deleteCount = await ctx.db
+        .delete(notifications)
+        .where(
+          and(
+            eq(notifications.notificationId, notificationId),
+            eq(notifications.userId, ctx.user.id),
+          ),
         );
-  
-      return result[0]?.count ?? 0;
+
+      if (deleteCount === 0) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Notification not found or already deleted',
+        });
+      }
+
+      return {
+        success: true,
+        message: 'Notification deleted successfully',
+      };
     }),
+
+  clearAllNotifications: protectedProcedure.mutation(async ({ ctx }) => {
+    // Ensure that user is active
+    if (ctx.user.status !== 'ACTIVE') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Your account is ${ctx.user.status}`,
+      });
+    }
+
+    // Delete all notifications for the user
+    const deletedRows = await ctx.db
+      .delete(notifications)
+      .where(eq(notifications.userId, ctx.user.id))
+      .returning({ id: notifications.notificationId });
+
+    const deleteCount = deletedRows.length;
+
+    return {
+      success: true,
+      message: `Deleted ${deleteCount} notifications successfully`,
+    };
+  }),
 });

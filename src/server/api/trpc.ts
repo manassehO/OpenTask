@@ -42,7 +42,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     authorization?.replace('Bearer ', '') ??
     opts.headers
       .get('cookie')
-      ?.split('better-auth.session_token=')[1]
+      ?.split('opentask.session_token=')[1]
       ?.split(';')[0];
 
   let session: Session | null = null;
