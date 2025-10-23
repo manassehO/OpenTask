@@ -61,6 +61,55 @@ This router handles all task-related procedures.
      - [Example Input](#example-input-8)
      - [Example Output](#example-output-6)
      - [Notes](#notes-5)
+   - [getRecommendedTasks](#getRecommendedTasks)
+     - [Type](#type-1)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [getTasksByStatus](#getTasksByStatus)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [cancelTask](#cancelTask)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [getTaskCategories](#getTaskCategories)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [getUserClaimedTasks](#getUserClaimedTasks)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [editTask](#editTask)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
+   - [updateTaskStatus](#updateTaskStatus)
+     - [Type](#type-2)
+     - [Called As](#called-as-2)
+     - [Description](#description-2)
+     - [Example Input](#example-input-2)
+     - [Example Output](#example-output-2)
+     - [Notes](#notes-2)
 
 ---
 
@@ -591,3 +640,407 @@ FORBIDDEN: User is not an admin.
 - NOT_FOUND: Submission does not exist or completer has no active wallet
 - UNAUTHORIZED: The authenticated user is not the task creator
 - BAD_REQUEST: The submission is not in a reviewable state (PENDING_REVIEW)
+
+### `getRecommendedTasks`
+
+**Type**: `query`  
+**Called As**: `taskRouter.getRecommendedTasks()`  
+**Description**: Retrieves a list of recommended tasks for the user. It filters out tasks that the user has already claimed or submitted and recommends tasks from categories related to the user's previous submissions. Pagination is supported.
+
+#### Example Input
+
+```json
+{
+  "limit": 8,
+  "offset": 0
+}
+```
+
+#### Example Output
+
+```json
+{
+  "pageSize": 8,
+  "offset": 0,
+  "totalPages": 5,
+  "totalRecords": 40,
+  "data": [
+    {
+      "id": "task-uuid-1",
+      "title": "Task 1",
+      "category": "Category 1",
+      "rewardAmount": 100,
+      "status": "ACTIVE",
+      "deadline": "2025-10-15T12:00:00.000Z",
+      "createdAt": "2025-10-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Notes
+
+- **Pagination**:
+  - **`limit`**: Defines the number of tasks returned per page. The default value is `8`, and the maximum is `20`.
+  - **`offset`**: Defines the starting point for pagination. The default value is `0`.
+
+- **Exclusion Criteria**:
+  - The procedure excludes tasks that the user has already claimed or submitted. It fetches these tasks from the `taskClaims` and `submissions` tables.
+
+- **Category Matching**:
+  - The recommended tasks are prioritized based on categories that the user has previously submitted tasks from.
+
+- **Sorting**:
+  - The tasks are sorted in descending order by:
+    1. Whether the task's category matches the categories of the user's previously submitted tasks.
+    2. The count of claims for the task.
+    3. The reward amount of the task.
+    4. The creation date of the task.
+
+- **Data Aggregation**:
+  - **Total Records**: The total number of tasks matching the conditions is returned as `totalRecords`.
+  - **Total Pages**: The number of total pages is calculated based on the `totalRecords` and `limit`.
+
+- **Error Handling**:
+  - If no matching tasks are found, an empty list is returned, but no error is thrown.
+
+- **Conditions**:
+  - Only tasks that are active and have a deadline greater than or equal to the current date are included in the results.
+
+### `getTasksByStatus`
+
+**Type**: `query`  
+**Called As**: `taskRouter.getTasksByStatus()`  
+**Description**: Retrieves tasks for a creator based on the specified status (`DRAFT`, `ACTIVE`, `COMPLETED`), with pagination support. Only users with the `CREATOR` role are allowed to access this information.
+
+#### Example Input
+
+```json
+{
+  "status": "ACTIVE",
+  "limit": 10,
+  "offset": 0
+}
+```
+
+#### Example Output
+
+```json
+{
+  "pageSize": 10,
+  "totalPages": 5,
+  "totalRecords": 50,
+  "data": [
+    {
+      "id": "task-uuid-1",
+      "title": "Active Task 1",
+      "description": "Description of active task 1",
+      "status": "ACTIVE",
+      "rewardAmount": 100,
+      "deadline": "2025-10-01T12:00:00.000Z",
+      "image": "image-url-1",
+      "createdAt": "2025-09-01T12:00:00.000Z",
+      "claimedBy": "user-uuid-1",
+      "claimStatus": "PENDING",
+      "claimedAt": "2025-09-02T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Notes
+
+- **Status Values**:
+  - **DRAFT**: Task is still in draft status.
+  - **ACTIVE**: Task is active and available for claiming or submission.
+  - **COMPLETED**: Task has been completed.
+
+- **Error Handling**:
+  - If the user is not a creator, a `FORBIDDEN` error is thrown with the message "Only creators can view their tasks".
+
+- **Pagination**:
+  - **`limit`**: Defines the number of tasks returned per page. The default value is `10`, and the maximum is `50`.
+  - **`offset`**: Defines the starting point for pagination. The default value is `0`.
+
+- **Exclusion**:
+  - The procedure only returns tasks created by the current user (`creatorUserId`).
+
+- **Data Aggregation**:
+  - **Total Records**: The total number of tasks that match the given status is returned as `totalRecords`.
+  - **Total Pages**: The number of pages is calculated by dividing the `totalRecords` by the `limit`.
+
+- **Task Query**:
+  - For tasks with status `ACTIVE` or `COMPLETED`, the results also include the claim status and the user who claimed the task.
+  - If the status is `DRAFT`, only basic task information (without claims) is returned.
+
+- **Sorting**:
+  - Tasks are sorted by `createdAt` in descending order.
+
+### `cancelTask`
+
+**Type**: `mutation`  
+**Called As**: `taskRouter.cancelTask()`  
+**Description**: Allows a task creator to cancel an active task. Only tasks with the status `ACTIVE` can be cancelled. If the task is cancelled, all related claims are also cancelled.
+
+#### Example Input
+
+```json
+{
+  "taskId": "task-uuid-1"
+}
+```
+
+### Example Output
+
+```json
+{
+  "success": true
+}
+```
+
+### Notes
+
+- **Authorization**:
+  - Only the task creator can cancel a task. If the user is not the creator of the task, a `FORBIDDEN` error is thrown.
+
+- **Status Check**:
+  - A task can only be cancelled if its status is `ACTIVE`. If the status is anything other than `ACTIVE`, a `BAD_REQUEST` error is thrown.
+
+- **Cancellation Process**:
+  - Once the task is cancelled, all related claims for the task are also cancelled, setting their status to `CANCELLED`.
+
+- **Error Handling**:
+  - If the task does not exist, a `NOT_FOUND` error is thrown.
+  - If an error occurs during the cancellation process, an `INTERNAL_SERVER_ERROR` is thrown with a message indicating the failure.
+
+- **Data Aggregation**:
+  - The `taskId` is used to find the task and cancel it along with any related claims.
+
+- **Logging**:
+  - Errors are logged to the console for debugging purposes.
+
+### `getTaskCategories`
+
+**Type**: `query`  
+**Called As**: `taskRouter.getTaskCategories()`  
+**Description**: Retrieves a list of unique task categories from the database, ensuring that no empty or whitespace-only categories are included. The categories are returned sorted in alphabetical order.
+
+#### Example Input
+
+```json
+{}
+```
+
+#### Example Otput
+
+```json
+{
+  "success": true,
+  "categories": ["Development", "Design", "Marketing"]
+}
+```
+
+### Notes
+
+- **Categories**:
+  - Only distinct task categories are returned.
+  - Empty or whitespace-only categories are excluded.
+  - The list of categories is sorted alphabetically.
+
+- **Error Handling**:
+  - If an error occurs during the query, it will throw an `INTERNAL_SERVER_ERROR`.
+
+- **Data Aggregation**:
+  - The `category` field from the `tasks` table is used to gather the distinct categories.
+  - The results are trimmed and filtered to ensure no empty or invalid categories are included.
+
+- **Performance**:
+  - The query uses `selectDistinct` to ensure that only unique categories are returned.
+
+### `getUserClaimedTasks`
+
+**Type**: `query`  
+**Called As**: `taskRouter.getUserClaimedTasks()`  
+**Description**: Retrieves a paginated list of tasks that a user has claimed, along with relevant task details such as the status and reward amount.
+
+#### Example Input
+
+```json
+{
+  "limit": 10,
+  "offset": 0
+}
+```
+
+#### Example Output
+
+```json
+{
+  "pageSize": 10,
+  "totalPages": 5,
+  "totalRecords": 50,
+  "data": [
+    {
+      "claimId": "claim-uuid-1",
+      "claimStatus": "PENDING",
+      "claimCreatedAt": "2025-10-01T12:00:00.000Z",
+      "claimUpdatedAt": "2025-10-02T12:00:00.000Z",
+      "taskId": "task-uuid-1",
+      "title": "Task 1",
+      "description": "Task description",
+      "status": "ACTIVE",
+      "rewardAmount": 100,
+      "deadline": "2025-10-10T12:00:00.000Z",
+      "image": "image-url-1",
+      "createdAt": "2025-09-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Notes
+
+- **Pagination**:
+  - **`limit`**: Defines the number of claimed tasks returned per page. The default value is `10`, and the maximum is `50`.
+  - **`offset`**: Defines the starting point for pagination. The default value is `0`.
+
+- **Data Aggregation**:
+  - **Total Records**: The total number of tasks the user has claimed is returned as `totalRecords`.
+  - **Total Pages**: The number of total pages is calculated based on `totalRecords` and `limit`.
+
+- **Sorting**:
+  - The tasks are sorted by the `createdAt` field of `taskClaims` in descending order.
+
+- **Task Details**:
+  - For each claimed task, details such as `taskId`, `title`, `status`, `rewardAmount`, and `deadline` are included.
+  - The claim information (e.g., `claimId`, `claimStatus`) is also returned.
+
+- **Error Handling**:
+  - If no tasks are found for the user, the `data` field will be an empty array.
+
+### `editTask`
+
+**Type**: `mutation`  
+**Called As**: `taskRouter.editTask()`  
+**Description**: Allows the creator of a task to edit the task details (e.g., title, description, category, reward amount, etc.) for tasks that are in `DRAFT` status. Only the owner of the task can perform this action.
+
+#### Example Input
+
+```json
+{
+  "taskId": "task-uuid-1",
+  "title": "Updated Task Title",
+  "description": "This is an updated description for the task.",
+  "category": "Updated Category",
+  "rewardAmount": "200",
+  "requiredCompletions": 5,
+  "deadline": "2025-12-01T12:00:00.000Z"
+}
+```
+
+#### Example Output
+
+```json
+{
+  "success": true,
+  "task": {
+    "id": "task-uuid-1",
+    "title": "Updated Task Title",
+    "description": "This is an updated description for the task.",
+    "category": "Updated Category",
+    "rewardAmount": "200",
+    "requiredCompletions": 5,
+    "deadline": "2025-12-01T12:00:00.000Z",
+    "updatedAt": "2025-10-10T12:00:00.000Z",
+    "createdAt": "2025-09-01T12:00:00.000Z"
+  }
+}
+```
+
+#### Notes
+
+- **Authorization**:
+  - Only the task creator can edit the task. If the user is not the creator, a `FORBIDDEN` error is thrown with the message "You are not the owner of this task".
+
+- **Status Check**:
+  - The task must be in `DRAFT` status to be editable. If the task status is anything other than `DRAFT`, a `BAD_REQUEST` error is thrown with the message "Only draft tasks can be edited".
+
+- **Editing Fields**:
+  - Users can edit the following fields:
+    - **`title`**: The task's title (3 to 255 characters).
+    - **`description`**: A brief description of the task (minimum 10 characters).
+    - **`category`**: The category of the task (2 to 100 characters).
+    - **`rewardAmount`**: The reward for completing the task.
+    - **`requiredCompletions`**: The number of required completions.
+    - **`deadline`**: The deadline for the task (datetime format).
+
+- **Error Handling**:
+  - If the task does not exist, a `NOT_FOUND` error is thrown.
+  - If the user is not the creator of the task, a `FORBIDDEN` error is thrown.
+  - If the task is not in `DRAFT` status, a `BAD_REQUEST` error is thrown.
+
+- **Data Aggregation**:
+  - The task's details are updated and the `updatedAt` field is set to the current time.
+
+- **Logging**:
+  - If there is an error in any part of the process (fetching or updating), it will be logged for debugging.
+
+#### Error Handling
+
+- **Task Not Found**: If the task does not exist, a `NOT_FOUND` error is returned.
+- **Forbidden Access**: If the user is not the creator of the task, a `FORBIDDEN` error is returned.
+
+- **Bad Request**: If the task is not in `DRAFT` status, a `BAD_REQUEST` error is returned.
+
+### `updateTaskStatus`
+
+**Type**: `mutation`  
+**Called As**: `taskRouter.updateTaskStatus()`  
+**Description**: Allows a task creator to update the status of their task. The status can be transitioned from `DRAFT` to `ACTIVE` and from `ACTIVE` to `COMPLETED`.
+
+#### Example Input
+
+```json
+{
+  "taskId": "task-uuid-1",
+  "newStatus": "ACTIVE"
+}
+```
+
+#### Example Output
+
+```json
+{
+  "success": true,
+  "message": "Task status updated to ACTIVE"
+}
+```
+
+#### Notes
+
+- **Authorization**:
+  - Only the creator of the task can update its status. If the user is not the creator, a `FORBIDDEN` error is thrown with the message "You are not allowed to update the status of this task".
+
+- **Status Transition**:
+  - **Allowed Transitions**:
+    - From `DRAFT` to `ACTIVE`
+    - From `ACTIVE` to `COMPLETED`
+  - If an invalid status transition is attempted, a `BAD_REQUEST` error is thrown with the message "Invalid status transition from [current status] to [new status]".
+  - If the task is already in the specified status, a `BAD_REQUEST` error is thrown with the message "Task is already [new status]"
+
+- **Error Handling**:
+  - If the task does not exist, a `NOT_FOUND` error is thrown with the message "Task not found"
+  - If the user is not the creator, a `FORBIDDEN` error is thrown
+  - If an invalid status transition is attempted, a `BAD_REQUEST` error is thrown
+
+- **Data Aggregation**:
+  - The task's status is updated to the new status
+
+- **Logging**:
+  - If an error occurs during the process, it will be logged for debugging purposes
+
+#### Error Handling
+
+- **Task Not Found**: If the task does not exist, a `NOT_FOUND` error is returned.
+- **Forbidden Access**: If the user is not the creator of the task, a `FORBIDDEN` error is returned.
+- **Bad Request**: If the status is already the same or the transition is invalid, a `BAD_REQUEST` error is returned.
