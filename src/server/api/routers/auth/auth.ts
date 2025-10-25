@@ -2,14 +2,13 @@ import {
   createTRPCRouter,
   publicProcedure,
   adminProcedure,
-  protectedProcedure
+  protectedProcedure,
 } from '~/server/api/trpc';
 
 import { z } from 'zod';
-import {  eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { wallets } from '@/server/db/schema';
-
 
 export const authRouter = createTRPCRouter({
   // Admin-only endpoint
@@ -22,51 +21,50 @@ export const authRouter = createTRPCRouter({
   }),
 
   // Check session status
-  
+
   getSessionStatus: publicProcedure.query(async ({ ctx }) => {
-  if (!ctx.session || !ctx.user) {
+    if (!ctx.session || !ctx.user) {
+      return {
+        isAuthenticated: false,
+        user: null,
+        session: null,
+        activeWallet: null,
+      };
+    }
+
+    // Fetch active wallet for the current user
+    const activeWallet = await ctx.db.query.wallets.findFirst({
+      where: (w, { eq, and }) =>
+        and(eq(w.userId, ctx.session!.userId), eq(w.isActive, 1)),
+    });
+
     return {
-      isAuthenticated: false,
-      user: null,
-      session: null,
-      activeWallet: null,
+      isAuthenticated: true,
+      user: {
+        id: ctx.user.id,
+        name: ctx.user.name,
+        email: ctx.user.email,
+        role: ctx.user.role,
+      },
+      session: {
+        id: ctx.session.id,
+        expiresAt: ctx.session.expiresAt,
+      },
+      activeWallet: activeWallet
+        ? {
+            id: activeWallet.walletId,
+            address: activeWallet.starknetAddress,
+          }
+        : null,
     };
-  }
-
-  // Fetch active wallet for the current user
-  const activeWallet = await ctx.db.query.wallets.findFirst({
-    where: (w, { eq, and }) =>
-    and(eq(w.userId, ctx.session!.userId), eq(w.isActive, 1))
-
-  });
-
-  return {
-    isAuthenticated: true,
-    user: {
-      id: ctx.user.id,
-      name: ctx.user.name,
-      email: ctx.user.email,
-      role: ctx.user.role,
-    },
-    session: {
-      id: ctx.session.id,
-      expiresAt: ctx.session.expiresAt,
-    },
-    activeWallet: activeWallet
-      ? {
-          id: activeWallet.walletId,
-          address: activeWallet.starknetAddress,
-        }
-      : null,
-  };
-}),
+  }),
 
   // Switch active wallet
   switchAccount: protectedProcedure
     .input(
       z.object({
         walletId: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session!.userId;
@@ -94,7 +92,5 @@ export const authRouter = createTRPCRouter({
         .where(eq(wallets.walletId, input.walletId));
 
       return { success: true, activeWallet: wallet.starknetAddress };
-    
-
     }),
 });
