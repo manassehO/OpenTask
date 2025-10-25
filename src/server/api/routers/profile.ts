@@ -19,19 +19,22 @@ import { eq, count, sql } from 'drizzle-orm';
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
 
-import axios from "axios";
+import axios from 'axios';
 
-export async function convertToFiat(amount: number, tokenId = "ethereum"): Promise<number> {
+export async function convertToFiat(
+  amount: number,
+  tokenId = 'ethereum',
+): Promise<number> {
   if (amount === 0) return 0;
 
   try {
     const { data } = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`,
     );
     const usdRate = data[tokenId]?.usd ?? 0;
     return amount * usdRate;
   } catch (error) {
-    console.error("CoinGecko conversion failed:", error);
+    console.error('CoinGecko conversion failed:', error);
     return 0;
   }
 }
@@ -157,7 +160,9 @@ export const profileRouter = createTRPCRouter({
 
     // --- Platform-wide earning summary ---
     const [totalEarnedRow, totalTasksRow] = await Promise.all([
-      ctx.db.select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` }).from(userStats),
+      ctx.db
+        .select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` })
+        .from(userStats),
       ctx.db.select({ totalTasks: count() }).from(submissions),
     ]);
 
@@ -176,7 +181,7 @@ export const profileRouter = createTRPCRouter({
         longestStreak: stats.longestStreak,
         earningSummary: {
           totalEarned,
-          fiatValue, 
+          fiatValue,
           tasksCompleted: totalTasksCompleted,
         },
       },
@@ -377,6 +382,7 @@ export const profileRouter = createTRPCRouter({
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
         socialLinks: z.record(z.string().url()).optional(),
+        phoneNumber: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

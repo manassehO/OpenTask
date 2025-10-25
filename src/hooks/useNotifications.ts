@@ -48,37 +48,22 @@ function getErrorMessage(error: unknown): string {
 
 // Types
 export interface Notification {
-  id: string;
+  notificationId: string;
   userId: string;
-  type: 'task_approved' | 'task_rejected' | 'payment' | 'system';
+  type: string;
   title: string;
   message: string;
-  isRead: boolean;
+  status: 'UNREAD' | 'READ' | 'ARCHIVED';
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
+  readAt?: Date;
+  relatedTaskId?: string | null;
+  metadata?: string | null;
 }
 
 // Context type for mutations
 interface MutationContext {
   toastId: string;
-}
-
-// Types for the toast context (assuming these are the expected types)
-export interface ToastContextType {
-  showSuccess: (title: string, message: string) => string;
-  showError: (title: string, message: string) => string;
-  showLoading: (title: string, message: string) => string;
-  removeToast: (id: string) => void;
-}
-
-// Define types for your API responses based on your tRPC router
-interface MarkAsReadVariables {
-  notificationIds: string[];
-}
-
-interface DeleteNotificationVariables {
-  id: string;
 }
 
 // Query hook for fetching all notifications
@@ -118,10 +103,14 @@ export function useMarkNotificationRead() {
       void utils.notification.getNotifications.invalidate();
       void utils.notification.getUnreadCount.invalidate();
     },
-    onError: (error: Error, _variables: MarkAsReadVariables): void => {
-      const errorMessage = getErrorMessage(error);
+
+    onError: (
+      error: unknown,
+      _variables: { notificationIds: string[] },
+    ): void => {
+      const errorMessage: string = getErrorMessage(error);
       console.error(`Failed to mark notification as read:`, errorMessage);
-      // You could add toast notification here if needed
+
       throw new NotificationError(
         `Failed to mark notification as read: ${errorMessage}`,
         'MARK_AS_READ_ERROR',
@@ -161,11 +150,10 @@ export function useMarkAllNotificationsRead() {
           'Cache invalidation failed:',
           getErrorMessage(invalidationError),
         );
-        // Continue execution even if cache invalidation fails
       }
     },
     onError: (
-      error: Error,
+      error: unknown,
       _variables: void,
       context: MutationContext | undefined,
     ): void => {
@@ -173,7 +161,6 @@ export function useMarkAllNotificationsRead() {
       const errorMessage: string = getErrorMessage(error);
       showError('Failed to update notifications', errorMessage);
 
-      // Re-throw with enhanced error information
       throw new NotificationError(
         `Failed to mark all notifications as read: ${errorMessage}`,
         'MARK_ALL_READ_ERROR',
@@ -184,12 +171,12 @@ export function useMarkAllNotificationsRead() {
 }
 
 // Mutation hook for clearing all notifications
-export function useClearNotifications() {
+export function useClearAllNotifications() {
   const { showSuccess, showError, showLoading, removeToast } =
     useToastContext();
   const utils = api.useUtils();
 
-  return api.notification.clearAll.useMutation({
+  return api.notification.clearAllNotifications.useMutation({
     onMutate: (): MutationContext => {
       const toastId: string = showLoading(
         'Clearing',
@@ -218,7 +205,7 @@ export function useClearNotifications() {
       }
     },
     onError: (
-      error: Error,
+      error: unknown,
       _variables: void,
       context: MutationContext | undefined,
     ): void => {
@@ -240,10 +227,10 @@ export function useDeleteNotification() {
   const { showSuccess, showError } = useToastContext();
   const utils = api.useUtils();
 
-  return api.notification.delete.useMutation({
+  return api.notification.deleteNotification.useMutation({
     onSuccess: async (
       _data: unknown,
-      _variables: DeleteNotificationVariables,
+      variables: { notificationId: string },
     ): Promise<void> => {
       showSuccess('Success', 'Notification deleted');
 
@@ -259,12 +246,53 @@ export function useDeleteNotification() {
         );
       }
     },
-    onError: (error: Error, _variables: DeleteNotificationVariables): void => {
+
+    onError: (error: unknown, _variables: unknown): void => {
       const errorMessage: string = getErrorMessage(error);
-      showError('Failed to delete notification', errorMessage);
+      showError('Failed to update preferences', errorMessage);
+
       throw new NotificationError(
-        `Failed to delete notification: ${errorMessage}`,
-        'DELETE_NOTIFICATION_ERROR',
+        `Failed to update preferences: ${errorMessage}`,
+        'UPDATE_PREFERENCES_ERROR',
+        error,
+      );
+    },
+  });
+}
+
+// Query hook for notification preferences
+export function useGetNotificationPreferences() {
+  return api.notification.getNotificationPreferences.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+// Mutation hook for updating notification preferences
+export function useUpdateNotificationPreferences() {
+  const { showSuccess, showError } = useToastContext();
+  const utils = api.useUtils();
+
+  return api.notification.updateNotificationPreferences.useMutation({
+    onSuccess: async (): Promise<void> => {
+      showSuccess('Success', 'Preferences updated successfully');
+
+      try {
+        await utils.notification.getNotificationPreferences.invalidate();
+      } catch (invalidationError: unknown) {
+        console.warn(
+          'Cache invalidation failed:',
+          getErrorMessage(invalidationError),
+        );
+      }
+    },
+
+    onError: (error: unknown, _variables: unknown): void => {
+      const errorMessage: string = getErrorMessage(error);
+      showError('Failed to update preferences', errorMessage);
+
+      throw new NotificationError(
+        `Failed to update preferences: ${errorMessage}`,
+        'UPDATE_PREFERENCES_ERROR',
         error,
       );
     },
@@ -275,15 +303,14 @@ export function useDeleteNotification() {
 export function useNotificationActions() {
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
-  const clearAll = useClearNotifications();
+  const clearAll = useClearAllNotifications();
   const deleteNotification = useDeleteNotification();
 
   const handleMarkAsRead = async (notificationId: string): Promise<void> => {
     try {
       await markAsRead.mutateAsync({ notificationIds: [notificationId] });
     } catch (error: unknown) {
-      // Error is already handled in the mutation, but we can add additional handling here
-      throw error; // Re-throw for component-level handling
+      throw error;
     }
   };
 
@@ -307,7 +334,7 @@ export function useNotificationActions() {
     notificationId: string,
   ): Promise<void> => {
     try {
-      await deleteNotification.mutateAsync({ id: notificationId });
+      await deleteNotification.mutateAsync({ notificationId });
     } catch (error: unknown) {
       throw error;
     }
