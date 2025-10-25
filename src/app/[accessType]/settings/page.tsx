@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useGetProfile, useUpdateProfile } from '~/hooks/useUpdateProfile';
 import {
   useGetNotifications,
-  useClearNotifications,
+  useClearAllNotifications,
   useMarkNotificationRead,
 } from '~/hooks/useNotifications';
 
@@ -38,8 +38,8 @@ export default function SettingPage() {
     isLoading: notificationsLoading,
     refetch: refetchNotifications,
   } = useGetNotifications();
-  const { mutate: clearNotifications, isPending: isClearingNotifications } =
-    useClearNotifications();
+  const { mutate: clearAllNotifications, isPending: isClearingNotifications } =
+    useClearAllNotifications();
   const { mutate: markAsRead } = useMarkNotificationRead();
 
   const notifications = notificationsData?.notifications ?? [];
@@ -57,7 +57,7 @@ export default function SettingPage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       fullName: profile?.name ?? '',
-      phoneNumber: profile?.profile?.phoneNumber ?? '',
+      // phoneNumber: profile?.profile?.phoneNumber ?? '',
       gender: (profile?.profile?.gender as 'male' | 'female') ?? undefined,
       niche: profile?.profile?.niche ?? '',
     },
@@ -78,7 +78,7 @@ export default function SettingPage() {
       {
         name: data.fullName,
         displayName: data.fullName,
-        phoneNumber: data.phoneNumber,
+        // phoneNumber: data.phoneNumber,
         gender: data.gender,
         niche: data.niche,
         image: profileImage ?? undefined,
@@ -96,30 +96,40 @@ export default function SettingPage() {
     );
   };
 
-  // Handle clear all notifications - FIXED: Use .mutate
+  // Handle clear all notifications - IMPROVED
   const handleClearAll = () => {
-    clearNotifications.mutate(undefined, {
+    clearAllNotifications(undefined, {
+      // or just clearAllNotifications() if your mutation takes no parameters
       onSuccess: () => {
         toast.success('All notifications cleared');
         void refetchNotifications();
       },
       onError: (error: unknown) => {
         console.error('Failed to clear notifications:', error);
-        toast.error('Failed to clear notifications');
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to clear notifications';
+        toast.error(errorMessage);
       },
     });
   };
 
-  // Handle marking notification as read - FIXED: Use .mutate
+  // Handle marking notification as read - IMPROVED
   const handleNotificationClick = (notificationId: string) => {
-    markAsRead.mutate(
+    markAsRead(
       { notificationIds: [notificationId] },
       {
         onSuccess: () => {
           void refetchNotifications();
+          // Optional: Show success toast for better UX
+          // toast.success('Notification marked as read');
         },
         onError: (error: unknown) => {
           console.error('Failed to mark notification as read:', error);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to mark as read';
+          toast.error(errorMessage); // Consistent error handling
         },
       },
     );
@@ -403,12 +413,12 @@ export default function SettingPage() {
               </div>
 
               <div className="space-y-6 pt-10 capitalize">
-                <div className="space-y-1 rounded bg-main p-5">
+                {/* <div className="space-y-1 rounded bg-main p-5">
                   <p className="text-sm">phone number</p>
                   <p className="text-lg font-medium md:text-2xl">
                     {profile?.profile?.phoneNumber ?? 'Not provided'}
                   </p>
-                </div>
+                </div> */}
                 <div className="space-y-1 rounded bg-main p-5">
                   <p className="text-sm">gender</p>
                   <p className="text-lg font-medium md:text-2xl">
@@ -468,11 +478,16 @@ export default function SettingPage() {
 
                 {/* Notifications List */}
                 {notifications.map((notification) => (
-                  <div key={notification.id} className="space-y-4 capitalize">
+                  <div
+                    key={notification.notificationId}
+                    className="space-y-4 capitalize"
+                  >
                     <div
-                      onClick={() => handleNotificationClick(notification.id)}
+                      onClick={() =>
+                        handleNotificationClick(notification.notificationId)
+                      }
                       className={`flex cursor-pointer items-start space-x-4 rounded py-4 transition-all hover:scale-[1.01] md:px-4 md:py-6 ${
-                        notification.isRead
+                        notification.status === 'READ'
                           ? 'bg-white hover:bg-main'
                           : 'bg-blue-50 hover:bg-blue-100'
                       }`}
@@ -491,7 +506,7 @@ export default function SettingPage() {
                           <p className="text-sm font-bold capitalize md:text-xl">
                             {notification.title}
                           </p>
-                          {!notification.isRead && (
+                          {notification.status !== 'READ' && (
                             <span className="h-2 w-2 rounded-full bg-primary"></span>
                           )}
                         </div>

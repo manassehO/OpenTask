@@ -107,7 +107,7 @@ export default function LearningPage() {
   }
 
   return (
-    <div>
+    <div className="p-4 md:p-6">
       {/* Updated title styling */}
       <h1 className="mb-4 font-bold capitalize md:text-[28px] md:text-xl">
         learning center
@@ -129,7 +129,14 @@ export default function LearningPage() {
       </div>
 
       {/* Loading state */}
-      {(coursesLoading || tutorialsLoading) && (
+      {/* {(coursesLoading || tutorialsLoading) && (
+        <div className="flex justify-center py-8">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+        </div>
+      )} */}
+
+      {((activeTab === 'Course' && coursesLoading) ||
+        (activeTab === 'Tutorial' && tutorialsLoading)) && (
         <div className="flex justify-center py-8">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
         </div>
@@ -284,7 +291,7 @@ export default function LearningPage() {
         )}
 
       {/* Empty states */}
-      {activeTab === 'Course' &&
+      {/* {activeTab === 'Course' &&
         (!coursesData?.courses || coursesData.courses.length === 0) && (
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
@@ -316,6 +323,26 @@ export default function LearningPage() {
           <div className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium text-gray-900">
               No tutorials available...
+            </h3>
+          </div>
+        )} */}
+
+      {activeTab === 'Course' &&
+        !coursesLoading &&
+        (!coursesData?.courses || coursesData.courses.length === 0) && (
+          <div className="py-12 text-center">
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              No courses available
+            </h3>
+          </div>
+        )}
+
+      {activeTab === 'Tutorial' &&
+        !tutorialsLoading &&
+        (!tutorialsData?.tutorials || tutorialsData.tutorials.length === 0) && (
+          <div className="py-12 text-center">
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              No tutorials available
             </h3>
           </div>
         )}
