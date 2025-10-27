@@ -18,14 +18,15 @@ async function seedUserWithdrawalMethods() {
 
   for (const userItem of allUsers) {
     // Skip if user already has withdrawal methods
-    const existing = await db.query.userWithdrawalMethods.findFirst({
+    /* const existing = await db.query.userWithdrawalMethods.findFirst({
       where: eq(userWithdrawalMethods.userId, userItem.id),
     });
-    if (existing) continue;
+    if (existing) continue; */
 
     // Create 2 methods per user
     for (let i = 0; i < 2; i++) {
-      const method = withdrawalMethods[Math.floor(Math.random() * withdrawalMethods.length)];
+      // const method = withdrawalMethods[Math.floor(Math.random() * withdrawalMethods.length)];
+      const method = 'BANK_ACCOUNT'; // For testing purposes
       const isDefault = i === 0; // first method is default
       const name = method === 'CRYPTO_WALLET' ? `Wallet ${i + 1}` : `Bank Account ${i + 1}`;
       const details =

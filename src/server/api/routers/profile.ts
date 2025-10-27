@@ -66,39 +66,39 @@ export const profileRouter = createTRPCRouter({
     };
   }),
 
-getUserStats: protectedProcedure.query(async ({ ctx }) => {
-  const userId = ctx.user.id;
+  getUserStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
 
-  const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
-    // Tasks created by user
-    ctx.db
-      .select({ count: count() })
-      .from(tasks)
-      .where(eq(tasks.creatorUserId, userId)),
+    const [createdTasks, completedTasks, raisedDisputes] = await Promise.all([
+      // Tasks created by user
+      ctx.db
+        .select({ count: count() })
+        .from(tasks)
+        .where(eq(tasks.creatorUserId, userId)),
 
-    // Submissions completed by user
-    ctx.db
-      .select({ count: count() })
-      .from(submissions)
-      .where(eq(submissions.completerUserId, userId)),
+      // Submissions completed by user
+      ctx.db
+        .select({ count: count() })
+        .from(submissions)
+        .where(eq(submissions.completerUserId, userId)),
 
-    // Disputes raised by user
-    ctx.db
-      .select({ count: count() })
-      .from(disputes)
-      .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
-      .where(eq(submissions.completerUserId, userId)),
-  ]);
+      // Disputes raised by user
+      ctx.db
+        .select({ count: count() })
+        .from(disputes)
+        .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
+        .where(eq(submissions.completerUserId, userId)),
+    ]);
 
-  return {
-    success: true,
-    stats: {
-      createdTasks: Number(createdTasks[0]?.count ?? 0),
-      completedTasks: Number(completedTasks[0]?.count ?? 0),
-      disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
-    },
-  };
-}),
+    return {
+      success: true,
+      stats: {
+        createdTasks: Number(createdTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+        disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+      },
+    };
+  }),
 
 
   updateProfile: protectedProcedure
@@ -244,6 +244,7 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
     }
 
     const profile = (userRow.profile ?? {}) as typeof userProfiles.$inferSelect;
+    console.log('Raw profile data:', profile);
 
     // Parse skillTags and socialLinks from JSON strings into usable JS objects
     let parsedSkillTags: string[] = [];
@@ -291,6 +292,7 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
         gender: z.string().optional(),
         niche: z.string().optional(),
         bio: z.string().optional(),
+        phoneNumber: z.string().max(20).optional(),
         location: z.string().optional(),
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
@@ -324,6 +326,7 @@ getUserStats: protectedProcedure.query(async ({ ctx }) => {
             bio: clean(input.bio),
             location: clean(input.location),
             timezone: clean(input.timezone),
+            phoneNumber: clean(input.phoneNumber),
             skillTags: input.skillTags
               ? JSON.stringify(input.skillTags)
               : undefined,
