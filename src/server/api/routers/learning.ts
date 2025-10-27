@@ -14,7 +14,7 @@ export const learningRouter = createTRPCRouter({
         offset: z.number().min(0).default(0),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { category, limit, offset } = input;
 
       try {
