@@ -18,7 +18,11 @@ export const learningRouter = createTRPCRouter({
       const { category, limit, offset } = input;
 
       try {
-        const coursesQuery = await ctx.db
+        const whereClause = category
+          ? and(eq(courses.isActive, true), eq(courses.category, category))
+          : eq(courses.isActive, true);
+
+        const coursesQuery = ctx.db
           .select({
             courseId: courses.courseId,
             title: courses.title,
@@ -28,60 +32,46 @@ export const learningRouter = createTRPCRouter({
             duration: courses.duration,
             rewardAmount: courses.rewardAmount,
             rewardInEth: courses.rewardTokenAddress,
-            rewardInUsd: sql<number>`0`, // TODO: Implement token-to-USD conversion
+            rewardInUsd: sql<number>`0`,
             category: courses.category,
             difficulty: courses.difficulty,
             isActive: courses.isActive,
           })
           .from(courses)
-          .where(
-            and(
-              eq(courses.isActive, true),
-              category ? eq(courses.category, category) : undefined,
-            ),
-          )
+          .where(whereClause)
           .limit(limit)
           .offset(offset);
 
-        const totalQuery = await ctx.db
+        const totalQuery = ctx.db
           .select({ count: count() })
           .from(courses)
-          .where(
-            and(
-              eq(courses.isActive, true),
-              category ? eq(courses.category, category) : undefined,
-            ),
-          );
+          .where(whereClause);
+
         const [coursesResult, totalResult] = await Promise.all([
           coursesQuery,
           totalQuery,
         ]);
 
-        if (coursesResult.length === 0) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'No courses found matching the criteria',
-          });
+        if (!coursesResult.length) {
+          return {
+            courses: [],
+            total: 0,
+          };
         }
 
         return {
           courses: coursesResult.map((course) => ({
             ...course,
-            duration:
-              course.duration !== null && course.duration !== undefined
-                ? course.duration.toString()
-                : '',
-            difficulty:
-              course.difficulty !== null && course.difficulty !== undefined
-                ? course.difficulty.toString()
-                : '',
-            rewardAmount: course.rewardAmount.toString(),
+            duration: course.duration ?? '',
+            difficulty: course.difficulty ?? '',
+            rewardAmount: course.rewardAmount?.toString?.() ?? '0',
             rewardInEth: course.rewardInEth,
-            rewardInUsd: 0, // TODO: Replace with actual conversion
+            rewardInUsd: 0,
           })),
           total: totalResult[0]?.count ?? 0,
         };
       } catch (error) {
+        console.error('❌ getCourses unexpected error:', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to fetch courses',

@@ -340,6 +340,7 @@ export const userProfiles = createTable('user_profiles', {
     .references(() => user.id, { onDelete: 'cascade' })
     .unique(),
   gender: varchar('gender', { length: 20 }),
+  phoneNumber: varchar('phone_number', { length: 20 }),
   niche: varchar('niche', { length: 100 }), // User's area of expertise/interest
   bio: text('bio'),
   location: varchar('location', { length: 100 }),

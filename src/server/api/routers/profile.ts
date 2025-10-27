@@ -331,6 +331,7 @@ export const profileRouter = createTRPCRouter({
     }
 
     const profile = (userRow.profile ?? {}) as typeof userProfiles.$inferSelect;
+    console.log('Raw profile data:', profile);
 
     // Parse skillTags and socialLinks from JSON strings into usable JS objects
     let parsedSkillTags: string[] = [];
@@ -378,6 +379,7 @@ export const profileRouter = createTRPCRouter({
         gender: z.string().optional(),
         niche: z.string().optional(),
         bio: z.string().optional(),
+        phoneNumber: z.string().max(20).optional(),
         location: z.string().optional(),
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
@@ -412,6 +414,7 @@ export const profileRouter = createTRPCRouter({
             bio: clean(input.bio),
             location: clean(input.location),
             timezone: clean(input.timezone),
+            phoneNumber: clean(input.phoneNumber),
             skillTags: input.skillTags
               ? JSON.stringify(input.skillTags)
               : undefined,
