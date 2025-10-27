@@ -7,7 +7,7 @@ import { adminRouter } from './routers/admin';
 import { notificationRouter } from './routers/notification';
 import { searchRouter } from './routers/search';
 import { learningRouter } from './routers/learning';
-import { earningsRouter } from "./routers/earning";
+import { earningsRouter } from './routers/earning';
 import { creatorRouter } from './routers/creator';
 
 /*
@@ -25,7 +25,7 @@ export const appRouter = createTRPCRouter({
   search: searchRouter,
   learning: learningRouter,
   creator: creatorRouter,
-  earnings: earningsRouter
+  earnings: earningsRouter,
 });
 
 // export type definition of API

@@ -1,4 +1,5 @@
-import nodemailer, { type Transporter, type SentMessageInfo } from 'nodemailer';
+import nodemailer, { type SentMessageInfo, type Transporter } from 'nodemailer';
+import sendEmail from '~/lib/sender';
 
 const transporter: Transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -23,12 +24,7 @@ export async function sendOtp(
     </div>
   `;
   try {
-    return await transporter.sendMail({
-      from: '"OpenTask" <no-reply@opentask.com>',
-      to: email,
-      subject,
-      html,
-    });
+    return await sendEmail(email, subject, html);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Failed to send email:', err.message);

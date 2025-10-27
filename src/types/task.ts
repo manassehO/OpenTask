@@ -1,25 +1,73 @@
-export type TaskStatus = 'active' | 'completed' | 'disputed' | 'cancelled';
+export type TaskStatus =
+  | 'ACTIVE'
+  | 'DRAFT'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'DISPUTED';
+
+export interface TaskFilters {
+  limit?: number;
+  page?: number;
+  sort_by?: 'created_at';
+  order?: 'asc' | 'desc';
+  category?: string;
+  min_reward?: number;
+}
 
 export interface Task {
   id: string;
+  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+  image: string | null;
+  createdAt: Date;
+  updatedAt?: Date | null;
+  creatorUserId?: string;
   title: string;
   description: string;
-  status: TaskStatus;
-  image: string;
-  deadline: string;
-  rewardInEth: number;
-  rewardInUsd: number;
-  isFlagged?: boolean;
-  creator?: string;
-  category: string;
-  tags: string[];
-  example?: string;
-  specialRequirements?: string;
+  instructions?: string;
+  category?: string;
+  rewardAmount?: string;
+  rewardTokenAddress?: string;
+  platformFee?: string | null;
+  approvedCompletions?: number;
+  inProgressCompletions?: number;
+  requiredCompletions?: number;
+  deadline?: Date;
+  fundingTxHash?: string;
+  maxCompletions?: number;
+  tags?: string;
+  example?: string | null;
+  specialRequirements?: string | null;
 }
+
+export type TaskType = {
+  id: string;
+  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  creatorUserId: string;
+  title: string;
+  description: string;
+  instructions: string;
+  category: string;
+  rewardAmount: string;
+  rewardTokenAddress?: string;
+  platformFee?: string | null;
+  approvedCompletions?: number;
+  inProgressCompletions?: number;
+  requiredCompletions?: number;
+  deadline?: Date;
+  fundingTxHash?: string;
+  maxCompletions?: number;
+  tags: string;
+  example: string | null;
+  specialRequirements: string | null;
+};
 
 export interface TaskCardProps {
   task: Task;
-  onAction: (taskId: string) => void;
+  onAction?: (taskId: string) => void;
+  isLoading?: boolean;
 }
 
 export type BasicInformationValues = {

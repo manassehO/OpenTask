@@ -1,0 +1,103 @@
+[33mb87e10d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mprofile-integration[m[33m)[m merging
+[33m15d5b5f[m updated auth
+[33me1e07ca[m[33m ([m[1;31mupstream/develop[m[33m, [m[1;31mupstream/HEAD[m[33m)[m feat: task lifecycle functions (#285)
+[33mc1ba0ed[m feat: added auth cookie prefix
+[33m7885bb9[m feat: Add seeding scripts for initial database data (#287)
+[33mae79e1a[m feat: add missing events (#283)
+[33md42a5de[m auth updated (#254)
+[33m06ebc0b[m feat: Implement status filtering and controlled updates for tasks(#256) (#259)
+[33mf706579[m feat: task recommendation enhancement (#260)
+[33me73f0af[m feat: Implement getUserClaimedTask procedure (#278) (#279)
+[33m2ea2519[m added edit task procedure and get user stats (#284)
+[33m082d35c[m feat: add funding validation and active status update in task funding
+[33m48e7db9[m Implements the fund_task function to allow additional funding of existing tasks. (#282)
+[33m408bc1c[m [Feat]::  Implemented  Dispute system (#276)
+[33mf8209f6[m [Feat]:: Implemented User Earnings System (#275)
+[33mc42ed7d[m Enhance task schema and API (#280)
+[33m9938de9[m Fix: Enhance task router procedures (#277)
+[33m542309a[m complete merging
+[33m781c1f2[m Merge pull request #200 from raymondjoseph02/feature/implement_creator_create_task_page
+[33ma375ddb[m feat: unify updates for users and userProfiles in updateExtendedProfile (#261)
+[33m1f7dc11[m Merge branch 'develop' into feature/implement_creator_create_task_page
+[33m1e9d4be[m feat: Add comprehensive notifications system with task workflow, disputes, and reminders(#220) (#251)
+[33m9b9a3e2[m add stats
+[33mfcd4673[m feat: add core contract types and API integration documentation
+[33m0290a1b[m feat: add task description field and update contract interfaces
+[33m57a5678[m refactor: reorganize contract structure and remove redundant files
+[33m4d2a10a[m feat: implement initial OpenTask contract with task creation functionality
+[33m610f9cc[m refactor: consolidate escrow and submission contracts into unified opentask contract
+[33m5ee00a1[m refactor: consolidate all event types and contracts into unified opentask module
+[33mda940ca[m updated
+[33m0fcf3e4[m[33m ([m[1;31morigin/profile-integration[m[33m)[m Merge remote-tracking branch 'upstream' into profile-integration
+[33m7fa7825[m updated
+[33m1d1b6a0[m[33m ([m[1;31morigin/develop[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mdevelop[m[33m)[m feat: implement global search across tasks, courses, and tutorials (#224) (#248)
+[33mb1230cb[m Implement learning router with progress management features (#249)
+[33m484de12[m Implement creator-specific functionality for task management and analytics (#247)
+[33m3d4b7e0[m feat: Implement getextendedprofile and updateextendedprofile procedures (#226) (#244)
+[33mdcebe58[m Notifications Integration implemented (#245)
+[33m7abc0ca[m Merge remote-tracking branch 'upstream' into profile-integration
+[33m2c7473e[m Merge pull request #253 from Vynix-Labs/authStatefix
+[33maeb74ed[m Merge remote-tracking branch 'upstream' into profile-integration
+[33m9c8139a[m feat: Add task recommendations, active tasks, cancellation, and categories tRPC procedures(#225) (#246)
+[33m65c18d9[m feature/earning-tracking (#243)
+[33m0aa5896[m feat: add user management with status updates and admin logs (#74) (#237)
+[33m11e59e6[m feat(docs): add documentation for the trpc procedures (#242)
+[33m28bfc75[m Fix: Resolve some broken features from recent merge (#236)
+[33m112ef1d[m[33m ([m[1;31mupstream/authStatefix[m[33m)[m feat: enhance authentication flow with form validation and error handling
+[33m2afcf2a[m Merge pull request #241 from Vynix-Labs/updatingContext
+[33mdaeee87[m[33m ([m[1;31mupstream/updatingContext[m[33m, [m[1;31mupstream/AdminPanelIntegration[m[33m)[m refactor: enhance landing page content for clarity and engagement
+[33m3d47116[m Merge pull request #239 from Vynix-Labs/updatingContext
+[33m3c71de3[m feat: update landing page sections with new content
+[33m372a7b2[m Merge pull request #238 from Vynix-Labs/faqContent
+[33me5ebcca[m[33m ([m[1;31mupstream/faqContent[m[33m)[m feat: update FAQ section and enhance dashboard component
+[33mc06dec4[m feat: add Apibara dispute webhook handlers and schema update (#229)
+[33mb24e0ef[m   feat/resolveDisputeProcedure (#227)
+[33m01251d5[m chore: remove unused contract implementations and add API documentation
+[33md19311e[m Merge pull request #218 from Vynix-Labs/db-schemas
+[33m374dc43[m[33m ([m[1;31mupstream/db-schemas[m[33m)[m chore: remove drizzle migration files
+[33m6be290f[m feat: add deadline and image fields to tasks schema
+[33m6d933a3[m feat: add user profiles table and establish database relations
+[33md6b5d9c[m feat: add user statistics and profile tables to database schema
+[33me7050a0[m feat: add withdrawal management schema with user payment methods
+[33m40bcc1d[m feat: add notification schema with user preferences and enum types
+[33md160c7f[m feat: add learning module schema with courses, tutorials and progress tracking
+[33mc6a2ef5[m feat: add initial dependencies and lock file configuration
+[33m5c98a75[m Pull Request for Implement Task Submission Procedure (with File Handling) (#214)
+[33m4ebc58a[m feat: Implemented get dispute by admin (#72) (#216)
+[33mb29294e[m feat(db): add opentask_admin_logs table with foreign key to opentask_user (#217)
+[33mdc0c4e8[m feat: Implemeted initiate dispute (#71) (#215)
+[33m3adc419[m feat: Implement Submission Approval Flow (#66) (#213)
+[33m35befec[m feat(webhook): add RewardPaid webhook handler and userBalances migration (#211)
+[33m1a3f9b2[m Feat/reject submission (#210)
+[33m223983d[m feat: Implemeted submision retrieval by creators ( #65) (#208)
+[33m0bb08da[m Merge branch 'develop' into feature/implement_creator_create_task_page
+[33m74caa0e[m fix(task): update sorting logic and improve file upload parameters in Minio service
+[33m9f8720b[m refactor(wallet): migrate transaction history fetching to wallet.ts and remove old router implementation
+[33m0ed3844[m feat: Implemented file uploading to minio and submission of tasks procedure (#207)
+[33m566b321[m feat(submissions): define Submissions schema with Drizzle ORM (#206)
+[33mddbb798[m feat: Fixed some broken features in the task procedures (#205)
+[33m9cb9137[m Feat/claim task (#204)
+[33mb391765[m feat: implement task.findTasks procedure with filtering, sorting, and pagination ( #59 ) (#203)
+[33m6eee482[m Feat/initiate funding (#202)
+[33m9831a88[m chore: update dependencies and remove unused post router
+[33mfd551a5[m feat: create protocol to store tasks in DB with TODO for frontend integration ( #52 )  (#201)
+[33m0c35730[m #52 Implement Task Detail Fetching Procedure (#199)
+[33m2acf716[m Changed files (#198)
+[33ma03c53d[m Merge pull request #197 from Sallah10/Create-Admin-Settings
+[33maf39d04[m Merge branch 'develop' into Create-Admin-Settings
+[33mfd5c1dc[m feature:implement creator create task page
+[33m8c0e443[m Feat: used table component for 'Task Categories' and made Settings more Responsive
+[33md79c2c0[m feat: Implemented wallet creation or updating (#188)
+[33m7475840[m Feat/45 transaction history (#186)
+[33mb70916a[m Merge pull request #192 from kelvinempires/admin-list-restored
+[33mfcdd0e1[m Merge branch 'develop' into admin-list-restored
+[33m2dbff5a[m Merge pull request #196 from Royal-design/emmanuel-tasks
+[33m3dd68f8[m feat: Admin Settings UI done
+[33m9623648[m[33m ([m[1;31morigin/emmanuel-tasks[m[33m, [m[1;32memmanuel-tasks[m[33m)[m Completed Earning Page
+[33m3a37d8d[m style: simplify UsersTable component layout by removing unnecessary padding
+[33m53f2e44[m Merge branch 'emmanuel-tasks' of github.com:Royal-design/OpenTask into emmanuel-tasks
+[33m63cb1a1[m style: improve styling of UsersTable component for better user experience
+[33m70c13b3[m fix: remove subText from Header in UsersPage for clarity
+[33m7231352[m Merge upstream/develop into admin-list-restored
+[33m57404f6[m switching to user on layout
+[33m6037619[m fea

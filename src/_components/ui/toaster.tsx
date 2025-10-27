@@ -7,7 +7,8 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from './toast';
+} from '@radix-ui/react-toast';
+
 import { useToast } from './use-toast';
 
 export function Toaster() {

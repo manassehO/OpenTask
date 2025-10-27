@@ -1,7 +1,7 @@
 import {
   type EarningDataProps,
-  type TransactionProps,
   type StatsProps,
+  type TransactionProps,
   type WithdrawalProps,
 } from '~/types/userEarning';
 
@@ -9,29 +9,29 @@ export const userStatsData: StatsProps[] = [
   {
     icon: '/icons/payments-cyan.svg',
     title: 'Total Earned',
-    value: '0.05 ETH',
-    amount: '$120.45',
+    value: '0.00 ETH',
+    amount: '$0.00',
     iconBg: '#06B6D41A',
   },
   {
     icon: '/icons/account_balance_wallet.svg',
     title: 'Available Balance',
-    value: '0.03 ETH',
-    amount: '$72.27',
+    value: '0.00 ETH',
+    amount: '$0.00',
     iconBg: '#CB00A31A',
   },
   {
     icon: '/icons/inactive_order.svg',
     title: 'Pending Rewards',
     value: '20 Days',
-    tasksRemaining: '3 Tasks In Review',
+    tasksRemaining: '0 Tasks In Review',
     iconBg: '#D47B061A',
   },
   {
     icon: '/icons/inventory.svg',
     title: 'Task Completed',
-    value: '12',
-    completionRate: '92% Success Rate',
+    value: '0',
+    completionRate: '0% Success Rate',
     iconBg: '#D406061A',
   },
 ];
@@ -63,62 +63,7 @@ export const earningData: EarningDataProps[] = [
   { date: '2025-06-17', eth: 0.03 },
 ];
 
-export const transactionData: TransactionProps[] = [
-  {
-    taskName: 'Deploy Smart Contract',
-    status: 'completed',
-    time: '2025-07-05T14:20:00',
-    eth: 0.15,
-  },
-  {
-    taskName: 'Bug Fix on Dashboard',
-    status: 'processed',
-    time: '2025-07-04T10:45:00',
-    eth: -0.03,
-  },
-  {
-    taskName: 'Design Landing Page',
-    status: 'pending',
-    time: '2025-07-03T16:00:00',
-    eth: 0.08,
-  },
-  {
-    taskName: 'Optimize API Queries',
-    status: 'completed',
-    time: '2025-07-02T09:30:00',
-    eth: 0.1,
-  },
-  {
-    taskName: 'Manual QA Review',
-    status: 'processed',
-    time: '2025-07-01T13:15:00',
-    eth: -0.02,
-  },
-  {
-    taskName: 'Create GitHub Actions',
-    status: 'completed',
-    time: '2025-06-30T08:50:00',
-    eth: 0.08,
-  },
-  {
-    taskName: 'Content Cleanup',
-    status: 'pending',
-    time: '2025-06-29T17:05:00',
-    eth: 0.15,
-  },
-  {
-    taskName: 'Fix Token Expiry Bug',
-    status: 'processed',
-    time: '2025-06-28T11:40:00',
-    eth: -0.04,
-  },
-  {
-    taskName: 'Complete Wallet Integration',
-    status: 'completed',
-    time: '2025-06-27T15:10:00',
-    eth: 0.2,
-  },
-];
+export const transactionData: TransactionProps[] = [];
 
 export const withdrawalData: WithdrawalProps[] = [
   {

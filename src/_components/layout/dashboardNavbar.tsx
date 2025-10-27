@@ -1,17 +1,19 @@
 'use client';
 
 import { useAtom } from 'jotai';
-import { CircleHelp, Search, Menu, X, PanelLeft } from 'lucide-react';
+import { CircleHelp, Menu, PanelLeft, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
+import { useGetRoleBase } from '~/hooks/useTasks';
 import { NotificationBell } from '../notifications/notification-bell';
 
 export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   // Removed unused activeSection state
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
+  const { isLoading, data: role } = useGetRoleBase();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,11 +54,13 @@ export function DashboardNavbar() {
           >
             <PanelLeft className="h-[20px] w-[20px] text-black" />
           </button>
-          <a href="">
-            <button className="text-base font-bold capitalize text-[#3B82F6]">
-              🗓️ create a task
-            </button>
-          </a>
+          {role?.user?.role !== 'COMPLETER' && (
+            <Link href="/creator/create-task">
+              <button className="text-base font-bold capitalize text-[#3B82F6]">
+                🗓️ create a task
+              </button>
+            </Link>
+          )}
           <CircleHelp />
           <NotificationBell />
           <Image

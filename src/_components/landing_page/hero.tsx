@@ -1,9 +1,11 @@
 'use client';
-import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { easeOut } from 'framer-motion';
+import { easeOut, motion } from 'framer-motion';
 import Image from 'next/image';
 import { containerVariants } from '~/lib/animations';
+import GetStarted from '../layout/GetStarted';
+import Link from 'next/link';
+import { api } from '~/hooks/queryClient';
 
 const imageVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -18,6 +20,8 @@ const imageVariants: Variants = {
 };
 
 function HeroPage() {
+  const user = api.auth.getSessionStatus.useQuery();
+  const session = user.data?.session;
   return (
     <motion.section
       variants={containerVariants}
@@ -47,13 +51,31 @@ function HeroPage() {
         Complete simple tasks, earn digital rewards, and learn about crypto at
         your own pace - no wallet or technical knowledge required
       </div>
-      <div className="items-cener mt-8 flex flex-row gap-6">
+      <div className="mt-8 flex flex-row items-center gap-6">
         <button className="rounded-[4px] bg-[#FAFAFA] px-[20px] py-[8px] text-base font-semibold text-[#3B82F6] lg:px-[40px] lg:py-[16px]">
           Learn More
         </button>
-        <button className="rounded-[4px] bg-[#3B82F6] px-[20px] py-[8px] text-base font-semibold text-white lg:px-[40px] lg:py-[16px]">
-          Register
-        </button>
+
+        {session ? (
+          // logged in
+          <li>
+            <Link
+              className="rounded-lg bg-primary px-6 py-2.5 font-medium capitalize text-white"
+              href={`${user.data?.user?.role.toLowerCase()}/home`}
+            >
+              view dashboard
+            </Link>
+          </li>
+        ) : (
+          // not logged in
+          <GetStarted
+            component={
+              <button className="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700">
+                Register
+              </button>
+            }
+          />
+        )}
       </div>
 
       <motion.div

@@ -7,6 +7,7 @@ type AuthWrapperProps = {
   title?: string;
   text: string;
   type?: 'login' | 'signup';
+  google?: boolean;
 };
 
 const AuthWrapper: React.FC<AuthWrapperProps> = ({
@@ -14,6 +15,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({
   title,
   text,
   type,
+  google = true,
 }) => {
   return (
     <div className="flex min-h-screen w-full flex-col bg-transparent p-[2%] lg:flex-row">
@@ -44,44 +46,50 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({
 
         <div className="mt-8 w-full max-w-md">{children}</div>
         <div className="flex w-full max-w-md flex-col items-start justify-center gap-4">
-          <div className="flex w-full items-center justify-center">
-            <p className="text-center text-base font-medium text-black">
-              Or Continue With
-            </p>
-          </div>
-          <Button
-            icon="/auth/google.svg"
-            iconPosition="left"
-            iconAlt="Google"
-            backgroundColor="bg-[#FAFAFA]"
-            borderColor="border-[#DFE5EF]"
-            rounded="rounded-[4px]"
-            textColor="text-black "
-            className="w-96"
-          >
-            Google
-          </Button>
-          <Button
-            icon="/auth/card1.png"
-            iconPosition="left"
-            iconAlt="card"
-            backgroundColor="bg-[#FAFAFA]"
-            borderColor="border-[#DFE5EF]"
-            rounded="rounded-[4px]"
-            textColor="text-black "
-            className="w-96"
-          >
-            Log in with wallet
-          </Button>
-          <Button
-            backgroundColor="bg-[#FAFAFA]"
-            borderColor="border-[#DFE5EF]"
-            rounded="rounded-[4px]"
-            textColor="text-black "
-            className="w-96"
-          >
-            🔑 Linked passkey
-          </Button>
+          {google && (
+            <>
+              {' '}
+              <div className="flex w-full items-center justify-center">
+                <p className="text-center text-base font-medium text-black">
+                  Or Continue With
+                </p>
+              </div>
+              <Button
+                icon="/auth/google.svg"
+                iconPosition="left"
+                iconAlt="Google"
+                backgroundColor="bg-[#FAFAFA]"
+                borderColor="border-[#DFE5EF]"
+                rounded="rounded-[4px]"
+                textColor="text-black "
+                className="w-96"
+              >
+                Google
+              </Button>
+              <Button
+                icon="/auth/card1.png"
+                iconPosition="left"
+                iconAlt="card"
+                backgroundColor="bg-[#FAFAFA]"
+                borderColor="border-[#DFE5EF]"
+                rounded="rounded-[4px]"
+                textColor="text-black "
+                className="w-96"
+              >
+                Log in with wallet
+              </Button>
+              <Button
+                backgroundColor="bg-[#FAFAFA]"
+                borderColor="border-[#DFE5EF]"
+                rounded="rounded-[4px]"
+                textColor="text-black "
+                className="w-96"
+              >
+                🔑 Linked passkey
+              </Button>
+            </>
+          )}
+
           <div className="mt-8 flex w-full items-center text-xs font-medium text-black">
             By {type !== 'login' ? 'signing up' : 'signing in'}, you agree to
             OpenTask’s

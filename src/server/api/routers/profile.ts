@@ -4,13 +4,37 @@ import {
   protectedProcedure,
   adminProcedure,
 } from '~/server/api/trpc';
-import { user, userProfiles, submissions, tasks, disputes } from '~/server/db/schema';
+import {
+  user,
+  userProfiles,
+  submissions,
+  tasks,
+  disputes,
+  userStats,
+} from '~/server/db/schema';
 import { TRPCError } from '@trpc/server';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, sql } from 'drizzle-orm';
 
 // import { type InferModel } from "drizzle-orm";
 import type { InferModel } from 'drizzle-orm';
 type User = InferModel<typeof user, 'select'>;
+
+import axios from "axios";
+
+export async function convertToFiat(amount: number, tokenId = "ethereum"): Promise<number> {
+  if (amount === 0) return 0;
+
+  try {
+    const { data } = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${tokenId}&vs_currencies=usd`
+    );
+    const usdRate = data[tokenId]?.usd ?? 0;
+    return amount * usdRate;
+  } catch (error) {
+    console.error("CoinGecko conversion failed:", error);
+    return 0;
+  }
+}
 
 const updateProfileSelfSchema = z
   .object({
@@ -100,6 +124,23 @@ export const profileRouter = createTRPCRouter({
     };
   }),
 
+    return {
+      success: true,
+      stats: {
+        createdTasks: Number(createdTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+        disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+        totalEarnings: stats.totalEarnings,
+        currentStreak: stats.currentStreak,
+        longestStreak: stats.longestStreak,
+        earningSummary: {
+          totalEarned,
+          fiatValue, 
+          tasksCompleted: totalTasksCompleted,
+        },
+      },
+    };
+  }),
 
   updateProfile: protectedProcedure
     .input(updateProfileSelfSchema)
@@ -151,7 +192,7 @@ export const profileRouter = createTRPCRouter({
         });
       }
 
-      const updatedUser: User = result[0];
+      const updatedUser: User = result[0]!;
       return {
         success: true,
         user: {
@@ -297,7 +338,7 @@ export const profileRouter = createTRPCRouter({
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
         socialLinks: z.record(z.string().url()).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
@@ -365,7 +406,5 @@ export const profileRouter = createTRPCRouter({
           cause: error,
         });
       }
-
-    }), 
-
+    }),
 });
