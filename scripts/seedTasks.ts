@@ -17,7 +17,7 @@ async function seedTasks() {
     process.exit(1);
   }
 
-  const statuses = ["DRAFT", "ACTIVE"];
+  const statuses = ["DRAFT", "ACTIVE", "COMPLETED"];
   const categories = ["General", "Marketing", "Design", "Development"];
   
   for (const creator of creators) {
