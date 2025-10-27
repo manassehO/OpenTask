@@ -110,60 +110,19 @@ export const profileRouter = createTRPCRouter({
       ctx.db
         .select({ count: count() })
         .from(disputes)
-        .leftJoin(
-          submissions,
-          eq(disputes.submissionId, submissions.submissionId),
-        )
+        .leftJoin(submissions, eq(disputes.submissionId, submissions.submissionId))
         .where(eq(submissions.completerUserId, userId)),
     ]);
 
-    // First, ensure user_stats row exists
-    let userStatsRow = await ctx.db
-      .select({
-        totalEarnings: userStats.totalEarnings,
-        currentStreak: userStats.currentStreak,
-        longestStreak: userStats.longestStreak,
-      })
-      .from(userStats)
-      .where(eq(userStats.userId, userId))
-      .limit(1);
-
-    // If it doesn't exist yet, create it
-    if (!userStatsRow[0]) {
-      await ctx.db.insert(userStats).values({
-        userId,
-        totalEarnings: '0',
-        currentStreak: 0,
-        longestStreak: 0,
-      });
-
-      // Re-fetch after creation
-      userStatsRow = await ctx.db
-        .select({
-          totalEarnings: userStats.totalEarnings,
-          currentStreak: userStats.currentStreak,
-          longestStreak: userStats.longestStreak,
-        })
-        .from(userStats)
-        .where(eq(userStats.userId, userId))
-        .limit(1);
-    }
-
-    const stats = userStatsRow[0] ?? {
-      totalEarnings: '0',
-      currentStreak: 0,
-      longestStreak: 0,
+    return {
+      success: true,
+      stats: {
+        createdTasks: Number(createdTasks[0]?.count ?? 0),
+        completedTasks: Number(completedTasks[0]?.count ?? 0),
+        disputesRaised: Number(raisedDisputes[0]?.count ?? 0),
+      },
     };
-
-    // --- Platform-wide earning summary ---
-    const [totalEarnedRow, totalTasksRow] = await Promise.all([
-      ctx.db.select({ totalEarned: sql<number>`sum(${userStats.totalEarnings})` }).from(userStats),
-      ctx.db.select({ totalTasks: count() }).from(submissions),
-    ]);
-
-    const totalEarned = Number(totalEarnedRow[0]?.totalEarned ?? 0);
-    const fiatValue = await convertToFiat(totalEarned);
-    const totalTasksCompleted = Number(totalTasksRow[0]?.totalTasks ?? 0);
+  }),
 
     return {
       success: true,
@@ -326,6 +285,7 @@ export const profileRouter = createTRPCRouter({
     }
 
     const profile = (userRow.profile ?? {}) as typeof userProfiles.$inferSelect;
+    console.log('Raw profile data:', profile);
 
     // Parse skillTags and socialLinks from JSON strings into usable JS objects
     let parsedSkillTags: string[] = [];
@@ -373,6 +333,7 @@ export const profileRouter = createTRPCRouter({
         gender: z.string().optional(),
         niche: z.string().optional(),
         bio: z.string().optional(),
+        phoneNumber: z.string().max(20).optional(),
         location: z.string().optional(),
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
@@ -406,6 +367,7 @@ export const profileRouter = createTRPCRouter({
             bio: clean(input.bio),
             location: clean(input.location),
             timezone: clean(input.timezone),
+            phoneNumber: clean(input.phoneNumber),
             skillTags: input.skillTags
               ? JSON.stringify(input.skillTags)
               : undefined,
