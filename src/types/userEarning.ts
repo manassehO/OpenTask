@@ -3,7 +3,7 @@ export type StatsProps = {
   iconBg: string;
   title: string;
   value: string;
-  amount?: string;
+  amount?: string | number;
   tasksRemaining?: string;
   completionRate?: string;
 };
@@ -15,15 +15,39 @@ export type EarningDataProps = {
 
 export type TransactionProps = {
   taskName: string;
-  status: string;
+  status:
+    | 'pending'
+    | 'processing'
+    | 'processed'
+    | 'completed'
+    | 'failed'
+    | 'cancelled';
   time: string;
   eth: number | null;
 };
 
 export type WithdrawalProps = {
-  type: string;
+  method: string;
   description: string;
   action: string;
-  status: string;
+  status: boolean;
   icon: string;
+  accountNumber?: string;
+  walletAddress?: string;
+};
+
+export type CryptoWithdrawalParams = {
+  amount: string;
+  tokenAddress: string;
+  destinationAddress: string;
+  currency: 'ETH' | 'BTC' | 'USDT';
+};
+
+export type BankWithdrawalParams = {
+  amount: string;
+  bankAccountDetails: {
+    accountNumber: string;
+    routingNumber: string;
+    accountHolderName: string;
+  };
 };
