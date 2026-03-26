@@ -12,7 +12,7 @@ export default function EarningPage() {
           <EarningChart />
           <TransactionHistory />
         </div>
-        <div className="w-fit">
+        <div className="min-w-[24.75rem]">
           <WithdrawalOptions />
         </div>
       </div>

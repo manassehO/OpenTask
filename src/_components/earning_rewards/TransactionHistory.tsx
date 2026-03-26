@@ -1,20 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { transactionData } from '~/mocks/userEarning';
 import { TransactionTab } from './TransactionTab';
 import { type TransactionProps } from '~/types/userEarning';
 import { HiOutlineArrowNarrowDown } from 'react-icons/hi';
+import { useTransactionHistory } from '~/hooks/transactionController';
 
 const TABS = ['All', 'Earnings', 'Withdrawals'];
 export type TabType = (typeof TABS)[number];
 
 const TransactionCard = ({ data }: { data: TransactionProps }) => {
-  const statusColor = {
-    pending: 'text-grey-300',
-    processed: 'text-primary',
-    completed: 'text-success-600',
-  }[data.status];
+  const statusColor =
+    {
+      pending: 'text-grey-300',
+      processing: 'text-primary',
+      processed: 'text-primary',
+      completed: 'text-success-600',
+      failed: 'text-red-500',
+      cancelled: 'text-red-500',
+    }[data.status] || 'text-grey-300';
 
   const ethDisplay =
     data.eth === null
@@ -59,11 +63,72 @@ const TransactionCard = ({ data }: { data: TransactionProps }) => {
 
 export const TransactionHistory = () => {
   const [activeTab, setActiveTab] = useState<TabType>('All');
-  const filteredTasks = transactionData.filter((transaction) => {
-    if (activeTab === 'Earnings') return transaction.status === 'completed';
-    if (activeTab === 'Withdrawals') return transaction.status === 'processed';
+  const { data: transactionData, isLoading } = useTransactionHistory();
+
+  if (isLoading) {
+    return (
+      <div className="mt-6 md:px-10">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-base font-bold">Transaction History</h1>
+          <TransactionTab
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            tabs={TABS}
+          />
+        </div>
+        <div className="mt-4 space-y-6">
+          <p className="text-center text-gray-500">Loading transactions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!transactionData) {
+    return (
+      <div className="mt-6 md:px-10">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-base font-bold">Transaction History</h1>
+          <TransactionTab
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            tabs={TABS}
+          />
+        </div>
+        <div className="mt-4 space-y-6">
+          <p className="text-center text-gray-500">No transactions found</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Combine earnings and withdrawals into a unified format
+  const allTransactions: TransactionProps[] = [
+    ...(transactionData.earnings || []).map((earning) => ({
+      taskName: earning.eventType ?? 'Task Completion',
+      status: 'completed' as const,
+      time: earning.timestamp,
+      eth: parseFloat(earning.amount ?? '0'),
+    })),
+    ...(transactionData.withdrawals || []).map((withdrawal) => ({
+      taskName: `${withdrawal.method.replace('_', ' ')} Withdrawal`,
+      status: withdrawal.status.toLowerCase() as TransactionProps['status'],
+      time: withdrawal.createdAt,
+      eth: -parseFloat(withdrawal.amount),
+    })),
+  ];
+
+  // Sort by time (most recent first)
+  const sortedTransactions = allTransactions.sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+  );
+
+  // Filter transactions based on active tab
+  const filteredTasks = sortedTransactions.filter((transaction) => {
+    if (activeTab === 'Earnings') return transaction.eth >= 0;
+    if (activeTab === 'Withdrawals') return transaction.eth < 0;
     return true;
   });
+
   return (
     <div className="mt-6 md:px-10">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -76,9 +141,15 @@ export const TransactionHistory = () => {
       </div>
 
       <div className="mt-4 space-y-6">
-        {filteredTasks.map((task, id) => (
-          <TransactionCard data={task} key={id} />
-        ))}
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task, id) => (
+            <TransactionCard data={task} key={id} />
+          ))
+        ) : (
+          <p className="text-center text-gray-500">
+            No transactions found for this filter
+          </p>
+        )}
       </div>
     </div>
   );

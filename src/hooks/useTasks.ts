@@ -314,9 +314,90 @@ export function useDraftTasks() {
 
 // Hook for fetching user's Active tasks from backend
 export function useActiveTasks() {
-  return api.task.getTasksByStatus.useQuery(
+  const { data: session } = useGetRoleBase();
+  const userRole = session?.user?.role;
+
+  // For creators: get their created tasks with ACTIVE status
+  const creatorTasks = api.task.getTasksByStatus.useQuery(
     {
       status: 'ACTIVE',
+    },
+    {
+      enabled: userRole === 'CREATOR',
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false,
+      retry: 2,
+    },
+  );
+
+  // For completers: get their claimed tasks
+  const completerTasks = api.task.getUserClaimedTasks.useQuery(
+    {
+      limit: 50,
+      offset: 0,
+    },
+    {
+      enabled: userRole === 'COMPLETER',
+      staleTime: 60 * 1000, // 1 minute
+      refetchOnWindowFocus: false,
+      retry: 2,
+    },
+  );
+
+  // Return the appropriate query based on user role
+  if (userRole === 'CREATOR') {
+    return creatorTasks;
+  } else if (userRole === 'COMPLETER') {
+    // Transform the completer tasks data to match the expected structure
+    // Filter for only IN_PROGRESS claims to show truly active tasks
+    return {
+      ...completerTasks,
+      data: completerTasks.data
+        ? {
+            ...completerTasks.data,
+            data:
+              completerTasks.data.data
+                ?.filter(
+                  (claimedTask: any) =>
+                    claimedTask.claimStatus === 'IN_PROGRESS',
+                )
+                .map((claimedTask: any) => ({
+                  id: claimedTask.taskId,
+                  title: claimedTask.title,
+                  description: claimedTask.description,
+                  status: claimedTask.status,
+                  rewardAmount: claimedTask.rewardAmount,
+                  deadline: claimedTask.deadline,
+                  image: claimedTask.image,
+                  createdAt: claimedTask.createdAt,
+                  // Add additional fields that might be needed
+                  claimStatus: claimedTask.claimStatus,
+                  claimCreatedAt: claimedTask.claimCreatedAt,
+                })) || [],
+          }
+        : { data: [] },
+    };
+  } else {
+    // Default behavior for unknown roles
+    return {
+      data: { data: [] },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: () => Promise.resolve(),
+    };
+  }
+}
+
+// hook for fetching role base
+export function useGetRoleBase() {
+  return api.auth.getSessionStatus.useQuery();
+}
+export function useGetUserClaimedTasks() {
+  return api.task.getUserClaimedTasks.useQuery(
+    {
+      limit: 100,
+      offset: 0,
     },
     {
       staleTime: 60 * 1000, // 1 minute
@@ -324,9 +405,4 @@ export function useActiveTasks() {
       retry: 2,
     },
   );
-}
-
-// hook for fetching role base
-export function useGetRoleBase() {
-  return api.auth.getSessionStatus.useQuery();
 }
