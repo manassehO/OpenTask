@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Check, CheckCheck, Settings, X, Bell } from 'lucide-react';
+import { Bell, Check, CheckCheck, Settings, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 
 interface NotificationDropdownProps {
@@ -26,12 +26,12 @@ export function NotificationDropdown({
   const [isAuthError, setIsAuthError] = useState(false);
 
   const {
-    data: notifications = [],
+    data: notificationsData,
     refetch,
     error,
     isLoading,
     isSuccess,
-  } = api.notifications.getUserNotifications.useQuery(
+  } = api.notification.getNotifications.useQuery(
     { limit: 20 },
     {
       enabled: isOpen && !isAuthError,
@@ -41,7 +41,9 @@ export function NotificationDropdown({
     },
   );
 
-  const markAsReadMutation = api.notifications.markAsRead.useMutation({
+  const notifications = notificationsData?.notifications ?? [];
+
+  const markAsReadMutation = api.notification.markAsRead.useMutation({
     onSuccess: () => {
       void refetch();
     },
@@ -49,7 +51,7 @@ export function NotificationDropdown({
 
   const authState = useMemo(() => {
     const hasAuthError = error?.data?.code === 'UNAUTHORIZED';
-    const hasAttempted = isSuccess || hasAuthError;
+    const hasAttempted = isSuccess ?? hasAuthError;
 
     return {
       isAuthError: hasAuthError,
@@ -96,8 +98,9 @@ export function NotificationDropdown({
   );
 
   const handleMarkAllAsRead = useCallback(() => {
-    markAsReadMutation.mutate({ markAll: true });
-  }, [markAsReadMutation]);
+    const notificationIds = notifications.map((n) => n.notificationId);
+    markAsReadMutation.mutate({ notificationIds });
+  }, [markAsReadMutation, notifications]);
 
   const handleSignIn = useCallback(() => {
     console.log('Navigate to sign in');

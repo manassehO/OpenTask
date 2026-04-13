@@ -68,7 +68,7 @@ const Summary = () => {
             >
               <div className="flex flex-col items-center space-y-2 lg:items-start">
                 <div
-                  className={`flex items-center justify-center p-1 ${item.bgColor} px-2`}
+                  className={`flex items-center justify-center p-1 ${item.bgColor ?? ''} px-2`}
                 >
                   <Image
                     src={item.icon}

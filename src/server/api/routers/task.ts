@@ -1,39 +1,39 @@
 import {
-  createTRPCRouter,
-  protectedProcedure,
-  adminProcedure,
-} from '~/server/api/trpc';
-import { db } from '~/server/db';
-import {
+  disputes,
+  submissions,
+  taskClaims,
   tasks,
   user,
   wallets,
-  taskClaims,
-  submissions,
-  disputes,
 } from '@/server/db/schema';
-import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
-  eq,
   and,
-  ilike,
-  gte,
   asc,
-  desc,
   count,
-  sql,
+  desc,
+  eq,
+  gte,
+  ilike,
   inArray,
   ne,
-  type SQLWrapper,
   notInArray,
+  sql,
+  type SQLWrapper,
 } from 'drizzle-orm';
+import { z } from 'zod';
 import {
-  getTaskByIdSchema,
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from '~/server/api/trpc';
+import { db } from '~/server/db';
+import { submitTaskSchema } from '../schemas/submission';
+import {
   createTaskSchema,
   findTaskSchema,
+  getTaskByIdSchema,
 } from '../schemas/task';
-import { submitTaskSchema } from '../schemas/submission';
 
 import { randomUUID } from 'crypto';
 import { createAutoNotification } from '~/services/notifications';
@@ -101,7 +101,7 @@ export const taskRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const { deadline, ...rest } = input;
-      const parsedDeadline = new Date(deadline);
+      const parsedDeadline = new Date(deadline as string | Date);
 
       if (ctx.user.role !== 'CREATOR') {
         throw new TRPCError({

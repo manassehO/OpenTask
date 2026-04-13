@@ -19,7 +19,12 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileMetadata, setFileMetadata] = useState<any>(null);
+  const [fileMetadata, setFileMetadata] = useState<{
+    fileName: string;
+    fileSize: number;
+    contentType: string;
+    storageKey: string;
+  } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Submit task mutation
@@ -40,7 +45,14 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
   };
 
   // Upload file to storage
-  const uploadFile = async (file: File): Promise<any> => {
+  const uploadFile = async (
+    file: File,
+  ): Promise<{
+    fileName: string;
+    fileSize: number;
+    contentType: string;
+    storageKey: string;
+  }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('taskId', taskId);
@@ -51,11 +63,18 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'File upload failed');
+      const error = (await response.json()) as { error?: string };
+      throw new Error(error.error ?? 'File upload failed');
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      fileMetadata: {
+        fileName: string;
+        fileSize: number;
+        contentType: string;
+        storageKey: string;
+      };
+    };
     return result.fileMetadata;
   };
 
@@ -74,10 +93,22 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
       }
 
       // Prepare submission data
-      const submissionData: any = {
+      const submissionData: {
+        taskId: string;
+        submissionType: 'text' | 'file' | 'url' | 'mixed';
+        textContent?: string;
+        submissionUrl?: string;
+        fileMetadata?: {
+          fileName: string;
+          fileSize: number;
+          contentType: string;
+          storageKey: string;
+        };
+        additionalNotes?: string;
+      } = {
         taskId,
         submissionType,
-        additionalNotes: additionalNotes.trim() || undefined,
+        additionalNotes: additionalNotes.trim() ?? undefined,
       };
 
       // Add content based on submission type
@@ -114,7 +145,11 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
           </label>
           <select
             value={submissionType}
-            onChange={(e) => setSubmissionType(e.target.value as any)}
+            onChange={(e) =>
+              setSubmissionType(
+                e.target.value as 'text' | 'file' | 'url' | 'mixed',
+              )
+            }
             className="w-full rounded-md border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           >
             <option value="text">Text Only</option>

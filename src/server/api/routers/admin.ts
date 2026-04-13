@@ -1,18 +1,18 @@
+import { db } from '@/server/db';
+import { resolveDispute } from '@/services/starknetSvc';
+import { TRPCError } from '@trpc/server';
+import { format, subDays, subYears } from 'date-fns';
+import type { InferModel } from 'drizzle-orm';
+import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, adminProcedure } from '~/server/api/trpc';
+import { adminProcedure, createTRPCRouter } from '~/server/api/trpc';
 import {
-  user,
   adminLogs,
   disputes,
   submissions,
   tasks,
+  user,
 } from '~/server/db/schema';
-import { TRPCError } from '@trpc/server';
-import { eq, ilike, or, and, sql } from 'drizzle-orm';
-import type { InferModel } from 'drizzle-orm';
-import { db } from '@/server/db';
-import { resolveDispute } from '@/services/starknetSvc';
-import { format, subDays, subYears } from 'date-fns';
 
 type User = InferModel<typeof user, 'select'>;
 
@@ -271,7 +271,7 @@ export const adminRouter = createTRPCRouter({
           const byDay = users.reduce(
             (acc, u) => {
               const day = format(new Date(u.createdAt), 'yyyy-MM-dd');
-              acc[day] = (acc[day] || 0) + 1;
+              acc[day] = (acc[day] ?? 0) + 1;
 
               return acc;
             },
@@ -289,7 +289,7 @@ export const adminRouter = createTRPCRouter({
           const byDay = tasks.reduce(
             (acc, t) => {
               const day = format(new Date(t.createdAt), 'yyyy-MM-dd');
-              acc[day] = (acc[day] || 0) + 1;
+              acc[day] = (acc[day] ?? 0) + 1;
               return acc;
             },
             {} as Record<string, number>,
@@ -306,7 +306,7 @@ export const adminRouter = createTRPCRouter({
           const byDay = disputes.reduce(
             (acc, d) => {
               const day = format(new Date(d.createdAt), 'yyyy-MM-dd');
-              acc[day] = (acc[day] || 0) + 1;
+              acc[day] = (acc[day] ?? 0) + 1;
               return acc;
             },
             {} as Record<string, number>,
@@ -324,7 +324,7 @@ export const adminRouter = createTRPCRouter({
             (acc, a) => {
               const day = format(new Date(a.date), 'yyyy-MM-dd');
               const amt = Number(a.earningsAmount ?? 0);
-              acc[day] = (acc[day] || 0) + amt;
+              acc[day] = (acc[day] ?? 0) + amt;
               return acc;
             },
             {} as Record<string, number>,

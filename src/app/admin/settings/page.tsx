@@ -1,10 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import { ReusableTable } from '@/_components/ui/table';
 import * as RadixSwitch from '@radix-ui/react-switch';
 import Image from 'next/image';
-import editIcon from '../../../../../public/icons/edit.png';
-import deleteIcon from '../../../../../public/icons/material-symbols_delete-outline.png';
-import { ReusableTable } from '@/_components/ui/table';
+import React, { useState } from 'react';
 
 type CounterProps = {
   value: number;
@@ -135,14 +133,14 @@ const Page = () => {
                 accessor: () => (
                   <div className="flex gap-4">
                     <Image
-                      src={editIcon}
+                      src="/icons/edit.png"
                       width={20}
                       height={20}
                       alt="Edit"
                       className="cursor-pointer"
                     />
                     <Image
-                      src={deleteIcon}
+                      src="/icons/material-symbols_delete-outline.png"
                       width={20}
                       height={20}
                       alt="Delete"
