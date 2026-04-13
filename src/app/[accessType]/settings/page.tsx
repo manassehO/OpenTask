@@ -5,15 +5,15 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { useGetProfile, useUpdateProfile } from '~/hooks/useUpdateProfile';
 import {
-  useGetNotifications,
   useClearAllNotifications,
+  useGetNotifications,
   useMarkNotificationRead,
 } from '~/hooks/useNotifications';
+import { useGetProfile, useUpdateProfile } from '~/hooks/useUpdateProfile';
 
 // Form validation schema
-export const profileSchema = z.object({
+const profileSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
   gender: z.enum(['male', 'female'], {
@@ -22,7 +22,7 @@ export const profileSchema = z.object({
   niche: z.string().min(1, 'Please select a preferred niche'),
 });
 
-export type ProfileFormData = z.infer<typeof profileSchema>;
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingPage() {
   const [activeTab, setActiveTab] = useState<'Profile' | 'Notifications'>(

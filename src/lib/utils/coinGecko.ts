@@ -1,7 +1,7 @@
 export async function convertCurrency(
   from: string,
   to: string,
-  amount: number = 1,
+  amount = 1,
 ): Promise<number> {
   try {
     const res = await fetch(

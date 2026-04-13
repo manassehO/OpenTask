@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
 import type { TaskCardProps } from '@/types/task';
+import React from 'react';
+import Button from '~/_components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,7 +10,6 @@ import {
   CardHeader,
   CardImage,
 } from '~/_components/ui/card';
-import Button from '~/_components/ui/button';
 import { ClientDate } from '~/_components/ui/ClientDate';
 
 // Helper function to convert reward amount to USD (mock conversion)
@@ -69,7 +69,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   }
 
   // Use fallback image if none provided
-  const taskImage = task.image || '/tasks/task_image.png';
+  const taskImage = task.image ?? '/tasks/task_image.png';
 
   // Get formatted reward amounts
   // const { eth: rewardInEth, usd: rewardInUsd } = formatRewardAmount(task);
@@ -112,7 +112,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <div className="text-base">
                 {task.deadline ? (
                   <ClientDate
-                    isoString={task.deadline}
+                    isoString={task.deadline.toISOString()}
                     format="date"
                     className="font-semibold"
                     fallback="Loading..."
@@ -143,11 +143,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
           <Button
             onClick={() => onAction?.(task.id)}
             className={`flex w-full text-[14px] ${
-              task.status === 'active' ? 'bg-primary' : 'bg-secondary'
+              task.status === 'ACTIVE' ? 'bg-primary' : 'bg-secondary'
             }`}
-            disabled={task.status !== 'active'}
+            disabled={task.status !== 'ACTIVE'}
           >
-            {task.status === 'active'
+            {task.status === 'ACTIVE'
               ? 'View Task'
               : `View Task (${task.status})`}
           </Button>

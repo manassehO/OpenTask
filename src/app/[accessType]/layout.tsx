@@ -19,7 +19,9 @@ export default async function DashboardLayout({
 
   return (
     <TRPCProvider>
-      <AuthenticatedLayout>{children}</AuthenticatedLayout>
+      <AuthenticatedLayout>
+        {children}
+      </AuthenticatedLayout>
     </TRPCProvider>
   );
 }
