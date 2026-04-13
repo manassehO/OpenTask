@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { ArrowOutWard } from 'public/svg/generalSvg';
 import { type FC } from 'react';
+import { ArrowOutWard } from '~/svg/generalSvg';
 import { type StatsCardProps } from '~/types/statsCard';
 export const StatsCard: FC<StatsCardProps> = ({
   title,

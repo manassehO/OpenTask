@@ -1,8 +1,8 @@
 'use client';
-import { ChevronBackOutline, ChevronNextOutline } from 'public/svg/generalSvg';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ReusableTable } from '~/_components/ui/table';
 import { disputes } from '~/mocks/disputes';
+import { ChevronBackOutline, ChevronNextOutline } from '~/svg/generalSvg';
 import { type DisputesProps } from '~/types/disputes';
 function DisputesTable() {
   const [allDisputes, setAllDisputes] = useState<DisputesProps[]>(disputes);

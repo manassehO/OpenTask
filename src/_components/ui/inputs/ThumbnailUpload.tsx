@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { Upload, X, ImageIcon } from 'lucide-react';
-import { CloudUploader } from 'public/svg/generalSvg';
+import { X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { CloudUploader } from '~/svg/generalSvg';
 // Remove this line: import Image from 'next/image';
 
 interface ThumbnailUploadProps {
