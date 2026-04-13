@@ -51,12 +51,12 @@ async function seedCourses() {
           duration: duration!,
           rewardAmount,
           rewardTokenAddress: '0x1234567890abcdef1234567890abcdef12345678',
-          category,
-          difficulty,
+          category: category!,
+          difficulty: difficulty!,
           isActive: Math.random() < 0.8, // 80% chance active
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as any);
+        });
 
         console.log(
           `Course created for ${creator.email}: ${title} [${difficulty}]`,
