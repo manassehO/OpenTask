@@ -1007,6 +1007,7 @@ export const taskRouter = createTRPCRouter({
             deadline: tasks.deadline,
             image: tasks.image,
             createdAt: tasks.createdAt,
+            creatorUserId: tasks.creatorUserId,
             claimedBy: taskClaims.userId,
             claimStatus: taskClaims.status,
             claimedAt: taskClaims.createdAt,
@@ -1029,6 +1030,7 @@ export const taskRouter = createTRPCRouter({
             deadline: tasks.deadline,
             image: tasks.image,
             createdAt: tasks.createdAt,
+            creatorUserId: tasks.creatorUserId,
           })
           .from(tasks)
           .where(and(eq(tasks.status, status), eq(tasks.creatorUserId, userId)))

@@ -1,8 +1,8 @@
 'use client';
-import { ChevronBackOutline, ChevronNextOutline } from 'public/svg/generalSvg';
 import { useState } from 'react';
 import { ReusableTable } from '~/_components/ui/table';
 import { mockTasks } from '~/mocks/tasks';
+import { ChevronBackOutline, ChevronNextOutline } from '~/svg/generalSvg';
 import { type Task as TaskProps } from '~/types/task';
 export const TasksTable = () => {
   const [allTasks, setAllTasks] = useState<TaskProps[]>(mockTasks);

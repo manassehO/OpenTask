@@ -1,12 +1,11 @@
+import { ChartBar } from '~/_components/dashboard_components/admin/dashboard/Chart';
+import { StatsCard } from '~/_components/dashboard_components/admin/dashboard/statsCard';
 import {
   CheckBoard,
   ClipBoard,
   CommentBankIcon,
   UserIcon,
-} from 'public/svg/generalSvg';
-import React from 'react';
-import { ChartBar } from '~/_components/dashboard_components/admin/dashboard/Chart';
-import { StatsCard } from '~/_components/dashboard_components/admin/dashboard/statsCard';
+} from '~/svg/generalSvg';
 
 function page() {
   const stats = [

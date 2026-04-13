@@ -1,21 +1,20 @@
-import { FinanceChipIcon, InfoIcon } from 'public/svg/generalSvg';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import FormHeader from '~/_components/creator/formHeader';
 import { type RewardStructureValues, useTaskStore } from '~/store';
-import { useForm } from 'react-hook-form';
+import { FinanceChipIcon, InfoIcon } from '~/svg/generalSvg';
 import CurrencyDropdown from '../../inputs/CurrencyDropDown';
 type Currency = 'ETH' | 'USDC' | 'DAI';
 
-const currencies = [
+const CURRENCIES = [
   { symbol: 'ETH', name: 'Ethereum' },
   { symbol: 'USDC', name: 'USD Coin' },
   { symbol: 'DAI', name: 'Dai Stablecoin' },
 ];
+
+const validatePositiveNumber = (value: string) =>
+  Number(value) > 0 || 'Value must be greater than 0';
 function Rewards() {
-  const store = useTaskStore();
-  const [selectedCurrency, setSelectedCurrency] = useState('ETH');
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [platformFee, setPlatformFee] = useState(0);
   const {
     rewardStructure: data,
     setRewardStructure: setData,
@@ -23,7 +22,10 @@ function Rewards() {
     canGoPrevious,
     goToNextStep: goNext,
     goToPreviousStep: goPrevious,
-  } = store;
+  } = useTaskStore();
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('ETH');
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [platformFee, setPlatformFee] = useState(0);
   const {
     register,
     handleSubmit,
@@ -38,15 +40,14 @@ function Rewards() {
 
   useEffect(() => {
     if (Number(reward) && Number(maxSubmission)) {
-      setTotalAmount(reward * maxSubmission);
-      setPlatformFee((totalAmount * 5) / 100);
+      const total = reward * maxSubmission;
+      setTotalAmount(total);
+      setPlatformFee(total * 0.05);
     }
   }, [reward, maxSubmission]);
   const onSubmit = (formData: RewardStructureValues) => {
-    setData({ ...formData, currency: selectedCurrency as Currency });
-    if (canGoNext()) {
-      goNext();
-    }
+    setData({ ...formData, currency: selectedCurrency });
+    if (canGoNext()) goNext();
   };
   return (
     <div className="max-w-2xl space-y-9 rounded-lg bg-white px-6 py-8">
@@ -65,8 +66,8 @@ function Rewards() {
             </div>
             <p className="text-sm font-medium text-[#F59E0B]">
               you need to fund your task with cryptocurrency to pay rewards to
-              your participants. the total budgetshould cover all expected
-              submission plus platform fees
+              your participants. the total budget should cover all expected
+              submissions plus platform fees
             </p>
           </div>
           <div className="flex items-center gap-2 text-[#414141]">
@@ -77,7 +78,7 @@ function Rewards() {
           </div>
         </div>
       </div>
-      <form className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="relative flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <label
@@ -98,12 +99,7 @@ function Rewards() {
               id="rewardPerSubmission"
               {...register('rewardPerSubmission', {
                 required: 'Reward per submission is required',
-                validate: (value) => {
-                  const isValid = Number(value) > 0;
-                  return isValid
-                    ? true
-                    : 'Reward per submission must be greater than 0';
-                },
+                validate: validatePositiveNumber,
               })}
               placeholder="Enter Reward"
               className="h-14 rounded border border-[#D9D9D9] pl-6 outline-none focus:border-primary"
@@ -112,12 +108,12 @@ function Rewards() {
               <CurrencyDropdown
                 setSelectedCurrency={setSelectedCurrency}
                 selectedCurrency={selectedCurrency}
-                currencies={currencies}
+                currencies={CURRENCIES}
               />
             </div>
           </div>
           <p className="font-medium italic text-[#414141]">
-            This is the amount each participant will recieve
+            This is the amount each participant will receive
           </p>
         </div>
         <div className="flex flex-col gap-3">
@@ -128,9 +124,9 @@ function Rewards() {
             >
               maximum submissions
             </label>
-            {errors.rewardPerSubmission && (
+            {errors.maxSubmission && (
               <small className="break-words text-xs font-medium text-red-400 transition-opacity duration-200">
-                {errors.maxSubmission?.message}
+                {errors.maxSubmission.message}
               </small>
             )}
           </div>
@@ -139,21 +135,16 @@ function Rewards() {
               type="text"
               id="maxSubmission"
               {...register('maxSubmission', {
-                required: 'maximum submissions is required',
-                validate: (value) => {
-                  const isValid = Number(value) > 0;
-                  return isValid
-                    ? true
-                    : 'maximum submissions must be greater than 0';
-                },
+                required: 'Maximum submissions is required',
+                validate: validatePositiveNumber,
               })}
-              placeholder="1000 "
+              placeholder="1000"
               className="h-14 rounded border border-[#D9D9D9] pl-6 outline-none focus:border-primary"
             />
           </div>
           <p className="font-medium italic text-[#414141]">
             the task will automatically close after reaching number of
-            participants{' '}
+            participants
           </p>
         </div>
         <div className="space-y-3">
@@ -167,7 +158,7 @@ function Rewards() {
                   reward per submission
                 </p>
                 <p className="text-sm font-medium capitalize text-[#414141]">
-                  {reward} {' ' + selectedCurrency}
+                  {reward} {selectedCurrency}
                 </p>
               </div>
               <div className="flex items-center justify-between">
@@ -183,7 +174,7 @@ function Rewards() {
                   platform fee (5%)
                 </p>
                 <p className="text-sm font-medium capitalize text-[#414141]">
-                  {platformFee} {' ' + selectedCurrency}
+                  {platformFee} {selectedCurrency}
                 </p>
               </div>
             </div>
@@ -202,11 +193,7 @@ function Rewards() {
       <div className="flex w-full items-start justify-between gap-4 pt-4">
         <button
           type="button"
-          onClick={() => {
-            if (canGoPrevious()) {
-              goPrevious();
-            }
-          }}
+          onClick={() => canGoPrevious() && goPrevious()}
           disabled={!canGoPrevious()}
           className="w-full max-w-44 rounded bg-gray-500 px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -215,7 +202,6 @@ function Rewards() {
         <button
           type="submit"
           className="w-full max-w-44 rounded bg-primary p-2.5 capitalize text-white"
-          onClick={handleSubmit(onSubmit)}
         >
           proceed
         </button>

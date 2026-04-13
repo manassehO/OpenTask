@@ -1,11 +1,11 @@
 'use client';
 
-import Image from 'next/image';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import classNames from 'classnames';
-import { FaPhone, FaEnvelope, FaUserCircle } from 'react-icons/fa';
-import { UserIcon } from 'public/svg/generalSvg';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { FaEnvelope, FaPhone } from 'react-icons/fa';
+import { UserIcon } from '~/svg/generalSvg';
 
 interface UserDetailPageClientProps {
   userId: string;

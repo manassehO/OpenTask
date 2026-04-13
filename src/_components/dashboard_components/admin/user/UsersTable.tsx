@@ -1,12 +1,12 @@
 'use client';
 
-import { ChevronBackOutline, ChevronNextOutline } from 'public/svg/generalSvg';
-import { useState, useMemo } from 'react';
-import { ReusableTable } from '~/_components/ui/table';
+import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import classNames from 'classnames';
+import { useMemo, useState } from 'react';
 import { MdSearch } from 'react-icons/md';
+import { ReusableTable } from '~/_components/ui/table';
+import { ChevronBackOutline, ChevronNextOutline } from '~/svg/generalSvg';
 
 interface User {
   id: string;
