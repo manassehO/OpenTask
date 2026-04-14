@@ -24,7 +24,7 @@ function convertApiTaskToUITask(apiTask: TaskSummary): Task {
     image: apiTask.image ?? '',
     deadline: apiTask.deadline,
     category: apiTask.category ?? 'General',
-    rewardInEth: apiTask.rewardAmount ?? 0,
+    rewardInEth: Number(apiTask.rewardAmount) ?? 0,
     rewardInUsd: Math.round((Number(apiTask.rewardAmount) ?? 0) * ETH_TO_USD),
   };
 }
