@@ -51,7 +51,6 @@ export const createAutoNotification = async ({
       metadata: metadata ?? null,
       status: 'UNREAD',
       createdAt: new Date(),
-      updatedAt: new Date(),
     })
     .returning();
 

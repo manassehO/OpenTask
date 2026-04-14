@@ -4,11 +4,7 @@ import { z } from 'zod';
 export const submitTaskSchema = z
   .object({
     taskId: z.string().uuid('Invalid task ID format'),
-    submissionType: z.enum(['text', 'file', 'url', 'mixed'], {
-      errorMap: () => ({
-        message: 'Submission type must be text, file, url, or mixed',
-      }),
-    }),
+    submissionType: z.enum(['text', 'file', 'url', 'mixed']),
     textContent: z.string().optional(),
     submissionUrl: z.string().url('Invalid URL format').optional(),
     fileMetadata: z

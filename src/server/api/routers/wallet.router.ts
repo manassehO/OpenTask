@@ -1,6 +1,7 @@
-import { protectedProcedure, createTRPCRouter } from '../trpc';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { db } from '~/server/db';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const walletRouter = createTRPCRouter({
   getTransactionHistory: protectedProcedure
@@ -12,6 +13,12 @@ export const walletRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      if (!ctx.session) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'No session found',
+        });
+      }
       const userId = ctx.session.userId;
 
       const wallets = await db.query.wallets.findMany({

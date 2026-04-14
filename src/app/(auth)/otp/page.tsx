@@ -2,7 +2,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -19,7 +19,7 @@ const otpSchema = z.object({
 
 type OtpFormData = z.infer<typeof otpSchema>;
 
-function Otp() {
+function OtpContent() {
   const searchParams = useSearchParams();
   const resetEmail = searchParams.get('reset_email');
   const email = searchParams.get('email')!;
@@ -191,6 +191,14 @@ function Otp() {
         </form>
       </AuthWrapper>
     </div>
+  );
+}
+
+function Otp() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OtpContent />
+    </Suspense>
   );
 }
 

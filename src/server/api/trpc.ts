@@ -8,20 +8,20 @@
  */
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { ZodError } from 'zod';
 import { type OpenApiMeta } from 'trpc-to-openapi';
+import { ZodError } from 'zod';
 
-import { db } from '~/server/db';
 import { auth, type Session, type User } from '~/lib/auth';
+import { db } from '~/server/db';
 import {
-  deployAAWallet,
   approve,
+  deployAAWallet,
+  flagDispute,
   fundTask,
+  fundTaskWithManagedWallet,
+  resolveDispute,
   transfer,
   verifyMessage,
-  flagDispute,
-  resolveDispute,
-  fundTaskWithManagedWallet,
 } from '../../services/starknetSvc';
 
 /**
@@ -63,7 +63,11 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         });
 
         if (dbUser) {
-          user = { ...sessionData.user, ...dbUser };
+          user = {
+            ...sessionData.user,
+            name: dbUser.name ?? sessionData.user.name,
+            image: dbUser.image ?? sessionData.user.image,
+          };
         } else {
           user = sessionData.user;
         }
