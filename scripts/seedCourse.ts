@@ -55,8 +55,7 @@ async function seedCourses() {
           difficulty: difficulty!,
           isActive: Math.random() < 0.8, // 80% chance active
           createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        } as any);
 
         console.log(
           `Course created for ${creator.email}: ${title} [${difficulty}]`,

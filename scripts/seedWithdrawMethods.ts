@@ -1,10 +1,9 @@
 import 'dotenv/config';
 import { db } from '~/server/db';
 import { userWithdrawalMethods } from '~/server/db/schema';
-import { randomUUID } from 'crypto';
 // import { eq } from "drizzle-orm";
 
-// const withdrawalMethods = ['CRYPTO_WALLET', 'BANK_ACCOUNT'];
+const withdrawalMethods = ['CRYPTO_WALLET', 'BANK_ACCOUNT'];
 
 async function seedUserWithdrawalMethods() {
   console.log('Using database:', process.env.DATABASE_URL);
@@ -25,8 +24,9 @@ async function seedUserWithdrawalMethods() {
 
     // Create 2 methods per user
     for (let i = 0; i < 2; i++) {
-      // const method = withdrawalMethods[Math.floor(Math.random() * withdrawalMethods.length)];
-      const method = 'BANK_ACCOUNT'; // For testing purposes
+      const method =
+        withdrawalMethods[Math.floor(Math.random() * withdrawalMethods.length)];
+      // const method = 'BANK_ACCOUNT'; // For testing purposes
       const isDefault = i === 0; // first method is default
       const name =
         method === 'CRYPTO_WALLET'
@@ -44,16 +44,14 @@ async function seedUserWithdrawalMethods() {
 
       try {
         await db.insert(userWithdrawalMethods).values({
-          methodId: randomUUID(),
           userId: userItem.id,
-          method,
+          method: method!,
           name,
           details,
           isActive: true,
           isDefault,
           createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        } as any);
 
         console.log(
           `Withdrawal method created for user ${userItem.id}: ${name} [${method}]`,

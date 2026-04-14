@@ -59,7 +59,7 @@ async function seedDisputes() {
           adminResolverId: resolvedBy?.id || null,
           status,
           resolution,
-          adminNotes: status.startsWith('RESOLVED')
+          adminNotes: status!.startsWith('RESOLVED')
             ? 'Resolved by admin after review'
             : null,
           flagTxHash:
@@ -67,14 +67,6 @@ async function seedDisputes() {
               ? `0x${randomUUID().replace(/-/g, '').slice(0, 64)}`
               : null,
         } as any);
-          resolveTxHash: status.startsWith('RESOLVED')
-            ? `0x${randomUUID().replace(/-/g, '').slice(0, 64)}`
-            : null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          resolvedAt: new Date(), // must be non-null
-          resolvedById: resolvedBy?.id || 'system',
-        });
 
         console.log(
           `Dispute created for submission ${submission.submissionId} [${status}]`,

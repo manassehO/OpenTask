@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Check, X, Settings } from 'lucide-react';
+import { Check, Settings, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '~/trpc/react';
 
 interface NotificationPreferences {
@@ -107,13 +107,13 @@ export function NotificationPreferences() {
     data: preferences,
     isLoading,
     error,
-  } = api.notifications.getPreferences.useQuery(undefined, {
+  } = api.notification.getNotificationPreferences.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
   const updatePreferencesMutation =
-    api.notifications.updatePreferences.useMutation({
+    api.notification.updateNotificationPreferences.useMutation({
       onSuccess: () => {
         setHasChanges(false);
         setShowSuccessMessage(true);
@@ -131,23 +131,26 @@ export function NotificationPreferences() {
     if (preferences) {
       const newFormData = {
         emailNotifications:
-          preferences.emailNotifications ??
+          preferences.preferences?.emailNotifications ??
           DEFAULT_PREFERENCES.emailNotifications,
         pushNotifications:
-          preferences.pushNotifications ??
+          preferences.preferences?.pushNotifications ??
           DEFAULT_PREFERENCES.pushNotifications,
-        taskUpdates: preferences.taskUpdates ?? DEFAULT_PREFERENCES.taskUpdates,
+        taskUpdates:
+          preferences.preferences?.taskUpdates ??
+          DEFAULT_PREFERENCES.taskUpdates,
         paymentNotifications:
-          preferences.paymentNotifications ??
+          preferences.preferences?.paymentNotifications ??
           DEFAULT_PREFERENCES.paymentNotifications,
         disputeNotifications:
-          preferences.disputeNotifications ??
+          preferences.preferences?.disputeNotifications ??
           DEFAULT_PREFERENCES.disputeNotifications,
         learningNotifications:
-          preferences.learningNotifications ??
+          preferences.preferences?.learningNotifications ??
           DEFAULT_PREFERENCES.learningNotifications,
         marketingEmails:
-          preferences.marketingEmails ?? DEFAULT_PREFERENCES.marketingEmails,
+          preferences.preferences?.marketingEmails ??
+          DEFAULT_PREFERENCES.marketingEmails,
       };
       setFormData(newFormData);
       setHasChanges(false);
@@ -168,12 +171,13 @@ export function NotificationPreferences() {
     (key: keyof NotificationPreferences) => {
       setFormData((prev) => {
         const newData = { ...prev, [key]: !prev[key] };
-        const hasActualChanges = preferences
+        const hasActualChanges = preferences?.preferences
           ? Object.keys(newData).some(
               (k) =>
                 newData[k as keyof NotificationPreferences] !==
-                (preferences[k as keyof NotificationPreferences] ??
-                  DEFAULT_PREFERENCES[k as keyof NotificationPreferences]),
+                (preferences.preferences?.[
+                  k as keyof NotificationPreferences
+                ] ?? DEFAULT_PREFERENCES[k as keyof NotificationPreferences]),
             )
           : true;
         setHasChanges(hasActualChanges);
@@ -187,23 +191,26 @@ export function NotificationPreferences() {
     if (preferences) {
       setFormData({
         emailNotifications:
-          preferences.emailNotifications ??
+          preferences.preferences?.emailNotifications ??
           DEFAULT_PREFERENCES.emailNotifications,
         pushNotifications:
-          preferences.pushNotifications ??
+          preferences.preferences?.pushNotifications ??
           DEFAULT_PREFERENCES.pushNotifications,
-        taskUpdates: preferences.taskUpdates ?? DEFAULT_PREFERENCES.taskUpdates,
+        taskUpdates:
+          preferences.preferences?.taskUpdates ??
+          DEFAULT_PREFERENCES.taskUpdates,
         paymentNotifications:
-          preferences.paymentNotifications ??
+          preferences.preferences?.paymentNotifications ??
           DEFAULT_PREFERENCES.paymentNotifications,
         disputeNotifications:
-          preferences.disputeNotifications ??
+          preferences.preferences?.disputeNotifications ??
           DEFAULT_PREFERENCES.disputeNotifications,
         learningNotifications:
-          preferences.learningNotifications ??
+          preferences.preferences?.learningNotifications ??
           DEFAULT_PREFERENCES.learningNotifications,
         marketingEmails:
-          preferences.marketingEmails ?? DEFAULT_PREFERENCES.marketingEmails,
+          preferences.preferences?.marketingEmails ??
+          DEFAULT_PREFERENCES.marketingEmails,
       });
       setHasChanges(false);
     }

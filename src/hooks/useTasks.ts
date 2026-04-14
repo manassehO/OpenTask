@@ -4,14 +4,15 @@ import { useTaskStore } from '~/store';
 import { useToastContext } from '~/store/ToastProvider';
 import { api } from '~/trpc/react';
 // Helper function to safely extract error message
-function getErrorMessage(error: any): string {
+function getErrorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     return typeof error.message === 'string'
       ? error.message
       : 'An error occurred';
   }
   if (error && typeof error === 'object' && 'shape' in error) {
-    return (error as any).shape?.message || 'An error occurred';
+    const shape = (error as { shape?: { message?: string } }).shape;
+    return shape?.message ?? 'An error occurred';
   }
   if (typeof error === 'string') {
     return error;

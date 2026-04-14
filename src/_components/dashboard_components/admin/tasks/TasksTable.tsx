@@ -98,7 +98,9 @@ export const TasksTable = () => {
       accessor: (row: TaskProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
-            {row.deadline}
+            {row.deadline instanceof Date
+              ? row.deadline.toLocaleDateString()
+              : row.deadline}
           </span>
         );
       },
@@ -110,7 +112,9 @@ export const TasksTable = () => {
       accessor: (row: TaskProps) => {
         return (
           <span className="text-xs font-semibold text-[#121212] sm:text-sm">
-            {row.deadline}
+            {row.deadline instanceof Date
+              ? row.deadline.toLocaleDateString()
+              : row.deadline}
           </span>
         );
       },

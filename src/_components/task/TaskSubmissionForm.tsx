@@ -120,7 +120,10 @@ export const TaskSubmissionForm: React.FC<TaskSubmissionFormProps> = ({
         submissionData.submissionUrl = submissionUrl.trim() || undefined;
       }
 
-      if (submissionType === 'file' || submissionType === 'mixed') {
+      if (
+        (submissionType === 'file' || submissionType === 'mixed') &&
+        finalFileMetadata
+      ) {
         submissionData.fileMetadata = finalFileMetadata;
       }
 

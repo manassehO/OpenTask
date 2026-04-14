@@ -112,7 +112,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <div className="text-base">
                 {task.deadline ? (
                   <ClientDate
-                    isoString={task.deadline.toISOString()}
+                    isoString={
+                      task.deadline instanceof Date
+                        ? task.deadline.toISOString()
+                        : task.deadline
+                    }
                     format="date"
                     className="font-semibold"
                     fallback="Loading..."
