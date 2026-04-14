@@ -1,9 +1,9 @@
+import { and, eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
-import { storageService } from '~/services/storageService';
 import { db } from '~/server/db';
-import { tasks, taskClaims } from '~/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { taskClaims, tasks } from '~/server/db/schema';
+import { storageService } from '~/services/storageService';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -17,7 +17,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (sessionData.user.role !== 'COMPLETER') {
+    // Get user from database to check role
+    const dbUser = await db.query.user.findFirst({
+      where: (u, { eq }) => eq(u.id, sessionData.user.id),
+    });
+
+    if (!dbUser || dbUser.role !== 'COMPLETER') {
       return NextResponse.json(
         { error: 'Only completers can submit task files' },
         { status: 403 },
