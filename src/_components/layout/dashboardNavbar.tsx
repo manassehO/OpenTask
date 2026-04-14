@@ -13,7 +13,7 @@ export function DashboardNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   // Removed unused activeSection state
   const [, setIsSidebarOpen] = useAtom(sidebarAtom);
-  const { isLoading, data: role } = useGetRoleBase();
+  const { data: role } = useGetRoleBase();
 
   useEffect(() => {
     const handleScroll = () => {

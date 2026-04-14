@@ -1,15 +1,7 @@
-import nodemailer, { type SentMessageInfo, type Transporter } from 'nodemailer';
+import { type SentMessageInfo } from 'nodemailer';
 import sendEmail from '~/lib/sender';
 
-const transporter: Transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+
 
 export async function sendOtp(
   email: string,

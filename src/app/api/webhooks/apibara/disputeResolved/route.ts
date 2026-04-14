@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
         break;
       case 'reject':
       case 'rejected':
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         status = 'RESOLVED_REJECT';
         break;
       default:

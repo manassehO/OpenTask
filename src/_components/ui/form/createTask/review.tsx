@@ -1,9 +1,8 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import FormHeader from '~/_components/creator/formHeader';
+import { useCreateTask } from '~/hooks/useTasks';
 import { type ReviewValues, useTaskStore } from '~/store';
 import FormInput from '../../inputs/FormInput';
-import { useCreateTask } from '~/hooks/useTasks';
 
 function Review() {
   const store = useTaskStore();
@@ -26,7 +25,6 @@ function Review() {
     const allFormData = getAllFormData();
     createTaskMutation.mutate({
       category: allFormData.basicInformation.category,
-      deadline: allFormData.requirements.deadline,
       description: allFormData.basicInformation.taskDescription,
       instructions: allFormData.requirements.instruction,
       requiredCompletions: Number(allFormData.rewardStructure.maxSubmission),
@@ -38,7 +36,6 @@ function Review() {
       rewardTokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       fundingTxHash:
         '0x5e1d3c7f7f4a7e3c1a5b9f8a2d8f3a7c8f5d1b2e4c3f6a9b7c2d1f8a3e5c6b7d',
-      image: '',
     });
   };
   return (

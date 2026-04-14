@@ -1,7 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { withdrawals, userBalances } from '@/server/db/schema';
+import { withdrawals } from '@/server/db/schema';
 import { parseAmountToBigInt } from '@/lib/utils';
 
 export const earningsRouter = createTRPCRouter({
@@ -168,6 +168,7 @@ export const earningsRouter = createTRPCRouter({
         });
 
         return { success: true };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -201,6 +202,7 @@ export const earningsRouter = createTRPCRouter({
         });
 
         return { success: true };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

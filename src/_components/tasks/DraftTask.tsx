@@ -58,7 +58,7 @@ export default function DraftTask() {
   // Fetch draft tasks on component mount
   useEffect(() => {
     fetchDraftTasks();
-  }, []);
+  }, [fetchDraftTasks]);
 
   // Convert API tasks to UI format
   const tasks: Task[] = draftTasks.map(convertApiTaskToUITask);

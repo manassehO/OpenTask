@@ -5,7 +5,7 @@ import { disputes } from '~/mocks/disputes';
 import { ChevronBackOutline, ChevronNextOutline } from '~/svg/generalSvg';
 import { type DisputesProps } from '~/types/disputes';
 function DisputesTable() {
-  const [allDisputes, setAllDisputes] = useState<DisputesProps[]>(disputes);
+  const [allDisputes] = useState<DisputesProps[]>(disputes);
   const disputesPerPage = 16;
   const [currentPage, setCurrentPage] = useState(1);
   const indexOfLastItem = currentPage * disputesPerPage;

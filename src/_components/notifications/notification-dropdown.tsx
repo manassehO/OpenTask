@@ -41,7 +41,10 @@ export function NotificationDropdown({
     },
   );
 
-  const notifications = notificationsData?.notifications ?? [];
+  const notifications = useMemo(
+    () => notificationsData?.notifications ?? [],
+    [notificationsData],
+  );
 
   const markAsReadMutation = api.notification.markAsRead.useMutation({
     onSuccess: () => {

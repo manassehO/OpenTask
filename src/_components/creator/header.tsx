@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Stepper from '../creator/stepper';
 
 interface HeaderProps {
@@ -8,13 +8,16 @@ interface HeaderProps {
 }
 
 function Header({ activeStepper }: HeaderProps) {
-  const tabs = [
-    'basic info',
-    'requirements',
-    'reward structure',
-    'distribution',
-    'review',
-  ];
+  const tabs = useMemo(
+    () => [
+      'basic info',
+      'requirements',
+      'reward structure',
+      'distribution',
+      'review',
+    ],
+    [],
+  );
 
   const [activeTab, setActiveTab] = useState<string | undefined>(
     tabs[activeStepper],
@@ -23,7 +26,7 @@ function Header({ activeStepper }: HeaderProps) {
   // Update activeTab when activeStepper changes
   useEffect(() => {
     setActiveTab(tabs[activeStepper]);
-  }, [activeStepper]);
+  }, [activeStepper, tabs]);
 
   return (
     <div className="">

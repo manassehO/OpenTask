@@ -27,7 +27,7 @@ export const ActiveTask = () => {
     //  void refetch?.();
     console.log(activeTasks, 'active task');
     void refetch?.();
-  }, []);
+  }, [refetch, activeTasks]);
 
   const onClick = (taskId: string) => {
     router.push(`/${taskId}`);
