@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSubmitTask } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
 import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { useSubmitTask } from '~/hooks/useTasks';
 
 interface TaskSubmissionModalProps {
   isOpen: boolean;
@@ -28,7 +28,6 @@ export default function TaskSubmissionModal({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const submitTaskMutation = useSubmitTask();
-  const { showError } = useToast();
 
   useEffect(() => {
     setMounted(true);
@@ -50,22 +49,16 @@ export default function TaskSubmissionModal({
   const handleSubmit = () => {
     // Validation
     if (submissionType === 'text' && !textContent.trim()) {
-      return showError(
-        'Validation Error',
-        'Please enter text content for your submission',
-      );
+      toast.error('Please enter text content for your submission');
+      return;
     }
     if (submissionType === 'url' && !submissionUrl.trim()) {
-      return showError(
-        'Validation Error',
-        'Please enter a valid URL for your submission',
-      );
+      toast.error('Please enter a valid URL for your submission');
+      return;
     }
     if (submissionType === 'file' && !selectedFile) {
-      return showError(
-        'Validation Error',
-        'Please select a file for your submission',
-      );
+      toast.error('Please select a file for your submission');
+      return;
     }
 
     // Prepare submission data
@@ -114,10 +107,8 @@ export default function TaskSubmissionModal({
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      return showError(
-        'File Too Large',
-        'Please select a file smaller than 5MB',
-      );
+      toast.error('Please select a file smaller than 5MB');
+      return;
     }
 
     setSelectedFile(file);

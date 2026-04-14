@@ -3,9 +3,7 @@
 import type { Task } from '@/types/task';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import { useCompletedTasks } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
@@ -51,7 +49,6 @@ export default function CompletedTask() {
     fetchCompletedTasks,
     refetchCompletedTasks,
   } = useCompletedTasks();
-  const { toasts } = useToast();
 
   // Fetch completed tasks on component mount
   useEffect(() => {
@@ -85,7 +82,6 @@ export default function CompletedTask() {
             ))}
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -122,7 +118,6 @@ export default function CompletedTask() {
             </div>
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -167,7 +162,6 @@ export default function CompletedTask() {
             </button>
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -234,8 +228,6 @@ export default function CompletedTask() {
           </p>
         </div>
       </div>
-
-      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }
