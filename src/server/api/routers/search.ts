@@ -1,8 +1,8 @@
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { z } from 'zod';
-import { tasks, courses, tutorials } from '@/server/db/schema';
-import { eq, or, and, ilike, inArray } from 'drizzle-orm';
+import { courses, tasks, tutorials } from '@/server/db/schema';
 import { TRPCError } from '@trpc/server';
+import { and, eq, ilike, inArray, or } from 'drizzle-orm';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 type SearchResultType = 'task' | 'course' | 'tutorial';
 
@@ -30,7 +30,10 @@ export const searchRouter = createTRPCRouter({
 
       if (type === 'tasks' || type === 'all') {
         try {
-          const searchableTaskStatuses = ['ACTIVE', 'COMPLETED'];
+          const searchableTaskStatuses: ('ACTIVE' | 'COMPLETED')[] = [
+            'ACTIVE',
+            'COMPLETED',
+          ];
           const taskResults = await ctx.db
             .select({
               id: tasks.id,

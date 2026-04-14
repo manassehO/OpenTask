@@ -1,12 +1,12 @@
+import { TRPCError } from '@trpc/server';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
-  adminProcedure,
 } from '~/server/api/trpc';
-import { notifications, notificationPreferences } from '~/server/db/schema';
-import { TRPCError } from '@trpc/server';
-import { eq, and, count, inArray } from 'drizzle-orm';
+import { notificationPreferences, notifications } from '~/server/db/schema';
 
 export const notificationRouter = createTRPCRouter({
   getNotifications: protectedProcedure
@@ -19,14 +19,6 @@ export const notificationRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       console.log(ctx.user);
-
-      // Ensure that user is active
-      if (ctx.user.status !== 'ACTIVE') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: `You have been ${ctx.user.status}`,
-        });
-      }
 
       // Build where clause
       const whereClause = [eq(notifications.userId, ctx.user.id)];
@@ -94,14 +86,6 @@ export const notificationRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { notificationIds } = input;
 
-      // Ensure that user is active
-      if (ctx.user.status !== 'ACTIVE') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: `Your account is ${ctx.user.status}`,
-        });
-      }
-
       // Run in a transaction to prevent race conditions
       return await ctx.db.transaction(async (tx) => {
         console.log(notificationIds);
@@ -139,7 +123,7 @@ export const notificationRouter = createTRPCRouter({
         // Bulk update unread notifications
         await tx
           .update(notifications)
-          .set({ status: 'READ', updatedAt: new Date() })
+          .set({ status: 'READ', readAt: new Date() })
           .where(
             and(
               inArray(notifications.notificationId, unreadIds),
@@ -158,14 +142,6 @@ export const notificationRouter = createTRPCRouter({
     }),
 
   getNotificationPreferences: protectedProcedure.query(async ({ ctx }) => {
-    // Ensure that user is active
-    if (ctx.user.status !== 'ACTIVE') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: `Your account is ${ctx.user.status}`,
-      });
-    }
-
     // Fetch user notification preferences
     const preferences = await ctx.db.query.notificationPreferences.findFirst({
       where: (np, { eq }) => eq(np.userId, ctx.user.id),
@@ -256,7 +232,6 @@ export const notificationRouter = createTRPCRouter({
           metadata: input.metadata ?? null,
           status: 'UNREAD', // default for new notifications
           createdAt: new Date(),
-          updatedAt: new Date(),
         })
         .returning();
 
@@ -291,13 +266,6 @@ export const notificationRouter = createTRPCRouter({
       };
       const userId = ctx.user.id;
 
-      if (ctx.user.status !== 'ACTIVE') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: `Your account is ${ctx.user.status}, cannot update preferences.`,
-        });
-      }
-
       // keep only provided fields
       const updateData = Object.fromEntries(
         Object.entries(input).filter(([_, v]) => v !== undefined),
@@ -311,54 +279,36 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const now = new Date();
+      // Check if preferences exist
+      const existingPreferences = await ctx.db.query.notificationPreferences.findFirst({
+        where: (np, { eq }) => eq(np.userId, userId),
+      });
 
-      const existingPref = await ctx.db.query.notificationPreferences.findFirst(
-        {
-          where: (np, { eq }) => eq(np.userId, userId),
-        },
-      );
-      console.log(existingPref);
-
-      if (existingPref) {
-        let updatedPref;
-        try {
-          console.log(
-            'Updating notification preferences with data:',
-            updateData,
-          );
-          [updatedPref] = await ctx.db
-            .update(notificationPreferences)
-            .set(Object.assign({}, updateData, { updatedAt: now }))
-            .where(eq(notificationPreferences.userId, userId))
-            .returning();
-          console.log('Update operation completed successfully');
-        } catch (error) {
-          console.error('Error updating notification preferences:', error);
-        }
-
-        return {
-          success: true,
-          message: 'Notification preferences updated successfully',
-          preferences: updatedPref,
-        };
-      } else {
-        // create new row with defaults + provided values
-        const [inserted] = await ctx.db
-          .insert(notificationPreferences)
-          .values({
-            userId,
-            ...default_notification_preferences,
-            ...updateData,
-            createdAt: now,
-            updatedAt: now,
-          })
+      if (existingPreferences) {
+        // Update existing preferences
+        const updated = await ctx.db
+          .update(notificationPreferences)
+          .set(updateData)
+          .where(eq(notificationPreferences.userId, userId))
           .returning();
 
         return {
           success: true,
+          preferences: updated[0],
+          message: 'Notification preferences updated successfully',
+        };
+      } else {
+        // Create new preferences with defaults + updates
+        const newPreferences = { ...default_notification_preferences, ...updateData, userId };
+        const inserted = await ctx.db
+          .insert(notificationPreferences)
+          .values(newPreferences)
+          .returning();
+
+        return {
+          success: true,
+          preferences: inserted[0],
           message: 'Notification preferences created successfully',
-          preferences: inserted,
         };
       }
     }),
@@ -378,37 +328,32 @@ export const notificationRouter = createTRPCRouter({
   }),
 
   markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
-    // Ensure that user is active
-    if (ctx.user.status !== 'ACTIVE') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: `Your account is ${ctx.user.status}`,
-      });
-    }
-
     // Update all unread notifications to read
     try {
       const result = await ctx.db
         .update(notifications)
-        .set({ status: 'READ', updatedAt: new Date() })
+        .set({ status: 'READ', readAt: new Date() })
         .where(
           and(
             eq(notifications.userId, ctx.user.id),
             eq(notifications.status, 'UNREAD'),
           ),
         )
-        .returning();
+        .returning({ id: notifications.notificationId });
+
+      const updatedCount = result.length;
 
       return {
         success: true,
-        updatedCount: result.length,
-        message: `${result.length} notifications marked as read`,
+        updatedCount,
+        message: `Marked ${updatedCount} notifications as read`,
       };
     } catch (error) {
-      console.error('Error marking notifications as read:', error);
+      console.error('Error marking all notifications as read:', error as Error);
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Could not update notifications',
+        message: 'Failed to mark notifications as read',
+        cause: error,
       });
     }
   }),
@@ -422,14 +367,6 @@ export const notificationRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { notificationId } = input;
 
-      // Ensure that user is active
-      if (ctx.user.status !== 'ACTIVE') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: `Your account is ${ctx.user.status}`,
-        });
-      }
-
       // Delete the notification
       const deleteCount = await ctx.db
         .delete(notifications)
@@ -438,12 +375,13 @@ export const notificationRouter = createTRPCRouter({
             eq(notifications.notificationId, notificationId),
             eq(notifications.userId, ctx.user.id),
           ),
-        );
+        )
+        .returning({ id: notifications.notificationId });
 
-      if (deleteCount === 0) {
+      if (deleteCount.length === 0) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Notification not found or already deleted',
+          message: 'Notification not found or you do not have permission to delete it',
         });
       }
 
@@ -454,14 +392,6 @@ export const notificationRouter = createTRPCRouter({
     }),
 
   clearAllNotifications: protectedProcedure.mutation(async ({ ctx }) => {
-    // Ensure that user is active
-    if (ctx.user.status !== 'ACTIVE') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: `Your account is ${ctx.user.status}`,
-      });
-    }
-
     // Delete all notifications for the user
     const deletedRows = await ctx.db
       .delete(notifications)

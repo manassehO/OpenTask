@@ -1,19 +1,19 @@
+import { TRPCError } from '@trpc/server';
+import { count, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
+  adminProcedure,
   createTRPCRouter,
   protectedProcedure,
-  adminProcedure,
 } from '~/server/api/trpc';
 import {
-  user,
-  userProfiles,
+  disputes,
   submissions,
   tasks,
-  disputes,
+  user,
+  userProfiles,
   userStats,
 } from '~/server/db/schema';
-import { TRPCError } from '@trpc/server';
-import { eq, count, sql } from 'drizzle-orm';
 
 // import { type InferModel } from "drizzle-orm";
 import type { InferModel } from 'drizzle-orm';
@@ -383,8 +383,7 @@ export const profileRouter = createTRPCRouter({
         location: z.string().optional(),
         timezone: z.string().optional(),
         skillTags: z.array(z.string()).max(10).optional(),
-        socialLinks: z.record(z.string().url()).optional(),
-        phoneNumber: z.string().optional(),
+        socialLinks: z.record(z.string(), z.string().url()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

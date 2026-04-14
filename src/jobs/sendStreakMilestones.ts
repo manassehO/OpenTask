@@ -1,7 +1,7 @@
+import { and, eq, gte, inArray } from 'drizzle-orm';
 import { db } from '~/server/db';
-import { userStats, notifications } from '~/server/db/schema';
+import { notifications, userStats } from '~/server/db/schema';
 import { NotificationsService } from '~/services/notifications';
-import { inArray, and, gte, eq } from 'drizzle-orm';
 
 const STREAK_MILESTONES = [7, 30, 100];
 const STREAK_MILESTONE_TYPE = 'STREAK_MILESTONE';
@@ -64,10 +64,13 @@ export async function sendStreakMilestonesJob() {
 
   results.forEach((result, idx) => {
     if (result.status === 'rejected') {
-      console.error(
-        `Failed to send streak milestone notification to user ${usersToNotify[idx].userId}:`,
-        result.reason,
-      );
+      const user = usersToNotify[idx];
+      if (user) {
+        console.error(
+          `Failed to send streak milestone notification to user ${user.userId}:`,
+          result.reason,
+        );
+      }
     }
   });
 

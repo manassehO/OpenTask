@@ -1,9 +1,9 @@
 import type {
   BasicInformationValues,
-  RequirementsValues,
-  RewardStructureValues,
   DistributionValues,
+  RequirementsValues,
   ReviewValues,
+  RewardStructureValues,
 } from '../../types/task';
 
 export const initialBasicInformation: BasicInformationValues = {
@@ -38,4 +38,10 @@ export const initialReview: ReviewValues = {
   launchTime: '',
   visibilitySetting: '',
   userTargeting: '',
+  category: '',
+  deadline: '',
+  instructions: '',
+  description: '',
+  rewardAmount: '',
+  maxSubmission: '',
 };

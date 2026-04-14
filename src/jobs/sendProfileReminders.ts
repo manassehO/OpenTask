@@ -1,7 +1,7 @@
+import { and, eq, gte, inArray, isNull, lte, or } from 'drizzle-orm';
 import { db } from '~/server/db';
-import { user, notifications } from '~/server/db/schema';
+import { notifications, user } from '~/server/db/schema';
 import { NotificationsService } from '~/services/notifications';
-import { and, or, isNull, lte, gte, eq, inArray } from 'drizzle-orm';
 
 const PROFILE_REMINDER_TYPE = 'PROFILE_REMINDER';
 const REMINDER_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -70,10 +70,13 @@ export async function sendProfileRemindersJob() {
 
   results.forEach((result, idx) => {
     if (result.status === 'rejected') {
-      console.error(
-        `Failed to send profile reminder to user ${usersToNotify[idx].id}:`,
-        result.reason,
-      );
+      const user = usersToNotify[idx];
+      if (user) {
+        console.error(
+          `Failed to send profile reminder to user ${user.id}:`,
+          result.reason,
+        );
+      }
     }
   });
 
