@@ -1,4 +1,4 @@
-import { useToastContext } from '~/store/ToastProvider';
+import { toast } from 'sonner';
 import { api } from '~/trpc/react';
 
 // Enhanced error handling with type safety
@@ -63,7 +63,7 @@ export interface Notification {
 
 // Context type for mutations
 interface MutationContext {
-  toastId: string;
+  toastId?: string;
 }
 
 // Query hook for fetching all notifications
@@ -122,23 +122,18 @@ export function useMarkNotificationRead() {
 
 // Mutation hook for marking all notifications as read
 export function useMarkAllNotificationsRead() {
-  const { showSuccess, showError, showLoading, removeToast } =
-    useToastContext();
   const utils = api.useUtils();
 
   return api.notification.markAllAsRead.useMutation({
     onMutate: (): MutationContext => {
-      const toastId: string = showLoading('Updating', 'Marking all as read...');
+      const toastId = String(toast.loading('Marking all as read...'));
       return { toastId };
     },
     onSuccess: async (
       _data: unknown,
       _variables: void,
-      context: MutationContext | undefined,
+      _context: MutationContext | undefined,
     ): Promise<void> => {
-      if (context?.toastId) removeToast(context.toastId);
-      showSuccess('Success', 'All notifications marked as read');
-
       // Use await for invalidations to ensure they complete
       try {
         await Promise.all([
@@ -155,14 +150,10 @@ export function useMarkAllNotificationsRead() {
     onError: (
       error: unknown,
       _variables: void,
-      context: MutationContext | undefined,
+      _context: MutationContext | undefined,
     ): void => {
-      if (context?.toastId) removeToast(context.toastId);
-      const errorMessage: string = getErrorMessage(error);
-      showError('Failed to update notifications', errorMessage);
-
       throw new NotificationError(
-        `Failed to mark all notifications as read: ${errorMessage}`,
+        `Failed to mark all notifications as read: ${getErrorMessage(error)}`,
         'MARK_ALL_READ_ERROR',
         error,
       );
@@ -172,25 +163,18 @@ export function useMarkAllNotificationsRead() {
 
 // Mutation hook for clearing all notifications
 export function useClearAllNotifications() {
-  const { showSuccess, showError, showLoading, removeToast } =
-    useToastContext();
   const utils = api.useUtils();
 
   return api.notification.clearAllNotifications.useMutation({
     onMutate: (): MutationContext => {
-      const toastId: string = showLoading(
-        'Clearing',
-        'Removing all notifications...',
-      );
-      return { toastId };
+      return {};
     },
     onSuccess: async (
       _data: unknown,
       _variables: void,
-      context: MutationContext | undefined,
+      _context: MutationContext | undefined,
     ): Promise<void> => {
-      if (context?.toastId) removeToast(context.toastId);
-      showSuccess('Success', 'All notifications cleared');
+      toast.success('All notifications cleared');
 
       try {
         await Promise.all([
@@ -207,14 +191,12 @@ export function useClearAllNotifications() {
     onError: (
       error: unknown,
       _variables: void,
-      context: MutationContext | undefined,
+      _context: MutationContext | undefined,
     ): void => {
-      if (context?.toastId) removeToast(context.toastId);
-      const errorMessage: string = getErrorMessage(error);
-      showError('Failed to clear notifications', errorMessage);
+      toast.error(`Failed to clear notifications: ${getErrorMessage(error)}`);
 
       throw new NotificationError(
-        `Failed to clear notifications: ${errorMessage}`,
+        `Failed to clear notifications: ${getErrorMessage(error)}`,
         'CLEAR_ALL_ERROR',
         error,
       );
@@ -224,15 +206,11 @@ export function useClearAllNotifications() {
 
 // Mutation hook for deleting a specific notification
 export function useDeleteNotification() {
-  const { showSuccess, showError } = useToastContext();
   const utils = api.useUtils();
 
   return api.notification.deleteNotification.useMutation({
-    onSuccess: async (
-      _data: unknown,
-     
-    ): Promise<void> => {
-      showSuccess('Success', 'Notification deleted');
+    onSuccess: async (_data: unknown): Promise<void> => {
+      toast.success('Notification deleted');
 
       try {
         await Promise.all([
@@ -249,7 +227,7 @@ export function useDeleteNotification() {
 
     onError: (error: unknown, _variables: unknown): void => {
       const errorMessage: string = getErrorMessage(error);
-      showError('Failed to update preferences', errorMessage);
+      toast.error(`Failed to update preferences: ${errorMessage}`);
 
       throw new NotificationError(
         `Failed to update preferences: ${errorMessage}`,
@@ -269,12 +247,11 @@ export function useGetNotificationPreferences() {
 
 // Mutation hook for updating notification preferences
 export function useUpdateNotificationPreferences() {
-  const { showSuccess, showError } = useToastContext();
   const utils = api.useUtils();
 
   return api.notification.updateNotificationPreferences.useMutation({
     onSuccess: async (): Promise<void> => {
-      showSuccess('Success', 'Preferences updated successfully');
+      toast.success('Preferences updated successfully');
 
       try {
         await utils.notification.getNotificationPreferences.invalidate();
@@ -288,7 +265,7 @@ export function useUpdateNotificationPreferences() {
 
     onError: (error: unknown, _variables: unknown): void => {
       const errorMessage: string = getErrorMessage(error);
-      showError('Failed to update preferences', errorMessage);
+      toast.error(`Failed to update preferences: ${errorMessage}`);
 
       throw new NotificationError(
         `Failed to update preferences: ${errorMessage}`,

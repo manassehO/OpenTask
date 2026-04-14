@@ -199,7 +199,8 @@ export const hasRole = (roles: string[]) =>
       });
     }
 
-    if (!roles.includes(ctx.user.role)) {
+    const userRole = ctx.user.role;
+    if (!userRole || !roles.includes(String(userRole))) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'You do not have permission to access this resource',

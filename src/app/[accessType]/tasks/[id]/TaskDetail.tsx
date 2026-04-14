@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 import CancelTaskModal from '~/_components/tasks/CancelTaskModal';
 import TaskSubmissionModal from '~/_components/tasks/TaskSubmissionModal';
 import Button from '~/_components/ui/button';
@@ -14,7 +13,6 @@ import {
   useGetTaskById,
   useTaskActions,
 } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
 interface TaskDetailProps {
   taskId: string;
 }
@@ -28,7 +26,6 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
   const { data: role, isLoading: loadingRole } = useGetRoleBase();
   const steps = task?.instructions?.split(/\d+\.\s*/).filter(Boolean);
   const claimMutation = useClaimTask();
-  const { toasts } = useToast();
 
   const claimed = task ? isTaskClaimed(taskId) : false;
 
@@ -97,7 +94,6 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
             </div>
           </div>
         </div>
-        {toast.success(toasts.map((toast) => toast.message).join('\n'))}
       </>
     );
   }
@@ -245,8 +241,6 @@ export default function TaskDetail({ taskId }: TaskDetailProps) {
         onClose={() => setShowCancelModal(false)}
         setIsOpen={setShowCancelModal}
       />
-
-      {toast.success(toasts.map((toast) => toast.message).join('\n'))}
     </>
   );
 }

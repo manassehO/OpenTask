@@ -3,9 +3,7 @@
 import type { Task } from '@/types/task';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { ToastContainer } from '~/_components/ui/Toast';
 import { useDraftTasks } from '~/hooks/useTasks';
-import { useToast } from '~/hooks/useToast';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
@@ -53,7 +51,6 @@ export default function DraftTask() {
     publishDraft,
     deleteDraft,
   } = useDraftTasks();
-  const { toasts, removeToast } = useToast();
 
   // Fetch draft tasks on component mount
   useEffect(() => {
@@ -117,7 +114,6 @@ export default function DraftTask() {
             ))}
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
       </>
     );
   }
@@ -152,7 +148,6 @@ export default function DraftTask() {
             </div>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
       </>
     );
   }
@@ -214,7 +209,6 @@ export default function DraftTask() {
             </div>
           </div>
         </div>
-        <ToastContainer toasts={toasts} onClose={removeToast} />
       </>
     );
   }
@@ -386,8 +380,6 @@ export default function DraftTask() {
           </p>
         </div>
       </div>
-
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </>
   );
 }

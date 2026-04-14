@@ -5,7 +5,7 @@ import { Provider } from 'jotai';
 import { type Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import { Toaster } from 'sonner';
-import { ToastProvider } from '~/store/ToastProvider';
+
 import { TRPCReactProvider } from '~/trpc/react';
 
 // import Footer from "./_components/layout/Footer";
@@ -29,9 +29,7 @@ export default function RootLayout({
       <body className={dmSans.className}>
         <Provider>
           <Toaster richColors position="top-right" />
-          <TRPCReactProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </TRPCReactProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
         </Provider>
       </body>
     </html>
