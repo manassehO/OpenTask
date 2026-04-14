@@ -6,12 +6,24 @@ import { useEffect } from 'react';
 import { ToastContainer } from '~/_components/ui/toast';
 import { useDraftTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import type { TaskSummary } from '~/types/api';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
-// Helper function to convert API task summary to UI task format
-function convertApiTaskToUITask(apiTask: TaskSummary): Task {
+// Interface for actual API response structure
+interface DraftTaskResponse {
+  id: string;
+  title: string;
+  description: string;
+  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+  rewardAmount: string;
+  deadline: Date;
+  image: string | null;
+  createdAt: Date;
+  creatorUserId: string;
+}
+
+// Helper function to convert API task to UI task format
+function convertApiTaskToUITask(apiTask: DraftTaskResponse): Task {
   // Mock ETH to USD conversion rate
   const ETH_TO_USD = 2400;
 
@@ -23,9 +35,10 @@ function convertApiTaskToUITask(apiTask: TaskSummary): Task {
     creator: `Creator ${apiTask.creatorUserId.slice(0, 8)}...`,
     image: apiTask.image ?? '',
     deadline: apiTask.deadline,
-    category: apiTask.category ?? 'General',
-    rewardInEth: Number(apiTask.rewardAmount) ?? 0,
-    rewardInUsd: Math.round((Number(apiTask.rewardAmount) ?? 0) * ETH_TO_USD),
+    category: 'General',
+    rewardInEth: Number(apiTask.rewardAmount),
+    rewardInUsd: Math.round(Number(apiTask.rewardAmount) * ETH_TO_USD),
+    createdAt: apiTask.createdAt,
   };
 }
 
