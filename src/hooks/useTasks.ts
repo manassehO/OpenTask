@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useTaskStore } from '~/store';
-import { useToastContext } from '~/store/ToastProvider';
 import { api } from '~/trpc/react';
 // Helper function to safely extract error message
 function getErrorMessage(error: unknown): string {
@@ -22,29 +22,21 @@ function getErrorMessage(error: unknown): string {
 
 // Helper function to safely handle context (loading ID)
 
-
 // Mutation hook for creating a task
 export function useCreateTask() {
-  const { removeToast, showError, showSuccess, showLoading } =
-    useToastContext();
   const store = useTaskStore();
   const { resetStep, resetForm } = store;
   return api.task.createTask.useMutation({
     onMutate(_variables) {
-      return showLoading('Creating Task', 'Processing your request...');
+      return toast.loading('Creating Task...');
     },
-    onSuccess(data, _variables, context) {
-      if (context) removeToast(context);
-      showSuccess(
-        'Task Created Successfully!',
-        `task ${data.task?.title} created successful`,
-      );
+    onSuccess(data, _variables, _context) {
+      toast.success(`Task ${data.task?.title} created successfully!`);
       resetForm();
       resetStep(0);
     },
-    onError(error, _variables, context) {
-      if (context) removeToast(context);
-      showError('Failed to create Task', getErrorMessage(error));
+    onError(error, _variables, _context) {
+      toast.error(`Failed to create Task: ${getErrorMessage(error)}`);
     },
   });
 }
@@ -76,67 +68,45 @@ export function useFindTasks({
 
 // Mutation hook for claiming a task
 export function useClaimTask() {
-  const { showSuccess, showError, showLoading, removeToast } =
-    useToastContext();
-
   return api.task.claimTask.useMutation({
     onMutate: (_variables) => {
-      return showLoading('Claiming Task', 'Processing your request...');
+      return toast.loading('Claiming Task...');
     },
-    onSuccess: (data, _variables, context) => {
-      if (context) removeToast(context); // if you store loadingId in context
-      showSuccess(
-        'Task Claimed Successfully!',
-        data.message || 'You can now start working on this task',
-      );
+    onSuccess: (data, _variables, _context) => {
+      toast.success(data.message || 'Task claimed successfully!');
     },
-    onError: (error, _variables, context) => {
-      if (context) removeToast(context); // if you store loadingId in context
-      showError('Failed to Claim Task', getErrorMessage(error));
+    onError: (error, _variables, _context) => {
+      toast.error(`Failed to claim Task: ${getErrorMessage(error)}`);
     },
   });
 }
 
 // Mutation hook for canceling a task
 export function useCancelTask() {
-  const { showSuccess, showError, showLoading, removeToast } =
-    useToastContext();
-
   return api.task.cancelTask.useMutation({
     onMutate: (_variables) => {
-      // return a loading toast id so you can remove it later
-      return showLoading('Canceling Task', 'Canceling task...');
+      return toast.loading('Canceling task...');
     },
-    onSuccess: (data, _variables, context) => {
-      if (context) removeToast(context); // removes loading toast
-      showSuccess('Task canceled successfully!', 'Successfully canceled task.');
+    onSuccess: (_data, _variables, _context) => {
+      toast.success('Task canceled successfully!');
     },
-    onError: (error, _variables, context) => {
-      if (context) removeToast(context); // removes loading toast
-      showError('Failed to cancel Task', getErrorMessage(error));
+    onError: (error, _variables, _context) => {
+      toast.error(`Failed to cancel Task: ${getErrorMessage(error)}`);
     },
   });
 }
 
 // Mutation hook for submitting a task
 export function useSubmitTask() {
-  const { showSuccess, showError, showLoading, removeToast } =
-    useToastContext();
-
   return api.task.submitTask.useMutation({
     onMutate: (_variables) => {
-      return showLoading('Submitting Task', 'Uploading your submission...');
+      return toast.loading('Submitting Task...');
     },
-    onSuccess: (data, _variables, context) => {
-      if (context) removeToast(context); // if you store loadingId in context
-      showSuccess(
-        'Task Submitted Successfully!',
-        data.message || `Submission ID: ${data.submissionId}`,
-      );
+    onSuccess: (data, _variables, _context) => {
+      toast.success(data.message || `Submission ID: ${data.submissionId}`);
     },
-    onError: (error, _variables, context) => {
-      if (context) removeToast(context);
-      showError('Failed to Submit Task', getErrorMessage(error));
+    onError: (error, _variables, _context) => {
+      toast.error(`Failed to Submit Task: ${getErrorMessage(error)}`);
     },
   });
 }
