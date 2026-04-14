@@ -6,12 +6,11 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useCompletedTasks } from '~/hooks/useTasks';
 import { useToast } from '~/hooks/useToast';
-import type { TaskSummary } from '~/types/api';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
-// Helper function to convert API task summary to UI task format
-function convertApiTaskToUITask(apiTask: TaskSummary): Task {
+// Helper function to convert API task to UI task format
+function convertApiTaskToUITask(apiTask: any): Task {
   // Mock ETH to USD conversion rate
   const ETH_TO_USD = 2400;
   const rewardInUsd = Math.round(Number(apiTask.rewardAmount) * ETH_TO_USD);
@@ -20,13 +19,14 @@ function convertApiTaskToUITask(apiTask: TaskSummary): Task {
     id: apiTask.id,
     title: apiTask.title,
     description: apiTask.description,
-    status: 'completed' as const, // Override status for completed tasks
+    status: 'COMPLETED' as const, // Override status for completed tasks
     image: apiTask.image ?? '',
     deadline: apiTask.deadline,
     creator: `Creator ${apiTask.creatorUserId.slice(0, 8)}...`,
-    category: apiTask.category,
+    category: apiTask.category || 'general',
     rewardInEth: 303,
     rewardInUsd: 70,
+    createdAt: apiTask.createdAt,
   };
 }
 

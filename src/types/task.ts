@@ -31,12 +31,17 @@ export interface Task {
   approvedCompletions?: number;
   inProgressCompletions?: number;
   requiredCompletions?: number;
-  deadline?: Date;
+  deadline?: Date | string;
   fundingTxHash?: string;
   maxCompletions?: number;
   tags?: string;
   example?: string | null;
   specialRequirements?: string | null;
+  // Additional mock data properties
+  rewardInUsd?: number;
+  rewardInEth?: number;
+  creator?: string;
+  isFlagged?: boolean;
 }
 
 export type TaskType = {

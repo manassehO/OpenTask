@@ -1,8 +1,7 @@
 import 'dotenv/config';
-import { db } from '~/server/db';
-import { user, tasks } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { randomUUID } from 'crypto';
+import { db } from '~/server/db';
+import { tasks, user } from '~/server/db/schema';
 
 async function seedTasks() {
   console.log('Using database:', process.env.DATABASE_URL);
@@ -33,7 +32,6 @@ async function seedTasks() {
         const maxCompletions = 5 + Math.floor(Math.random() * 15); // 5-20
 
         await db.insert(tasks).values({
-          id: randomUUID(),
           creatorUserId: creator.id,
           title,
           description: `Description for ${title}`,
@@ -52,7 +50,7 @@ async function seedTasks() {
           tags: JSON.stringify(['test', 'sample', 'demo']),
           example: 'Example submission text',
           specialRequirements: 'Must be original work',
-        });
+        } as any);
 
         console.log(`Task created for ${creator.email}: ${title} [${status}]`);
       } catch (err: any) {

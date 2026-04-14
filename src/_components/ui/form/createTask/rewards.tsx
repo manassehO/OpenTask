@@ -12,8 +12,8 @@ const CURRENCIES = [
   { symbol: 'DAI', name: 'Dai Stablecoin' },
 ];
 
-const validatePositiveNumber = (value: string) =>
-  Number(value) > 0 || 'Value must be greater than 0';
+const validatePositiveNumber = (value: number) =>
+  value > 0 || 'Value must be greater than 0';
 function Rewards() {
   const {
     rewardStructure: data,
@@ -106,7 +106,9 @@ function Rewards() {
             />
             <div className="absolute right-3 top-1/2 w-fit -translate-y-1/2">
               <CurrencyDropdown
-                setSelectedCurrency={setSelectedCurrency}
+                setSelectedCurrency={(value) =>
+                  setSelectedCurrency(value as Currency)
+                }
                 selectedCurrency={selectedCurrency}
                 currencies={CURRENCIES}
               />

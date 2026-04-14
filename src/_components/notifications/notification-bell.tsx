@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { Bell } from 'lucide-react';
+import { useState } from 'react';
 import { api } from '~/trpc/react';
 import { NotificationDropdown } from './notification-dropdown';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: unreadCount = 0 } = api.notifications.getUnreadCount.useQuery(
+  const { data: unreadCount = 0 } = api.notification.getUnreadCount.useQuery(
     undefined,
     {
       refetchInterval: isOpen ? 10000 : false,
