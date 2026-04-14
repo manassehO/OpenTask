@@ -5,7 +5,7 @@ import { mockTasks } from '~/mocks/tasks';
 import { ChevronBackOutline, ChevronNextOutline } from '~/svg/generalSvg';
 import { type Task as TaskProps } from '~/types/task';
 export const TasksTable = () => {
-  const [allTasks, setAllTasks] = useState<TaskProps[]>(mockTasks);
+  const [allTasks] = useState<TaskProps[]>(mockTasks);
   const tasksPerPage = 16;
   const [currentPage, setCurrentPage] = useState(1);
   const indexOfLastItem = currentPage * tasksPerPage;

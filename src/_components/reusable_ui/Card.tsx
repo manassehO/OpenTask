@@ -59,7 +59,7 @@ const parseDurationToValue = (duration: string): number => {
 const ContentCard: React.FC<ContentCardProps> = ({
   item,
   onAction: _onAction,
-  buttonLabel = 'View',
+  
 }) => {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = React.useState(false);

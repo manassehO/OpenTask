@@ -14,7 +14,7 @@ const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
   onFileSelect,
   currentFile,
   error,
-  required = false,
+ 
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -138,6 +138,7 @@ const ThumbnailUpload: React.FC<ThumbnailUploadProps> = ({
           // File Preview
           <div className="relative h-full w-full">
             {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={preview}
                 alt="Thumbnail preview"

@@ -7,7 +7,7 @@ const tabs = ['Course', 'Tutorial'];
 
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState(tabs[0]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory] = useState<string>('all');
 
   // Progress query with safe fallback
   const { data: progressData, error: progressError } =

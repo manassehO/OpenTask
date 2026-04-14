@@ -230,7 +230,7 @@ export function useDeleteNotification() {
   return api.notification.deleteNotification.useMutation({
     onSuccess: async (
       _data: unknown,
-      variables: { notificationId: string },
+     
     ): Promise<void> => {
       showSuccess('Success', 'Notification deleted');
 

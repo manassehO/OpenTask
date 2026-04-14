@@ -26,7 +26,7 @@ const Summary = () => {
         void fetchConversion();
       }
     }
-  }, [userStats?.totalEarnings]);
+  }, [btcValue, userStats?.totalEarnings]);
 
   const summaryData = [
     {

@@ -107,6 +107,12 @@ export type ReviewValues = {
   launchTime: string;
   visibilitySetting: string;
   userTargeting: string;
+  category: string;
+  deadline: string;
+  instructions: string;
+  description: string;
+  rewardAmount: string;
+  maxSubmission: string;
 };
 
 export interface TaskStore {

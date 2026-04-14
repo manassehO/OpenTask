@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import { createTask } from '~/app/api/task';
 
 type Props = object;
@@ -18,10 +17,8 @@ function page({}: Props) {
         category: 'Development',
         rewardAmount: '100',
         rewardTokenAddress: '0x1234567890abcdef1234567890abcdef12345678',
-        deadline: '2025-09-01',
         fundingTxHash:
           '0x2f8f4f25a2d8c58c9c4f0f8af3e4b67890abcdef1234567890abcdef12345678',
-        image: '',
         maxCompletions: 20,
         requiredCompletions: 1,
       });

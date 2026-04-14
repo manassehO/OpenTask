@@ -8,7 +8,7 @@ const FormSelectInput = <T extends FieldValues>({
   label,
   register,
   error,
-  className = '',
+ 
   touched,
   options,
   placeholder,

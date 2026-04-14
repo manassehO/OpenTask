@@ -12,7 +12,7 @@ import Button from '~/_components/ui/button';
 const TaskCard: React.FC<TaskCardProps> = ({ task, onAction }) => {
   useEffect(() => {
     console.log(task.deadline);
-  }, []);
+  }, [task?.deadline]);
   return (
     <Card className="flex h-full w-full flex-col bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
       <CardImage

@@ -21,9 +21,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 // Helper function to safely handle context (loading ID)
-function getLoadingId(context: unknown): string | null {
-  return typeof context === 'string' ? context : null;
-}
+
 
 // Mutation hook for creating a task
 export function useCreateTask() {

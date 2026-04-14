@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import { sidebarAtom } from '~/hooks/sidebarAtom';
 import GetStarted from './GetStarted';
 import { api } from '~/hooks/queryClient';
-import Button from '../ui/button';
 const sections = ['home', 'features', 'contact us'];
 
 export function Navbar() {

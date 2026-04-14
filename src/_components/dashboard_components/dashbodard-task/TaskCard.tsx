@@ -13,11 +13,7 @@ import {
 import { ClientDate } from '~/_components/ui/ClientDate';
 
 // Helper function to convert reward amount to USD (mock conversion)
-function convertToUSD(ethAmount: number): number {
-  // Mock ETH to USD conversion rate (in real app, this would come from an API)
-  const ETH_TO_USD = 2400;
-  return Math.round(ethAmount * ETH_TO_USD);
-}
+
 
 // Helper function to get status badge styling
 function getStatusBadge(status: string) {

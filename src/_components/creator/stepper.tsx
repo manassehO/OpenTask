@@ -9,7 +9,7 @@ interface StepperProps {
   setActiveStepper?: Dispatch<SetStateAction<string | undefined>>;
 }
 
-function Stepper({ tabs, setActiveStepper, activeStepper }: StepperProps) {
+function Stepper({ tabs, activeStepper }: StepperProps) {
   const stepperRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   // Auto-scroll active step into view on small screens

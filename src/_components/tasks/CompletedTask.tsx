@@ -9,11 +9,23 @@ import { useToast } from '~/hooks/useToast';
 import TaskCard from './TaskCard';
 import TaskCardSkeleton from './TaskCardSkeleton';
 
+// Interface for actual API response structure
+interface CompletedTaskResponse {
+  id: string;
+  title: string;
+  description: string;
+  status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
+  rewardAmount: string;
+  deadline: Date;
+  image: string | null;
+  createdAt: Date;
+  creatorUserId: string;
+  category?: string;
+}
+
 // Helper function to convert API task to UI task format
-function convertApiTaskToUITask(apiTask: any): Task {
+function convertApiTaskToUITask(apiTask: CompletedTaskResponse): Task {
   // Mock ETH to USD conversion rate
-  const ETH_TO_USD = 2400;
-  const rewardInUsd = Math.round(Number(apiTask.rewardAmount) * ETH_TO_USD);
 
   return {
     id: apiTask.id,
@@ -23,7 +35,7 @@ function convertApiTaskToUITask(apiTask: any): Task {
     image: apiTask.image ?? '',
     deadline: apiTask.deadline,
     creator: `Creator ${apiTask.creatorUserId.slice(0, 8)}...`,
-    category: apiTask.category || 'general',
+    category: apiTask.category ?? 'general',
     rewardInEth: 303,
     rewardInUsd: 70,
     createdAt: apiTask.createdAt,
@@ -39,38 +51,15 @@ export default function CompletedTask() {
     fetchCompletedTasks,
     refetchCompletedTasks,
   } = useCompletedTasks();
-  const { toasts, showInfo } = useToast();
+  const { toasts } = useToast();
 
   // Fetch completed tasks on component mount
   useEffect(() => {
     fetchCompletedTasks();
-  }, []);
+  }, [fetchCompletedTasks]);
 
   // Convert API tasks to UI format
   const tasks: Task[] = completedTasks.map(convertApiTaskToUITask);
-
-  const onClick = (taskId: string) => {
-    router.push(`/task/${taskId}`);
-  };
-
-  const handleViewSubmission = (taskId: string) => {
-    // Navigate to submission view
-    router.push(`/task/${taskId}/submission`);
-  };
-
-  const handleDownloadCertificate = (taskId: string) => {
-    // Mock certificate download
-    showInfo(
-      'Download Started',
-      'Your completion certificate is being downloaded...',
-    );
-    // In real implementation, you would download a PDF certificate
-  };
-
-  const handleViewReward = (taskId: string) => {
-    // Navigate to reward/payment details
-    router.push(`/rewards/${taskId}`);
-  };
 
   const handleRefresh = () => {
     refetchCompletedTasks();
